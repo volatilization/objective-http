@@ -16,7 +16,7 @@ class JsonHttpEndpoint {
     async listen(request, response) {
         this.#validateHeaders(request.headers);
 
-        return await this.#origin.listen(request, response);
+        return JSON.parse(Buffer.concat(await this.#origin.listen(request, response)).toString());
     }
 
     #validateHeaders(headers) {
