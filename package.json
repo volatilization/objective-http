@@ -8,5 +8,8 @@
     "name": "volatilization",
     "email": "volatilization@yandex.ru"
   },
+  "repository": {
+    "url": "git+https://github.com/volatilization/objective-http.git"
+  },
   "license": "LGPL-3.0-only"
 }
