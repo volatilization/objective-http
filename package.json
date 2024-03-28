@@ -1,6 +1,6 @@
 {
   "name": "objective-http",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Proxy classes for creating an http server",
   "main": "dev/code/index.js",
   "keywords": ["web", "web-server", "http", "http-server", "oop"],
