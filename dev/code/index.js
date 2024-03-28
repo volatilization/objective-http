@@ -1,5 +1,5 @@
 module.exports = {
-    HttpServer: require('./domain/HttpServer'),
-    HttpEndpoint: require('./domain/endpoint/HttpEndpoint'),
-    JsonHttpEndpoint: require('./domain/endpoint/JsonHttpEndpoint')
+    HttpServer: require('./server/HttpServer'),
+    HttpEndpoint: require('./server/endpoint/HttpEndpoint'),
+    JsonHttpEndpoint: require('./server/endpoint/JsonHttpEndpoint')
 }
