@@ -18,17 +18,8 @@ class HttpEndpoint {
         };
     }
 
-    listen(request, response) {
-        return new Promise((resolve) => {
-            if (request.method.toString().toUpperCase() === 'POST' || 'PUT') {
-                const chunks = [];
-                request.on('data', (chunk) => chunks.push(chunk));
-                request.on('end', () => resolve(chunks));
-
-            } else {
-                resolve();
-            }
-        });
+    async handle(request) {
+        return {};
     }
 }
 

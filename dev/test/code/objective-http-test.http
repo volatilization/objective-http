@@ -1,0 +1,34 @@
+### GET 1
+GET http://localhost:8080/api?a=1
+
+
+### GET 2
+GET http://localhost:8080/api?a=2
+
+
+### GET 3
+GET http://localhost:8080/api?a=3
+
+
+### GET 4
+GET http://localhost:8080/api?a=4
+
+
+### POST
+POST http://localhost:8080/api?s=2
+Content-Type: application/json; charset=utf-8
+
+{
+  "a": "asdasdasdasdasdasd asd asdasd asd ",
+  "s": "asdad"
+}
+
+
+### PUT
+PUT http://localhost:8080/api?s=2
+Content-Type: application/json; charset=utf-8
+
+{
+  "a": "asdasdasdasdasdasd asd asdasd asd ",
+  "s": "asdad"
+}
