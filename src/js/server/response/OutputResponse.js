@@ -1,4 +1,4 @@
-class HttpOutputResponse {
+module.exports = class OutputResponse {
     #outputStream;
     #options;
 
@@ -8,11 +8,11 @@ class HttpOutputResponse {
     }
 
     copy(outputStream = this.#outputStream, options = this.#options) {
-        return new HttpOutputResponse(outputStream, {...{statusCode: 200, headers: {}}, ...options});
+        return new OutputResponse(outputStream, {...{statusCode: 200, headers: {}}, ...options});
     }
 
     update(options) {
-        return new HttpOutputResponse(this.#outputStream, this.#mergeOptions(this.#options, options));
+        return new OutputResponse(this.#outputStream, this.#mergeOptions(this.#options, options));
     }
 
     flush() {
@@ -46,5 +46,3 @@ class HttpOutputResponse {
         return existedOptions;
     }
 }
-
-module.exports = HttpOutputResponse;

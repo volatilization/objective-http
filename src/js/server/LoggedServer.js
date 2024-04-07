@@ -1,4 +1,4 @@
-class LogHttpServer {
+module.exports = class LoggedServer {
     #origin;
     #logger;
 
@@ -19,5 +19,3 @@ class LogHttpServer {
         return this.#origin.options();
     }
 }
-
-module.exports = LogHttpServer;

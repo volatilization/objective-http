@@ -1,4 +1,4 @@
-class LogHttpInputRequest {
+module.exports = class LoggedInputRequest {
     #origin;
     #inputStream;
     #logger;
@@ -10,13 +10,13 @@ class LogHttpInputRequest {
     }
 
     copy(inputStream, options, logger = this.#logger, origin = this.#origin.copy(inputStream, options)) {
-        return new LogHttpInputRequest(origin, logger, inputStream);
+        return new LoggedInputRequest(origin, logger, inputStream);
     }
 
     async flush() {
         this.#logger.debug(`HttpRequest: [${this.#inputStream.method}] ${this.#inputStream.url} ${JSON.stringify(this.#inputStream.headers)}`);
 
-        return new LogHttpInputRequest(await this.#origin.flush(), this.#logger);
+        return new LoggedInputRequest(await this.#origin.flush(), this.#logger);
     }
 
     route() {
@@ -31,5 +31,3 @@ class LogHttpInputRequest {
         return this.#origin.body();
     }
 }
-
-module.exports = LogHttpInputRequest;

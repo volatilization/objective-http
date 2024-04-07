@@ -1,4 +1,4 @@
-class PostTestEndpoint {
+module.exports = class PostTestEndpoint {
     #origin;
 
     constructor(origin) {
@@ -19,5 +19,3 @@ class PostTestEndpoint {
         return {body: JSON.stringify({...body, s: s})}
     }
 }
-
-module.exports = PostTestEndpoint;

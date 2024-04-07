@@ -1,9 +1,3 @@
-# objective-http
-Proxy classes for creating a http server
-
-## Using
-
-``` javascript
 const http = require('node:http');
 const cluster = require('node:cluster');
 
@@ -20,7 +14,11 @@ const {
     Endpoint,
     LoggedEndpoint,
     Endpoints
-} = require('../../../js').server; = require('objective-http').server;
+} = require('../../../js').server;
+
+const PostTestEndpoint = require('./endpont/PostTestEndpoint');
+const GetTestEndpoint = require('./endpont/GetTestEndpoint');
+const ErrorTestEndpoint = require('./endpont/ErrorTestEndpoint');
 
 new ClusteredServer(
     new LoggedServer(
@@ -33,11 +31,10 @@ new ClusteredServer(
                 new PostTestEndpoint(new LoggedEndpoint(new Endpoint(), console)),
                 new ErrorTestEndpoint(new LoggedEndpoint(new Endpoint(), console))
             ]),
-            {port: server_port}
+            {port: 8080}
         ),
         console
     ),
     cluster,
-    {workers: workers_count}
+    {workers: 4}
 ).start();
-```

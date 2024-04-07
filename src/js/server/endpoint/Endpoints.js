@@ -1,4 +1,4 @@
-class HttpEndpoints {
+module.exports = class Endpoints {
     #collection;
 
     constructor(collection = []) {
@@ -6,7 +6,7 @@ class HttpEndpoints {
     }
 
     copy(collection = this.#collection) {
-        return new HttpEndpoints(collection);
+        return new Endpoints(collection);
     }
 
     async handle(request) {
@@ -24,5 +24,3 @@ class HttpEndpoints {
         return await endpoint.handle(request);
     }
 }
-
-module.exports = HttpEndpoints;

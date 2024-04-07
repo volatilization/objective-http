@@ -1,4 +1,4 @@
-class GetTestEndpoint {
+module.exports = class GetTestEndpoint {
     #origin;
 
     constructor(origin) {
@@ -24,5 +24,3 @@ class GetTestEndpoint {
         return {body: a};
     }
 }
-
-module.exports = GetTestEndpoint;

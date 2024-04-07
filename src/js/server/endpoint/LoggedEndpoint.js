@@ -1,4 +1,4 @@
-class LogHttpEndpoint {
+module.exports = class LoggedEndpoint {
     #origin;
     #logger;
 
@@ -8,7 +8,7 @@ class LogHttpEndpoint {
     }
 
     copy(method, path, logger = this.#logger, origin = this.#origin.copy(method, path)) {
-        return new LogHttpEndpoint(origin, logger);
+        return new LoggedEndpoint(origin, logger);
     }
 
     route() {
@@ -21,5 +21,3 @@ class LogHttpEndpoint {
         return await this.#origin.handle(request);
     }
 }
-
-module.exports = LogHttpEndpoint;
