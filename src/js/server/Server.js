@@ -1,4 +1,4 @@
-class HttpServer {
+module.exports = class HttpServer {
     #http;
     #request;
     #response;
@@ -54,5 +54,3 @@ class HttpServer {
         return this.#options;
     }
 }
-
-module.exports = HttpServer;

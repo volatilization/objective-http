@@ -1,4 +1,4 @@
-class ErrorTestEndpoint {
+module.exports = class ErrorTestEndpoint {
     #origin;
 
     constructor(origin) {
@@ -27,5 +27,3 @@ class ErrorTestEndpoint {
         }
     }
 }
-
-module.exports = ErrorTestEndpoint;

@@ -15,12 +15,12 @@ GET http://localhost:8080/api?a=4
 
 
 ### POST
-POST http://localhost:8080/api?s=2
+POST http://localhost:8080/api?a=2
 Content-Type: application/json; charset=utf-8
 
 {
   "a": "asdasdasdasdasdasd asd asdasd asd ",
-  "s": "asdad"
+  "aa": "asdad"
 }
 
 
@@ -30,5 +30,5 @@ Content-Type: application/json; charset=utf-8
 
 {
   "a": "asdasdasdasdasdasd asd asdasd asd ",
-  "s": "asdad"
+  "aa": "asdad"
 }

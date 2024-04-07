@@ -1,4 +1,4 @@
-class JsonHttpInputRequest {
+module.exports = class JsonInputRequest {
     #origin;
     #inputStream;
 
@@ -8,7 +8,7 @@ class JsonHttpInputRequest {
     }
 
     copy(inputStream, options, origin = this.#origin.copy(inputStream, options)) {
-        return new JsonHttpInputRequest(origin, inputStream);
+        return new JsonInputRequest(origin, inputStream);
     }
 
     async flush() {
@@ -16,7 +16,7 @@ class JsonHttpInputRequest {
             throw new Error('Wrong content-type. Only application/json accepted.', {cause: 'INVALID_REQUEST'});
         }
 
-        return new JsonHttpInputRequest(await this.#origin.flush(), this.#inputStream);
+        return new JsonInputRequest(await this.#origin.flush(), this.#inputStream);
     }
 
     route() {
@@ -44,5 +44,3 @@ class JsonHttpInputRequest {
             && new RegExp('^application\/json').test(requestHeaders['content-type']);
     }
 }
-
-module.exports = JsonHttpInputRequest;

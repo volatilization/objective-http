@@ -1,8 +1,8 @@
 {
   "name": "objective-http",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Proxy classes for creating an http server",
-  "main": "dev/code/index.js",
+  "main": "src/js/index.js",
   "keywords": ["web", "web-server", "http", "http-server", "oop"],
   "author": {
     "name": "volatilization",

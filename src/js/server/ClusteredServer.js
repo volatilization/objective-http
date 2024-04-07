@@ -1,4 +1,4 @@
-class ClusterHttpServer {
+module.exports = class ClusteredServer {
     #origin;
     #cluster;
     #options;
@@ -26,5 +26,3 @@ class ClusterHttpServer {
         return {...this.#origin.options(), ...this.#options};
     }
 }
-
-module.exports = ClusterHttpServer;

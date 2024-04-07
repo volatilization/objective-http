@@ -1,4 +1,4 @@
-class JsonHttpOutputResponse {
+module.exports = class JsonOutputResponse {
     #origin;
 
     constructor(origin) {
@@ -6,11 +6,11 @@ class JsonHttpOutputResponse {
     }
 
     copy(outputStream, options, origin = this.#origin.copy(outputStream, options)) {
-        return new JsonHttpOutputResponse(origin);
+        return new JsonOutputResponse(origin);
     }
 
     update(options) {
-        return new JsonHttpOutputResponse(this.#origin.update(options));
+        return new JsonOutputResponse(this.#origin.update(options));
     }
 
     flush() {
@@ -19,5 +19,3 @@ class JsonHttpOutputResponse {
             .flush();
     }
 }
-
-module.exports = JsonHttpOutputResponse;

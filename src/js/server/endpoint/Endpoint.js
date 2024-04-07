@@ -1,4 +1,4 @@
-class HttpEndpoint {
+module.exports = class Endpoint {
     #method;
     #path;
 
@@ -8,7 +8,7 @@ class HttpEndpoint {
     }
 
     copy(method = this.#method, path = this.#path) {
-        return new HttpEndpoint(method, path);
+        return new Endpoint(method, path);
     }
 
     route() {
@@ -22,5 +22,3 @@ class HttpEndpoint {
         return {};
     }
 }
-
-module.exports = HttpEndpoint;

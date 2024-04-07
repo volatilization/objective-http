@@ -1,4 +1,4 @@
-class LogHttpOutputResponse {
+module.exports = class LoggedOutputResponse {
     #origin;
     #logger;
 
@@ -8,11 +8,11 @@ class LogHttpOutputResponse {
     }
 
     copy(outputStream, options, logger = this.#logger, origin = this.#origin.copy(outputStream, options)) {
-        return new LogHttpOutputResponse(origin, logger);
+        return new LoggedOutputResponse(origin, logger);
     }
 
     update(options) {
-        return new LogHttpOutputResponse(this.#origin.update(options), this.#logger);
+        return new LoggedOutputResponse(this.#origin.update(options), this.#logger);
     }
 
     flush() {
@@ -23,5 +23,3 @@ class LogHttpOutputResponse {
         return outputStream;
     }
 }
-
-module.exports = LogHttpOutputResponse;

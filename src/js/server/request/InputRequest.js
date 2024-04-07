@@ -1,4 +1,4 @@
-class HttpInputRequest {
+module.exports = class InputRequest {
     #inputStream;
     #options;
 
@@ -8,7 +8,7 @@ class HttpInputRequest {
     }
 
     copy(inputStream = this.#inputStream, options = this.#options) {
-        return new HttpInputRequest(inputStream, options);
+        return new InputRequest(inputStream, options);
     }
 
     flush() {
@@ -17,7 +17,7 @@ class HttpInputRequest {
                 this.#inputStream.on('error', (e) => reject(e));
 
                 if (!this.#isChunkedInputStream(this.#inputStream)) {
-                    resolve(new HttpInputRequest(
+                    resolve(new InputRequest(
                         this.#inputStream,
                         this.#extractOptionsFromInputStream(this.#inputStream)
                     ));
@@ -25,7 +25,7 @@ class HttpInputRequest {
 
                 let chunks = [];
                 this.#inputStream.on('data', (chunk) => chunks.push(chunk));
-                this.#inputStream.on('end', () => resolve(new HttpInputRequest(
+                this.#inputStream.on('end', () => resolve(new InputRequest(
                     this.#inputStream,
                     {... this.#extractOptionsFromInputStream(this.#inputStream), body: Buffer.concat(chunks)}
                 )));
@@ -64,5 +64,3 @@ class HttpInputRequest {
         };
     }
 }
-
-module.exports = HttpInputRequest;
