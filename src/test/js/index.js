@@ -14,11 +14,11 @@ const {
     Endpoint,
     LoggedEndpoint,
     Endpoints
-} = require('../../../js').server;
+} = require('../../js').server;
 
-const PostTestEndpoint = require('./endpont/PostTestEndpoint');
-const GetTestEndpoint = require('./endpont/GetTestEndpoint');
-const ErrorTestEndpoint = require('./endpont/ErrorTestEndpoint');
+const PostTestEndpoint = require('./server/endpont/PostTestEndpoint');
+const GetTestEndpoint = require('./server/endpont/GetTestEndpoint');
+const ErrorTestEndpoint = require('./server/endpont/ErrorTestEndpoint');
 
 new ClusteredServer(
     new LoggedServer(
