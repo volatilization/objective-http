@@ -20,7 +20,7 @@ const {
     Endpoint,
     LoggedEndpoint,
     Endpoints
-} = require('../../../js').server; = require('objective-http').server;
+} = require('objective-http').server;
 
 new ClusteredServer(
     new LoggedServer(
@@ -29,9 +29,9 @@ new ClusteredServer(
             new LoggedInputRequest(new JsonInputRequest(new InputRequest()), console),
             new LoggedOutputResponse(new JsonOutputResponse(new OutputResponse()), console),
             new Endpoints([
-                new GetTestEndpoint(new LoggedEndpoint(new Endpoint(), console)),
-                new PostTestEndpoint(new LoggedEndpoint(new Endpoint(), console)),
-                new ErrorTestEndpoint(new LoggedEndpoint(new Endpoint(), console))
+                new MyFirstEndpoint(new LoggedEndpoint(new Endpoint(), console)),
+                new MySecondEndpoint(new LoggedEndpoint(new Endpoint(), console)),
+                new MyThirdEndpoint(new LoggedEndpoint(new Endpoint(), console))
             ]),
             {port: server_port}
         ),
