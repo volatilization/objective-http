@@ -2,7 +2,7 @@ name: Publish release
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
   publish-npm:
@@ -15,5 +15,5 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm run publish
         env:
-          RELEASE: ${GITHUB_REF#refs/heads/release/}
+          RELEASE: ${{github.event.release.name}}
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
