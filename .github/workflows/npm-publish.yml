@@ -11,9 +11,11 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 21
           registry-url: https://registry.npmjs.org/
-      - run: npm run publish
+      - run: npm run prepareToPublish
         env:
           RELEASE: ${{github.event.release.name}}
+      - run: npm publish
+        env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
