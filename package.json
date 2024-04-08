@@ -3,8 +3,10 @@
   "version": "master",
   "private": "true",
   "description": "Proxy classes for creating a http server",
-  "main": "src/js/index.js",
   "keywords": ["web", "web-server", "http", "http-server", "oop"],
+  "scripts": {
+    "publish": "node dist/prepareToPublish.js && npm publsih"
+  },
   "author": {
     "name": "volatilization",
     "email": "volatilization@yandex.ru"
