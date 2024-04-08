@@ -5,7 +5,7 @@
   "description": "Proxy classes for creating a http server",
   "keywords": ["web", "web-server", "http", "http-server", "oop"],
   "scripts": {
-    "publish": "node dist/prepareToPublish.js && npm publsih"
+    "prepareToPublish": "node dist/prepareToPublish.js"
   },
   "author": {
     "name": "volatilization",
