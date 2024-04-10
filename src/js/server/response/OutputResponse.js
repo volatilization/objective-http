@@ -31,6 +31,10 @@ module.exports = class OutputResponse {
     }
 
     #mergeOptions(existedOptions, newOptions) {
+        if (newOptions == null) {
+            return existedOptions;
+        }
+
         if (newOptions.statusCode != null) {
             existedOptions.statusCode = newOptions.statusCode;
         }
