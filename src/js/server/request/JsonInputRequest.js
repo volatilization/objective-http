@@ -32,7 +32,16 @@ module.exports = class JsonInputRequest {
             return null;
         }
 
-        return JSON.parse(this.#origin.body().toString());
+        try {
+            return JSON.parse(this.#origin.body().toString());
+
+        } catch (e) {
+            throw new Error('Wrong body format. Only JSON accepted.', {cause: 'INVALID_REQUEST'});
+        }
+    }
+
+    headers() {
+        return this.#origin.headers();
     }
 
     #useChunkMethod(requestMethod) {

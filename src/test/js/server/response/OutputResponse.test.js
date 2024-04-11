@@ -1,12 +1,17 @@
+/* node:coverage disable */
+
 const {OutputResponse} = require('../../../../js/index').server;
 const {describe, it, mock, beforeEach, afterEach, before, after} = require('node:test');
 const assert = require('node:assert');
 
 const diagnosticOutputStream = {
     options: {},
-    writeHead(statusCode, headers) {},
-    write(body) {},
-    end() {}
+    writeHead(statusCode, headers) {
+    },
+    write(body) {
+    },
+    end() {
+    }
 };
 
 const testOptions = {
@@ -57,14 +62,22 @@ describe('constructor', () => {
 describe('copy', () => {
     it('should not call anything', () => {
         assert.doesNotThrow(() => {
-            new OutputResponse()
+            new OutputResponse().copy();
         });
 
         assert.strictEqual(diagnosticOutputStream.writeHead.mock.calls.length, 0);
         assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
         assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 0);
     });
-})
+
+    it('should return new OutputResponse instance', () => {
+        const outputResponse = new OutputResponse();
+        const copyOutputResponse = outputResponse.copy();
+
+        assert.notEqual(outputResponse, copyOutputResponse);
+        assert.strictEqual(typeof outputResponse, typeof copyOutputResponse);
+    });
+});
 
 describe('flush', () => {
     beforeEach(prepareDiagnostic);
@@ -114,7 +127,9 @@ describe('flush', () => {
     });
 
     it('should fall on writeHead', () => {
-        diagnosticOutputStream.writeHead = () => {throw new Error('writeHead error')};
+        diagnosticOutputStream.writeHead = () => {
+            throw new Error('writeHead error');
+        };
         mock.method(diagnosticOutputStream, 'writeHead');
 
         assert.throws(() => new OutputResponse(diagnosticOutputStream).flush(), {message: 'writeHead error'});
@@ -124,7 +139,9 @@ describe('flush', () => {
     });
 
     it('should not fall on write', () => {
-        diagnosticOutputStream.write = () => {throw new Error('write error')};
+        diagnosticOutputStream.write = () => {
+            throw new Error('write error');
+        };
         mock.method(diagnosticOutputStream, 'write');
 
         assert.doesNotThrow(() => new OutputResponse(diagnosticOutputStream, {body: null}).flush());
@@ -134,7 +151,9 @@ describe('flush', () => {
     });
 
     it('should fall on write', () => {
-        diagnosticOutputStream.write = () => {throw new Error('write error')};
+        diagnosticOutputStream.write = () => {
+            throw new Error('write error');
+        };
         mock.method(diagnosticOutputStream, 'write');
 
         assert.throws(() => new OutputResponse(diagnosticOutputStream, {body: 'now i am falling'}).flush(),
@@ -145,7 +164,9 @@ describe('flush', () => {
     });
 
     it('should fall on end', () => {
-        diagnosticOutputStream.end = () => {throw new Error('end error')};
+        diagnosticOutputStream.end = () => {
+            throw new Error('end error');
+        };
         mock.method(diagnosticOutputStream, 'end');
 
         assert.throws(() => new OutputResponse(diagnosticOutputStream).flush(),
@@ -154,7 +175,7 @@ describe('flush', () => {
         assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
     });
-})
+});
 
 describe('update', () => {
     beforeEach(prepareDiagnostic);

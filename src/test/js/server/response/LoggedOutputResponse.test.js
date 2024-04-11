@@ -1,17 +1,23 @@
+/* node:coverage disable */
+
 const {LoggedOutputResponse} = require('../../../../js/index').server;
 const {describe, it, mock, beforeEach, afterEach, before, after} = require('node:test');
 const assert = require('node:assert');
 
 const diagnosticOrigin = {
     options: {},
-    copy(outputStream, options) {},
-    update(options) {},
-    flush() {}
+    copy(outputStream, options) {
+    },
+    update(options) {
+    },
+    flush() {
+    }
 };
 
 const diagnosticLogger = {
     message: {},
-    debug(message) {}
+    debug(message) {
+    }
 };
 
 function prepareDiagnostic() {
@@ -36,7 +42,7 @@ function prepareDiagnostic() {
     diagnosticLogger.message = null;
     diagnosticLogger.debug = (message) => {
         diagnosticLogger.message = message;
-    }
+    };
     mock.method(diagnosticLogger, 'debug');
 }
 
@@ -89,13 +95,17 @@ describe('copy', () => {
     });
 
     it('should fall when origin copy, cause null', () => {
-        assert.throws(() => {new LoggedOutputResponse().copy()}, {name: 'TypeError'});
+        assert.throws(() => {
+            new LoggedOutputResponse().copy();
+        }, {name: 'TypeError'});
 
         assert.strictEqual(diagnosticOrigin.copy.mock.calls.length, 0);
     });
 
     it('should fall when origin copy, cause error', () => {
-        diagnosticOrigin.copy = () => {throw new Error('copy error')};
+        diagnosticOrigin.copy = () => {
+            throw new Error('copy error');
+        };
         mock.method(diagnosticOrigin, 'copy');
 
         assert.throws(() => new LoggedOutputResponse(diagnosticOrigin).copy(),
@@ -106,7 +116,15 @@ describe('copy', () => {
             {message: 'copy error'});
         assert.strictEqual(diagnosticOrigin.copy.mock.calls.length, 1);
     });
-})
+
+    it('should return new LoggedOutputResponse instance', () => {
+        const loggedOutputResponse = new LoggedOutputResponse(diagnosticOrigin);
+        const copyLoggedOutputResponse = loggedOutputResponse.copy();
+
+        assert.notEqual(loggedOutputResponse, copyLoggedOutputResponse);
+        assert.strictEqual(typeof loggedOutputResponse, typeof copyLoggedOutputResponse);
+    });
+});
 
 describe('flush', () => {
     beforeEach(prepareDiagnostic);
@@ -132,7 +150,9 @@ describe('flush', () => {
     });
 
     it('should fall when call flush of origin, cause error', () => {
-        diagnosticOrigin.flush = () => {throw new Error('flush error')};
+        diagnosticOrigin.flush = () => {
+            throw new Error('flush error');
+        };
         mock.method(diagnosticOrigin, 'flush');
 
         assert.throws(() => new LoggedOutputResponse(diagnosticOrigin, diagnosticLogger).flush(), {message: 'flush error'});
@@ -149,7 +169,9 @@ describe('flush', () => {
 
     it('should return same outputStream', () => {
         const testOutputStream = {content: 'test', req: {}};
-        diagnosticOrigin.flush = () => {return testOutputStream};
+        diagnosticOrigin.flush = () => {
+            return testOutputStream;
+        };
         mock.method(diagnosticOrigin, 'flush');
 
         const resultOutputStream = new LoggedOutputResponse(diagnosticOrigin, diagnosticLogger).flush();
@@ -157,7 +179,7 @@ describe('flush', () => {
         assert.equal(resultOutputStream, testOutputStream);
         assert.deepStrictEqual(resultOutputStream, testOutputStream);
     });
-})
+});
 
 describe('update', () => {
     beforeEach(prepareDiagnostic);
@@ -175,7 +197,9 @@ describe('update', () => {
     });
 
     it('should fall when call update of origin, cause error', () => {
-        diagnosticOrigin.update = () => {throw new Error('update error')};
+        diagnosticOrigin.update = () => {
+            throw new Error('update error');
+        };
         mock.method(diagnosticOrigin, 'update');
 
         assert.throws(() => new LoggedOutputResponse(diagnosticOrigin, diagnosticLogger).update(),

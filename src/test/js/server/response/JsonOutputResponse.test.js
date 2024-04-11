@@ -1,12 +1,17 @@
+/* node:coverage disable */
+
 const {JsonOutputResponse} = require('../../../../js/index').server;
 const {describe, it, mock, beforeEach, afterEach, before, after} = require('node:test');
 const assert = require('node:assert');
 
 const diagnosticOrigin = {
     options: {},
-    copy(outputStream, options) {},
-    update(options) {},
-    flush() {}
+    copy(outputStream, options) {
+    },
+    update(options) {
+    },
+    flush() {
+    }
 };
 
 function prepareDiagnostic() {
@@ -20,7 +25,8 @@ function prepareDiagnostic() {
         diagnosticOrigin.options.options = options;
         return diagnosticOrigin;
     };
-    diagnosticOrigin.flush = () => {};
+    diagnosticOrigin.flush = () => {
+    };
 
     mock.method(diagnosticOrigin, 'copy');
     mock.method(diagnosticOrigin, 'update');
@@ -72,13 +78,17 @@ describe('copy', () => {
     });
 
     it('should fall when origin copy, cause null', () => {
-        assert.throws(() => {new JsonOutputResponse().copy()}, {name: 'TypeError'});
+        assert.throws(() => {
+            new JsonOutputResponse().copy();
+        }, {name: 'TypeError'});
 
         assert.strictEqual(diagnosticOrigin.copy.mock.calls.length, 0);
     });
 
     it('should fall when origin copy, cause error', () => {
-        diagnosticOrigin.copy = () => {throw new Error('copy error')};
+        diagnosticOrigin.copy = () => {
+            throw new Error('copy error');
+        };
         mock.method(diagnosticOrigin, 'copy');
 
         assert.throws(() => new JsonOutputResponse(diagnosticOrigin).copy(),
@@ -89,7 +99,15 @@ describe('copy', () => {
             {message: 'copy error'});
         assert.strictEqual(diagnosticOrigin.copy.mock.calls.length, 1);
     });
-})
+
+    it('should return new JsonOutputResponse instance', () => {
+        const jsonOutputResponse = new JsonOutputResponse(diagnosticOrigin);
+        const copyJsonOutputResponse = jsonOutputResponse.copy();
+
+        assert.notEqual(jsonOutputResponse, copyJsonOutputResponse);
+        assert.strictEqual(typeof jsonOutputResponse, typeof copyJsonOutputResponse);
+    });
+});
 
 describe('flush', () => {
     beforeEach(prepareDiagnostic);
@@ -115,7 +133,9 @@ describe('flush', () => {
     });
 
     it('should fall when call update of origin, cause error', () => {
-        diagnosticOrigin.update = () => {throw new Error('update error')};
+        diagnosticOrigin.update = () => {
+            throw new Error('update error');
+        };
         mock.method(diagnosticOrigin, 'update');
 
         assert.throws(() => new JsonOutputResponse(diagnosticOrigin).flush(), {message: 'update error'});
@@ -125,7 +145,9 @@ describe('flush', () => {
     });
 
     it('should fall when call flush of origin, cause error', () => {
-        diagnosticOrigin.flush = () => {throw new Error('flush error')};
+        diagnosticOrigin.flush = () => {
+            throw new Error('flush error');
+        };
         mock.method(diagnosticOrigin, 'flush');
 
         assert.throws(() => new JsonOutputResponse(diagnosticOrigin).flush(), {message: 'flush error'});
@@ -136,7 +158,9 @@ describe('flush', () => {
 
     it('should return same outputStream', () => {
         const testOutputStream = {content: 'test'};
-        diagnosticOrigin.flush = () => {return testOutputStream};
+        diagnosticOrigin.flush = () => {
+            return testOutputStream;
+        };
         mock.method(diagnosticOrigin, 'flush');
 
         const resultOutputStream = new JsonOutputResponse(diagnosticOrigin).flush();
@@ -150,7 +174,7 @@ describe('flush', () => {
 
         assert.deepStrictEqual(diagnosticOrigin.options.options.headers, {'Content-Type': 'application/json; charset=utf-8'});
     });
-})
+});
 
 describe('update', () => {
     beforeEach(prepareDiagnostic);
@@ -167,7 +191,9 @@ describe('update', () => {
     });
 
     it('should fall when call update of origin, cause error', () => {
-        diagnosticOrigin.update = () => {throw new Error('update error')};
+        diagnosticOrigin.update = () => {
+            throw new Error('update error');
+        };
         mock.method(diagnosticOrigin, 'update');
 
         assert.throws(() => new JsonOutputResponse(diagnosticOrigin).update(),

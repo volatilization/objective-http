@@ -30,4 +30,8 @@ module.exports = class LoggedInputRequest {
     body() {
         return this.#origin.body();
     }
+
+    headers() {
+        return this.#origin.headers();
+    }
 }
