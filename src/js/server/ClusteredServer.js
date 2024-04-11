@@ -16,10 +16,8 @@ module.exports = class ClusteredServer {
             }
 
         } else {
-            await this.#origin.start();
+            return new ClusteredServer(await this.#origin.start(), this.#cluster, this.#options);
         }
-
-        return this;
     }
 
     options() {
