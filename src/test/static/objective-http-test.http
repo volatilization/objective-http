@@ -19,8 +19,8 @@ POST http://localhost:8080/api?a=2
 Content-Type: application/json; charset=utf-8
 
 {
-  "a": "asdasdasdasdasdasd asd asdasd asd ",
-  "aa": "asdad"
+  "param0": "value0",
+  "param1": "value1"
 }
 
 
@@ -29,6 +29,6 @@ PUT http://localhost:8080/api?s=2
 Content-Type: application/json; charset=utf-8
 
 {
-  "a": "asdasdasdasdasdasd asd asdasd asd ",
-  "aa": "asdad"
+  "param0": "value0",
+  "param1": "value1"
 }
