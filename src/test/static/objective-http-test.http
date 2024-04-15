@@ -32,3 +32,17 @@ Content-Type: application/json; charset=utf-8
   "param0": "value0",
   "param1": "value1"
 }
+
+
+### Bun GET
+GET http://localhost:8080/test?queryKey=sadasdasd&q=1
+
+
+### Bun POST
+POST http://localhost:8080/test?queryKey=sadasdasd&q=1
+Content-Type: application/json; charset=utf-8
+
+{
+  "param0": "value0",
+  "param1": "value1"
+}
