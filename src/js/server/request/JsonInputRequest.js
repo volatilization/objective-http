@@ -12,7 +12,7 @@ module.exports = class JsonInputRequest {
     }
 
     async flush() {
-        if (this.#useChunkMethod(this.#inputStream.method) && !this.#validHeaders(this.#inputStream.headers)) {
+        if (this.#useChunkMethod(this.#inputStream.method) && !this.#validHeaders(new Headers(this.#inputStream.headers))) {
             throw new Error('Wrong content-type. Only application/json accepted.', {cause: 'INVALID_REQUEST'});
         }
 
@@ -49,7 +49,7 @@ module.exports = class JsonInputRequest {
     }
 
     #validHeaders(requestHeaders) {
-        return requestHeaders['content-type'] != null
-            && new RegExp('^application\/json').test(requestHeaders['content-type']);
+        return new Headers(requestHeaders).has('content-type')
+            && new RegExp('^application\/json').test(new Headers(requestHeaders).get('content-type'));
     }
 }

@@ -163,7 +163,7 @@ describe('InputRequest', () => {
             assert.strictEqual(resultInputRequest.route().method, 'POST');
             assert.strictEqual(resultInputRequest.route().path, testOptions.path);
             assert.strictEqual(resultInputRequest.query().get('queryParam'), 'queryParam0');
-            assert.deepStrictEqual(resultInputRequest.headers(), testOptions.headers);
+            assert.deepStrictEqual(resultInputRequest.headers(), new Headers(testOptions.headers));
             assert.strictEqual(resultInputRequest.body().toString(), testOptions.body);
         });
 
@@ -178,7 +178,7 @@ describe('InputRequest', () => {
             assert.strictEqual(resultInputRequest.route().method, testOptions.method);
             assert.strictEqual(resultInputRequest.route().path, testOptions.path);
             assert.strictEqual(resultInputRequest.query().get('queryParam'), 'queryParam0');
-            assert.deepStrictEqual(resultInputRequest.headers(), testOptions.headers);
+            assert.deepStrictEqual(resultInputRequest.headers(), new Headers(testOptions.headers));
             assert.equal(resultInputRequest.body(), null);
         });
     });

@@ -1,48 +1,58 @@
 const {
     Server,
     LoggedServer,
-    InputRequest,
-    OutputResponse,
+    JsonOutputResponse,
+    JsonInputRequest,
     Endpoints
 } = require('../../../js').server;
-const http = require('node:http');
+const {
+    // Server,
+    InputRequest,
+    OutputResponse
+} = require('../../../js')
+    .bun
+    .server;
+const http =
+    require('../../../js/').bun.bunttp;
+// require('http');
 
-new Server(
-    http,
-    new InputRequest(),
-    new OutputResponse(),
-    new Endpoints([
-        {
-            route() {
-                return {
-                    method: 'GET',
-                    path: '/test'
-                };
+
+new LoggedServer(
+    new Server(
+        new Endpoints([
+            {
+                route() {
+                    return {
+                        method: 'GET',
+                        path: '/test'
+                    };
+                },
+                handle(request) {
+                    return {
+                        statusCode: 200,
+                        body: request.query().get('queryKey')
+                    };
+                }
             },
-            handle(request) {
-                console.log('its GET /test');
-                return {
-                    statusCode: 200,
-                    body: request.query().get('queryKey')
-                };
-            }
-        },
-        {
-            route() {
-                return {
-                    method: 'POST',
-                    path: '/test'
-                };
+            {
+                route() {
+                    return {
+                        method: 'POST',
+                        path: '/test'
+                    };
+                },
+                handle(request) {
+                    return {
+                        statusCode: 201,
+                        body: JSON.stringify(request.body())
+                    };
+                }
             },
-            handle(request) {
-                console.log('its GET /test');
-                return {
-                    statusCode: 201,
-                    body: request.body().toString()
-                };
-            }
-        },
-    ]),
-    {port: 8080}
-).start()
-.then(() => console.log(8080))
+        ]),
+        {port: 8080},
+        new JsonInputRequest(new InputRequest()),
+        new JsonOutputResponse(new OutputResponse()),
+        http
+    ),
+    console)
+.start()

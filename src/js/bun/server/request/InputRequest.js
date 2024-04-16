@@ -11,26 +11,19 @@ module.exports = class InputRequest {
         return new InputRequest(inputStream, options);
     }
 
-    flush() {
-        return new Promise((resolve) => {
-            this.#inputStream.once('error', (e) => {
-                throw new Error(e.message, {cause: 'INVALID_REQUEST'});
-            });
-
-            if (!this.#isChunkedInputStream(this.#inputStream)) {
-                return resolve(new InputRequest(
-                    this.#inputStream,
-                    this.#extractOptionsFromInputStream(this.#inputStream)
-                ));
-            }
-
-            let chunks = [];
-            this.#inputStream.on('data', (chunk) => chunks.push(chunk));
-            this.#inputStream.on('end', () => resolve(new InputRequest(
+    async flush() {
+        if (!this.#isChunkedInputStream(this.#inputStream)) {
+            return new InputRequest(
                 this.#inputStream,
-                {... this.#extractOptionsFromInputStream(this.#inputStream), body: Buffer.concat(chunks)}
-            )));
-        });
+                this.#extractOptionsFromInputStream(this.#inputStream)
+            );
+        }
+
+        return new InputRequest(
+            this.#inputStream,
+            {... this.#extractOptionsFromInputStream(this.#inputStream),
+                body: new Buffer(await (await this.#inputStream.blob()).arrayBuffer())}
+        );
     }
 
     route() {
@@ -59,9 +52,9 @@ module.exports = class InputRequest {
     #extractOptionsFromInputStream(inputStream) {
         return {
             method: inputStream.method,
-            path: new URL(inputStream.url, 'http://dummy').pathname,
-            query: new URL(inputStream.url, 'http://dummy').searchParams,
-            headers: new Headers(inputStream.headers)
+            path: new URL(inputStream.url).pathname,
+            query: new URL(inputStream.url).searchParams,
+            headers: inputStream.headers
         };
     }
 }

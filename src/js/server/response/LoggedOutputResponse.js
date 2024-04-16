@@ -7,7 +7,7 @@ module.exports = class LoggedOutputResponse {
         this.#logger = logger;
     }
 
-    copy(outputStream, options, logger = this.#logger, origin = this.#origin.copy(outputStream, options)) {
+    copy(options, outputStream, logger = this.#logger, origin = this.#origin.copy(options, outputStream)) {
         return new LoggedOutputResponse(origin, logger);
     }
 

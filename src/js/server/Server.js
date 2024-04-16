@@ -1,17 +1,17 @@
-module.exports = class HttpServer {
-    #http;
-    #request;
-    #response;
+module.exports = class Server {
     #endpoints;
     #options;
+    #request;
+    #response;
+    #http;
     #server;
 
-    constructor(http, request, response, endpoints, options, server) {
-        this.#http = http;
-        this.#request = request;
-        this.#response = response;
+    constructor(endpoints, options, request, response, http, server) {
         this.#endpoints = endpoints;
         this.#options = options;
+        this.#request = request;
+        this.#response = response;
+        this.#http = http;
         this.#server = server;
     }
 
@@ -19,27 +19,27 @@ module.exports = class HttpServer {
         const server = this.#http.createServer(async (requestStream, responseStream) => {
             try {
                 return await (this.#response
-                    .copy(responseStream, await this.#endpoints
+                    .copy(await this.#endpoints
                         .handle(await (this.#request
                             .copy(requestStream))
-                            .flush())))
+                            .flush()), responseStream))
                     .flush();
 
             } catch (e) {
                 if (e.cause === 'INVALID_REQUEST') {
-                    return await (this.#response
-                        .copy(responseStream, {
+                    return this.#response
+                        .copy({
                             statusCode: 400,
                             body: e.message
-                        }))
+                        }, responseStream)
                         .flush();
                 }
 
-                return await (this.#response
-                    .copy(responseStream, {
+                return this.#response
+                    .copy({
                         statusCode: 500,
                         body: 'Unexpected server error.'
-                    }))
+                    }, responseStream)
                     .flush();
             }
         });
@@ -47,13 +47,15 @@ module.exports = class HttpServer {
         return new Promise(resolve => {
             server.listen(
                 this.#options,
-                () => resolve(new HttpServer(
-                    this.#http,
-                    this.#request,
-                    this.#response,
-                    this.#endpoints,
-                    this.#options,
-                    server))
+                () => {
+                    resolve(new Server(
+                        this.#endpoints,
+                        this.#options,
+                        this.#request,
+                        this.#response,
+                        this.#http,
+                        server));
+                }
             );
         });
     }
@@ -61,12 +63,12 @@ module.exports = class HttpServer {
     stop() {
         return new Promise(resolve => {
             this.#server.close(
-                () => resolve(new HttpServer(
-                    this.#http,
+                () => resolve(new Server(
+                    this.#endpoints,
+                    this.#options,
                     this.#request,
                     this.#response,
-                    this.#endpoints,
-                    this.#options))
+                    this.#http))
             );
         });
     }

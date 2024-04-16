@@ -16,18 +16,10 @@ module.exports = class OutputResponse {
     }
 
     flush() {
-        try {
-            this.#outputStream.writeHead(this.#options.statusCode, this.#options.headers)
-
-            if (this.#options.body != null) {
-                this.#outputStream.write(this.#options.body);
-            }
-
-            return this.#outputStream;
-
-        } finally {
-            this.#outputStream.end();
-        }
+        return new Response(this.#options.body, {
+            status: this.#options.statusCode,
+            headers: this.#options.headers
+        });
     }
 
     #mergeOptions(existedOptions, newOptions) {

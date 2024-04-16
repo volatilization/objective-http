@@ -10,7 +10,7 @@ module.exports = class LoggedServer {
     async start() {
         const server = await this.#origin.start();
 
-        this.#logger.debug(`HttpServer is running at port: ${this.#origin.options().port}`);
+        this.#logger.debug(`HttpServer is running at port: ${server.options().port}`);
 
         return new LoggedServer(server, this.#logger);
     }
@@ -18,7 +18,7 @@ module.exports = class LoggedServer {
     async stop() {
         const server = await this.#origin.stop();
 
-        this.#logger.debug(`HttpServer at port: ${this.#origin.options().port} is stopped`);
+        this.#logger.debug(`HttpServer at port: ${server.options().port} is stopped`);
 
         return new LoggedServer(server, this.#logger);
     }
