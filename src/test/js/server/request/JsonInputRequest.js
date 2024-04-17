@@ -355,12 +355,12 @@ describe('JsonInputRequest', () => {
         it('should call body of origin', () => {
             new JsonInputRequest(diagnosticOrigin).body();
 
-            assert.strictEqual(diagnosticOrigin.body.mock.calls.length, 2);
+            assert.strictEqual(diagnosticOrigin.body.mock.calls.length, 1);
         });
 
         it('should fall when call body of origin, cause null', () => {
             assert.throws(() => new JsonInputRequest(null).body(),
-                {name: 'TypeError'});
+                {message: 'Wrong body format. Only JSON accepted.', cause: 'INVALID_REQUEST'});
         });
 
         it('should fall when call body of origin, cause error', () => {
@@ -370,7 +370,7 @@ describe('JsonInputRequest', () => {
             mock.method(diagnosticOrigin, 'body');
 
             assert.throws(() => new JsonInputRequest(diagnosticOrigin).body(),
-                {message: 'body error'});
+                {message: 'Wrong body format. Only JSON accepted.', cause: 'INVALID_REQUEST'});
 
             assert.strictEqual(diagnosticOrigin.body.mock.calls.length, 1);
         });
@@ -378,20 +378,8 @@ describe('JsonInputRequest', () => {
         it('should return parsed body', () => {
             const resultBody = new JsonInputRequest(diagnosticOrigin).body();
 
-            assert.strictEqual(diagnosticOrigin.body.mock.calls.length, 2);
-            assert.deepStrictEqual(resultBody, JSON.parse(diagnosticOrigin.body()));
-        });
-
-        it('should return null when body is null', () => {
-            diagnosticOrigin.body = () => {
-                return null;
-            };
-            mock.method(diagnosticOrigin, 'body');
-
-            const resultBody = new JsonInputRequest(diagnosticOrigin).body();
-
             assert.strictEqual(diagnosticOrigin.body.mock.calls.length, 1);
-            assert.equal(resultBody, null);
+            assert.deepStrictEqual(resultBody, JSON.parse(diagnosticOrigin.body()));
         });
 
         it('should fall when body is not a JSON format', () => {
@@ -403,7 +391,7 @@ describe('JsonInputRequest', () => {
             assert.throws(() => new JsonInputRequest(diagnosticOrigin).body(),
                 {message: 'Wrong body format. Only JSON accepted.', cause: 'INVALID_REQUEST'});
 
-            assert.strictEqual(diagnosticOrigin.body.mock.calls.length, 2);
+            assert.strictEqual(diagnosticOrigin.body.mock.calls.length, 1);
         });
     });
 
