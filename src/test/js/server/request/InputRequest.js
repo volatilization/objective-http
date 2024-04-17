@@ -86,7 +86,7 @@ describe('InputRequest', () => {
     describe('copy', () => {
         it('should not call anything', () => {
             assert.doesNotThrow(() => {
-                new InputRequest();
+                new InputRequest().copy();
             });
         });
 
