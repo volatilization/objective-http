@@ -9,7 +9,7 @@ const testOptions = {
     statusCode: 200,
     headers: new Headers({header: 'header'}),
     body: 'test body'
-}
+};
 
 const diagnosticOptions = {
     get statusCode() {
@@ -29,7 +29,49 @@ const diagnosticOptions = {
     }
 }
 
+const diagnosticInputStream = {
+    on() {
+    },
+    once() {
+    },
+    get statusCode() {
+        return this.diagnosticStatusCode();
+    },
+    get headers() {
+        return this.diagnosticHeaders();
+    },
+    diagnosticStatusCode() {
+    },
+    diagnosticHeaders() {
+    }
+};
+
 function prepareDiagnostic() {
+    diagnosticInputStream.on = (event, cb) => {
+        if (event === 'data') {
+            cb(Buffer.from(testOptions.body, 'utf8'));
+        }
+        if (event === 'end') {
+            cb();
+        }
+    };
+    diagnosticInputStream.once = () => {
+    };
+    diagnosticInputStream.diagnosticStatusCode = () => {
+        return testOptions.statusCode;
+    };
+    diagnosticInputStream.diagnosticHeaders = () => {
+        return testOptions.headers;
+    };
+    diagnosticInputStream.diagnosticBody = () => {
+        return testOptions.body;
+    };
+
+    mock.method(diagnosticInputStream, 'once');
+    mock.method(diagnosticInputStream, 'on');
+    mock.method(diagnosticInputStream, 'diagnosticStatusCode');
+    mock.method(diagnosticInputStream, 'diagnosticHeaders');
+
     diagnosticOptions.diagnosticStatusCode = () => {
         return testOptions.statusCode;
     };
@@ -51,18 +93,16 @@ function resetDiagnostic() {
 
 describe('InputResponse', () => {
     beforeEach(prepareDiagnostic);
-    afterEach(resetDiagnostic)
+    afterEach(resetDiagnostic);
 
     describe('constructor', () => {
         it('should not call anything', () => {
             assert.doesNotThrow(() => {
                 new InputResponse();
-                new InputResponse(testOptions);
+                new InputResponse(diagnosticInputStream, testOptions);
+                new InputResponse(undefined, testOptions);
+                new InputResponse(diagnosticInputStream);
             });
-
-            assert.strictEqual(diagnosticOptions.diagnosticStatusCode.mock.calls.length, 0);
-            assert.strictEqual(diagnosticOptions.diagnosticHeaders.mock.calls.length, 0);
-            assert.strictEqual(diagnosticOptions.diagnosticBody.mock.calls.length, 0);
         });
     });
 
@@ -71,7 +111,7 @@ describe('InputResponse', () => {
             assert.doesNotThrow(() => new InputResponse().copy());
         });
 
-        it('should return new InputRequest instance', () => {
+        it('should return new InputResponse instance', () => {
             const inputResponse = new InputResponse();
             const copyInputResponse = inputResponse.copy();
 
@@ -80,9 +120,81 @@ describe('InputResponse', () => {
         });
     });
 
+    describe('flush', () => {
+
+        it('should fall on inputStream, cause null', async () => {
+            await assert.rejects(() => new InputResponse().flush(), {name: 'TypeError'});
+
+            assert.strictEqual(diagnosticInputStream.once.mock.calls.length, 0);
+            assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 0);
+        });
+
+        it('should fall on inputStream, cause error event', async () => {
+            diagnosticInputStream.once = (event, cb) => {
+                if (event === 'error') {
+                    cb(new Error('event error'));
+                }
+            };
+            mock.method(diagnosticInputStream, 'once');
+
+            await assert.rejects(() => new InputResponse(diagnosticInputStream).flush(),
+                {message: 'event error', cause: 'INVALID_RESPONSE'});
+
+            assert.strictEqual(diagnosticInputStream.once.mock.calls.length, 1);
+            assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 2);
+        });
+
+        it('should not fall', async () => {
+            await assert.doesNotReject(() => new InputResponse(diagnosticInputStream).flush());
+
+            assert.strictEqual(diagnosticInputStream.once.mock.calls.length, 1);
+            assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 2);
+        });
+
+        it('should return another InputResponse', async () => {
+            const inputResponse = new InputResponse(diagnosticInputStream);
+            const resultInputResponse = await inputResponse.flush();
+
+            assert.notEqual(inputResponse, resultInputResponse);
+        });
+
+        it('should return InputResponse without body', async () => {
+            diagnosticInputStream.on = (event, cb) => {
+                if (event === 'data') {}
+                if (event === 'end') {
+                    cb();
+                }
+            }
+            mock.method(diagnosticInputStream, 'on');
+
+            const resultInputResponse = await new InputResponse(diagnosticInputStream).flush();
+
+            assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 2);
+            assert.strictEqual(diagnosticInputStream.diagnosticStatusCode.mock.calls.length, 1);
+            assert.strictEqual(diagnosticInputStream.diagnosticHeaders.mock.calls.length, 1);
+
+            assert.strictEqual(resultInputResponse.statusCode(), testOptions.statusCode);
+            assert.deepStrictEqual(resultInputResponse.headers(), new Headers(testOptions.headers));
+            assert.deepStrictEqual(resultInputResponse.body(), Buffer.concat([]));
+            assert.strictEqual(resultInputResponse.body().length, 0);
+        });
+
+        it('should return InputResponse with body', async () => {
+            const resultInputResponse = await new InputResponse(diagnosticInputStream).flush();
+
+            assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 2);
+            assert.strictEqual(diagnosticInputStream.diagnosticStatusCode.mock.calls.length, 1);
+            assert.strictEqual(diagnosticInputStream.diagnosticHeaders.mock.calls.length, 1);
+
+            assert.strictEqual(resultInputResponse.statusCode(), testOptions.statusCode);
+            assert.deepStrictEqual(resultInputResponse.headers(), new Headers(testOptions.headers));
+            assert.equal(resultInputResponse.body().toString(), testOptions.body);
+        });
+    });
+
     describe('statusCode', () => {
         it('should not fall', () => {
-            assert.doesNotThrow(() => new InputResponse(diagnosticOptions).statusCode());
+            assert.doesNotThrow(() => new InputResponse(undefined, diagnosticOptions).statusCode());
 
             assert.strictEqual(diagnosticOptions.diagnosticStatusCode.mock.calls.length, 1);
         });
@@ -94,15 +206,17 @@ describe('InputResponse', () => {
         });
 
         it('should fall, cause error', () => {
-            diagnosticOptions.diagnosticStatusCode = () => {throw new Error('statusCode error')};
+            diagnosticOptions.diagnosticStatusCode = () => {
+                throw new Error('statusCode error');
+            };
             mock.method(diagnosticOptions, 'diagnosticStatusCode');
 
-            assert.throws(() => new InputResponse(diagnosticOptions).statusCode(), {message: 'statusCode error'});
+            assert.throws(() => new InputResponse(undefined, diagnosticOptions).statusCode(), {message: 'statusCode error'});
             assert.strictEqual(diagnosticOptions.diagnosticStatusCode.mock.calls.length, 1);
         });
 
         it('should return test statusCode value', () => {
-            const resultStatusCode = new InputResponse(diagnosticOptions).statusCode();
+            const resultStatusCode = new InputResponse(undefined, diagnosticOptions).statusCode();
 
             assert.strictEqual(resultStatusCode, testOptions.statusCode);
         });
@@ -110,7 +224,7 @@ describe('InputResponse', () => {
 
     describe('headers', () => {
         it('should not fall', () => {
-            assert.doesNotThrow(() => new InputResponse(diagnosticOptions).headers());
+            assert.doesNotThrow(() => new InputResponse(undefined, diagnosticOptions).headers());
 
             assert.strictEqual(diagnosticOptions.diagnosticHeaders.mock.calls.length, 1);
         });
@@ -122,15 +236,17 @@ describe('InputResponse', () => {
         });
 
         it('should fall, cause error', () => {
-            diagnosticOptions.diagnosticHeaders = () => {throw new Error('headers error')};
+            diagnosticOptions.diagnosticHeaders = () => {
+                throw new Error('headers error');
+            };
             mock.method(diagnosticOptions, 'diagnosticHeaders');
 
-            assert.throws(() => new InputResponse(diagnosticOptions).headers(), {message: 'headers error'});
+            assert.throws(() => new InputResponse(undefined, diagnosticOptions).headers(), {message: 'headers error'});
             assert.strictEqual(diagnosticOptions.diagnosticHeaders.mock.calls.length, 1);
         });
 
         it('should return test headers value', () => {
-            const resultHeaders = new InputResponse(diagnosticOptions).headers();
+            const resultHeaders = new InputResponse(undefined, diagnosticOptions).headers();
 
             assert.strictEqual(resultHeaders, testOptions.headers);
         });
@@ -138,7 +254,7 @@ describe('InputResponse', () => {
 
     describe('body', () => {
         it('should not fall', () => {
-            assert.doesNotThrow(() => new InputResponse(diagnosticOptions).body());
+            assert.doesNotThrow(() => new InputResponse(undefined, diagnosticOptions).body());
 
             assert.strictEqual(diagnosticOptions.diagnosticBody.mock.calls.length, 1);
         });
@@ -150,15 +266,17 @@ describe('InputResponse', () => {
         });
 
         it('should fall, cause error', () => {
-            diagnosticOptions.diagnosticBody = () => {throw new Error('body error')};
+            diagnosticOptions.diagnosticBody = () => {
+                throw new Error('body error');
+            };
             mock.method(diagnosticOptions, 'diagnosticBody');
 
-            assert.throws(() => new InputResponse(diagnosticOptions).body(), {message: 'body error'});
+            assert.throws(() => new InputResponse(undefined, diagnosticOptions).body(), {message: 'body error'});
             assert.strictEqual(diagnosticOptions.diagnosticBody.mock.calls.length, 1);
         });
 
         it('should return test body value', () => {
-            const resultBody = new InputResponse(diagnosticOptions).body();
+            const resultBody = new InputResponse(undefined, diagnosticOptions).body();
 
             assert.strictEqual(resultBody, testOptions.body);
         });

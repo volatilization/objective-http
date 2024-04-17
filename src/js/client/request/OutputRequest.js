@@ -6,36 +6,64 @@ module.exports = class OutputRequest {
     constructor(http, response, options) {
         this.#http = http;
         this.#response = response;
-        this.#options = options;
+        this.#options = {method: 'GET', ...options};
     }
 
     copy(options = this.#options, response = this.#response, http = this.#http) {
-        return new OutputRequest(options, response, http);
+        return new OutputRequest(http, response, {method: 'GET', ...options});
     }
 
     send() {
         return new Promise((resolve, reject) => {
-            const requestOutputStream = this.#http.request(this.#options, (responseInputStream) => {
-                responseInputStream.once('error', (e) => reject(e));
+            try {
+                this.#sendRequestOutputStream(
+                    this.#configureRequestOutputStream(this.#http, this.#response, this.#options, resolve, reject),
+                    this.#options);
 
-                const chunks = [];
-                responseInputStream.on('data', (chunk) => chunks.push(chunk));
-                responseInputStream.on('end', () => resolve(this.#response.copy({
-                    statusCode: responseInputStream.statusCode,
-                    headers: new Headers(responseInputStream.headers),
-                    body: Buffer.concat(chunks)
-                })));
-            });
-
-            if (this.#isChunkedOutputStream(this.#options.method) && this.#options.body != null) {
-                requestOutputStream.write(this.#options.body);
+            } catch (e) {
+                throw new Error(e.message, {cause: 'INVALID_REQUEST'});
             }
-
-            requestOutputStream.end();
-        })
+        });
     }
 
-    #isChunkedOutputStream(requestMethod) {
-        return ['POST', 'PUT'].some(method => method === requestMethod.toString().toUpperCase());
+    #configureRequestOutputStream(http, response, options, resolve, reject) {
+        if (options.url != null) {
+            return http.request(
+                options.url,
+                options,
+                async (responseInputStream) => {
+                    await this.#flushResponseInputStream(responseInputStream, response, resolve, reject);
+                });
+        }
+
+        return http.request(
+            options,
+            async (responseInputStream) => {
+                await this.#flushResponseInputStream(responseInputStream, response, resolve, reject);
+            });
     }
-}
+
+    async #flushResponseInputStream(responseInputStream, response, resolve, reject) {
+        try {
+            resolve(await response
+                .copy(responseInputStream)
+                .flush());
+
+        } catch (e) {
+            reject(e);
+        }
+    }
+
+    #sendRequestOutputStream(requestOutputStream, options) {
+        if (this.#needToByWritten(options)) {
+            requestOutputStream.write(options.body);
+        }
+
+        requestOutputStream.end();
+    }
+
+    #needToByWritten(options) {
+        return ['POST', 'PUT'].some(method => method === options.method.toString().toUpperCase())
+            && (options.body != null && typeof options.body === 'string');
+    }
+};

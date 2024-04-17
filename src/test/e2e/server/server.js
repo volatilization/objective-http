@@ -1,14 +1,16 @@
 /* node:coverage disable */
 
+const {describe, it, before, after} = require('node:test');
+const assert = require('node:assert');
+
+const http = require('node:http');
 const {
     Server,
     InputRequest,
     OutputResponse,
     Endpoints
-} = require('../../js').server;
-const {describe, it, before, after} = require('node:test');
-const assert = require('node:assert');
-const http = require('node:http');
+} = require('../../../js').server;
+
 
 const testBody = {value: 'value', queryValue: 'otherQueryValue'};
 

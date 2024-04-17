@@ -1,8 +1,10 @@
 /* node:coverage disable */
 
-const {InputRequest} = require('../../../../js/index').server;
 const {describe, it, mock, beforeEach, afterEach} = require('node:test');
 const assert = require('node:assert');
+
+const {InputRequest} = require('../../../../js/index').server;
+
 
 const testOptions = {
     method: 'GET',
@@ -12,6 +14,34 @@ const testOptions = {
     headers: {header: 'header'},
     body: 'test body'
 };
+
+const diagnosticOptions = {
+    get method() {
+        return this.diagnosticMethod();
+    },
+    get path() {
+        return this.diagnosticPath();
+    },
+    get query() {
+        return this.diagnosticQuery();
+    },
+    get headers() {
+        return this.diagnosticHeaders();
+    },
+    get body() {
+        return this.diagnosticBody();
+    },
+    diagnosticMethod() {
+    },
+    diagnosticPath() {
+    },
+    diagnosticQuery() {
+    },
+    diagnosticHeaders() {
+    },
+    diagnosticBody() {
+    }
+}
 
 const diagnosticInputStream = {
     on() {
@@ -61,6 +91,28 @@ function prepareDiagnostic() {
     mock.method(diagnosticInputStream, 'diagnosticMethod');
     mock.method(diagnosticInputStream, 'diagnosticUrl');
     mock.method(diagnosticInputStream, 'diagnosticHeaders');
+
+    diagnosticOptions.diagnosticMethod = () => {
+        return testOptions.method;
+    };
+    diagnosticOptions.diagnosticPath = () => {
+        return testOptions.path;
+    };
+    diagnosticOptions.diagnosticQuery = () => {
+        return new URLSearchParams(testOptions.query);
+    };
+    diagnosticOptions.diagnosticHeaders = () => {
+        return new Headers(testOptions.headers);
+    };
+    diagnosticOptions.diagnosticBody = () => {
+        return testOptions.body;
+    };
+
+    mock.method(diagnosticOptions, 'diagnosticMethod');
+    mock.method(diagnosticOptions, 'diagnosticPath');
+    mock.method(diagnosticOptions, 'diagnosticQuery');
+    mock.method(diagnosticOptions, 'diagnosticHeaders');
+    mock.method(diagnosticOptions, 'diagnosticBody');
 }
 
 function resetDiagnostic() {
@@ -122,14 +174,14 @@ describe('InputRequest', () => {
                 {message: 'event error', cause: 'INVALID_REQUEST'});
 
             assert.strictEqual(diagnosticInputStream.once.mock.calls.length, 1);
-            assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 0);
+            assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 2);
         });
 
         it('should not fall', async () => {
             await assert.doesNotReject(() => new InputRequest(diagnosticInputStream).flush());
 
             assert.strictEqual(diagnosticInputStream.once.mock.calls.length, 1);
-            assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 0);
+            assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 2);
         });
 
         it('should return another InputRequest with body', async () => {
@@ -149,54 +201,109 @@ describe('InputRequest', () => {
             assert.notEqual(inputRequest, resultInputRequest);
         });
 
-        it('should return InputRequest with body', async () => {
+        it('should return InputRequest without body', async () => {
             diagnosticInputStream.diagnosticMethod = () => 'POST';
+            diagnosticInputStream.on = (event, cb) => {
+                if (event === 'data') {}
+                if (event === 'end') {
+                    cb();
+                }
+            }
             mock.method(diagnosticInputStream, 'diagnosticMethod');
+            mock.method(diagnosticInputStream, 'on');
 
             const resultInputRequest = await new InputRequest(diagnosticInputStream).flush();
 
             assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 2);
-            assert.strictEqual(diagnosticInputStream.diagnosticMethod.mock.calls.length, 2);
+            assert.strictEqual(diagnosticInputStream.diagnosticMethod.mock.calls.length, 1);
             assert.strictEqual(diagnosticInputStream.diagnosticUrl.mock.calls.length, 2);
             assert.strictEqual(diagnosticInputStream.diagnosticHeaders.mock.calls.length, 1);
 
             assert.strictEqual(resultInputRequest.route().method, 'POST');
             assert.strictEqual(resultInputRequest.route().path, testOptions.path);
             assert.strictEqual(resultInputRequest.query().get('queryParam'), 'queryParam0');
-            assert.deepStrictEqual(resultInputRequest.headers(), testOptions.headers);
-            assert.strictEqual(resultInputRequest.body().toString(), testOptions.body);
+            assert.deepStrictEqual(resultInputRequest.headers(), new Headers(testOptions.headers));
+            assert.deepStrictEqual(resultInputRequest.body(), Buffer.concat([]));
+            assert.strictEqual(resultInputRequest.body().length, 0);
         });
 
-        it('should return InputRequest without body', async () => {
+        it('should return InputRequest with body', async () => {
             const resultInputRequest = await new InputRequest(diagnosticInputStream).flush();
 
-            assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 0);
-            assert.strictEqual(diagnosticInputStream.diagnosticMethod.mock.calls.length, 3);
+            assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 2);
+            assert.strictEqual(diagnosticInputStream.diagnosticMethod.mock.calls.length, 1);
             assert.strictEqual(diagnosticInputStream.diagnosticUrl.mock.calls.length, 2);
             assert.strictEqual(diagnosticInputStream.diagnosticHeaders.mock.calls.length, 1);
 
             assert.strictEqual(resultInputRequest.route().method, testOptions.method);
             assert.strictEqual(resultInputRequest.route().path, testOptions.path);
             assert.strictEqual(resultInputRequest.query().get('queryParam'), 'queryParam0');
-            assert.deepStrictEqual(resultInputRequest.headers(), testOptions.headers);
-            assert.equal(resultInputRequest.body(), null);
+            assert.deepStrictEqual(resultInputRequest.headers(), new Headers(testOptions.headers));
+            assert.equal(resultInputRequest.body().toString(), testOptions.body);
         });
     });
 
     describe('route', () => {
-        it('should fall on options, cause of null', () => {
-            assert.throws(() => new InputRequest().route(),
-                {name: 'TypeError'});
+        it('should not fall', () => {
+            assert.doesNotThrow(() => new InputRequest(undefined, diagnosticOptions).route());
+
+            assert.strictEqual(diagnosticOptions.diagnosticMethod.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOptions.diagnosticPath.mock.calls.length, 1);
         });
 
-        it('should fall on options.method, cause of null', () => {
-            assert.throws(() => new InputRequest(null, {method: null}).route(),
-                {name: 'TypeError'});
+        it('should fall, cause null', () => {
+            assert.throws(() => new InputRequest().route(), {name: 'TypeError'});
+
+            assert.strictEqual(diagnosticOptions.diagnosticMethod.mock.calls.length, 0);
+            assert.strictEqual(diagnosticOptions.diagnosticPath.mock.calls.length, 0);
         });
 
-        it('should fall on options.path, cause of null', () => {
-            assert.throws(() => new InputRequest(null, {method: 'notNull', path: null}).route(),
+        it('should fall, cause method null', () => {
+            diagnosticOptions.diagnosticMethod = () => {
+                return null;
+            };
+            mock.method(diagnosticOptions, 'diagnosticMethod');
+
+            assert.throws(() => new InputRequest(undefined, diagnosticOptions).route(),
                 {name: 'TypeError'});
+            assert.strictEqual(diagnosticOptions.diagnosticMethod.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOptions.diagnosticPath.mock.calls.length, 0);
+        });
+
+        it('should fall, cause path null', () => {
+            diagnosticOptions.diagnosticPath = () => {
+                return null;
+            };
+            mock.method(diagnosticOptions, 'diagnosticPath');
+
+            assert.throws(() => new InputRequest(undefined, diagnosticOptions).route(),
+                {name: 'TypeError'});
+            assert.strictEqual(diagnosticOptions.diagnosticMethod.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOptions.diagnosticPath.mock.calls.length, 1);
+        });
+
+        it('should fall, cause method error', () => {
+            diagnosticOptions.diagnosticMethod = () => {
+                throw new Error('method error');
+            };
+            mock.method(diagnosticOptions, 'diagnosticMethod');
+
+            assert.throws(() => new InputRequest(undefined, diagnosticOptions).route(),
+                {message: 'method error'});
+            assert.strictEqual(diagnosticOptions.diagnosticMethod.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOptions.diagnosticPath.mock.calls.length, 0);
+        });
+
+        it('should fall, cause path error', () => {
+            diagnosticOptions.diagnosticPath = () => {
+                throw new Error('path error');
+            };
+            mock.method(diagnosticOptions, 'diagnosticPath');
+
+            assert.throws(() => new InputRequest(undefined, diagnosticOptions).route(),
+                {message: 'path error'});
+            assert.strictEqual(diagnosticOptions.diagnosticMethod.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOptions.diagnosticPath.mock.calls.length, 1);
         });
 
         it('should return method and path', () => {
@@ -215,44 +322,93 @@ describe('InputRequest', () => {
     });
 
     describe('query', () => {
-        it('should fall on options, cause of null', () => {
-            assert.throws(() => new InputRequest().query(),
-                {name: 'TypeError'});
+        it('should not fall', () => {
+            assert.doesNotThrow(() => new InputRequest(undefined, diagnosticOptions).query());
+
+            assert.strictEqual(diagnosticOptions.diagnosticQuery.mock.calls.length, 1);
         });
 
-        it('should return query', () => {
-            const resultQuery = new InputRequest(null, testOptions).query();
+        it('should fall, cause null', () => {
+            assert.throws(() => new InputRequest().query(), {name: 'TypeError'});
 
-            assert.equal(resultQuery, testOptions.query);
-            assert.strictEqual(resultQuery, testOptions.query);
+            assert.strictEqual(diagnosticOptions.diagnosticQuery.mock.calls.length, 0);
+        });
+
+        it('should fall, cause error', () => {
+            diagnosticOptions.diagnosticQuery = () => {
+                throw new Error('query error');
+            };
+            mock.method(diagnosticOptions, 'diagnosticQuery');
+
+            assert.throws(() => new InputRequest(undefined, diagnosticOptions).query(),
+                {message: 'query error'});
+            assert.strictEqual(diagnosticOptions.diagnosticQuery.mock.calls.length, 1);
+        });
+
+        it('should return test query value', () => {
+            const resultQuery = new InputRequest(undefined, diagnosticOptions).query();
+
+            assert.deepStrictEqual(resultQuery, new URLSearchParams(testOptions.query));
         });
     });
 
     describe('body', () => {
-        it('should fall on options, cause of null', () => {
-            assert.throws(() => new InputRequest().body(),
-                {name: 'TypeError'});
+        it('should not fall', () => {
+            assert.doesNotThrow(() => new InputRequest(undefined, diagnosticOptions).body());
+
+            assert.strictEqual(diagnosticOptions.diagnosticBody.mock.calls.length, 1);
         });
 
-        it('should return body', () => {
-            const resultBody = new InputRequest(null, testOptions).body();
+        it('should fall, cause null', () => {
+            assert.throws(() => new InputRequest().body(), {name: 'TypeError'});
 
-            assert.equal(resultBody, testOptions.body);
+            assert.strictEqual(diagnosticOptions.diagnosticBody.mock.calls.length, 0);
+        });
+
+        it('should fall, cause error', () => {
+            diagnosticOptions.diagnosticBody = () => {
+                throw new Error('body error');
+            };
+            mock.method(diagnosticOptions, 'diagnosticBody');
+
+            assert.throws(() => new InputRequest(undefined, diagnosticOptions).body(), {message: 'body error'});
+            assert.strictEqual(diagnosticOptions.diagnosticBody.mock.calls.length, 1);
+        });
+
+        it('should return test body value', () => {
+            const resultBody = new InputRequest(undefined, diagnosticOptions).body();
+
             assert.strictEqual(resultBody, testOptions.body);
         });
     });
 
     describe('headers', () => {
-        it('should fall on options, cause of null', () => {
-            assert.throws(() => new InputRequest().headers(),
-                {name: 'TypeError'});
+        it('should not fall', () => {
+            assert.doesNotThrow(() => new InputRequest(undefined, diagnosticOptions).headers());
+
+            assert.strictEqual(diagnosticOptions.diagnosticHeaders.mock.calls.length, 1);
         });
 
-        it('should return headers', () => {
-            const resultHeaders = new InputRequest(null, testOptions).headers();
+        it('should fall, cause null', () => {
+            assert.throws(() => new InputRequest().headers(), {name: 'TypeError'});
 
-            assert.equal(resultHeaders, testOptions.headers);
-            assert.deepStrictEqual(resultHeaders, testOptions.headers);
+            assert.strictEqual(diagnosticOptions.diagnosticHeaders.mock.calls.length, 0);
+        });
+
+        it('should fall, cause error', () => {
+            diagnosticOptions.diagnosticHeaders = () => {
+                throw new Error('headers error');
+            };
+            mock.method(diagnosticOptions, 'diagnosticHeaders');
+
+            assert.throws(() => new InputRequest(undefined, diagnosticOptions).headers(), {message: 'headers error'});
+            assert.strictEqual(diagnosticOptions.diagnosticHeaders.mock.calls.length, 1);
+        });
+
+        it('should return test headers value', () => {
+            const resultHeaders = new InputRequest(undefined, diagnosticOptions).headers();
+
+            assert.deepStrictEqual(resultHeaders, new Headers(testOptions.headers));
         });
     });
 });

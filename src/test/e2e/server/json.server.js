@@ -7,7 +7,7 @@ const {
     OutputResponse,
     JsonOutputResponse,
     Endpoints
-} = require('../../js').server;
+} = require('../../../js').server;
 const {describe, it, before, after} = require('node:test');
 const assert = require('node:assert');
 const http = require('node:http');
