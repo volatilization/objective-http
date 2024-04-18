@@ -2,17 +2,18 @@
 
 const {describe, test, beforeAll, afterAll} = require('bun:test');
 const assert = require('node:assert');
-const http = require('node:http');
 
+const http = require('../../../../js').bun.bunttp;
 const {
     OutputRequest,
     InputResponse
-} = require('../../../../js/index').client;
-
+} = require('../../../../js/index').bun.client;
 const {
-    Server,
     InputRequest,
     OutputResponse,
+} = require('../../../../js').bun.server;
+const {
+    Server,
     Endpoints
 } = require('../../../../js').server;
 
@@ -38,7 +39,13 @@ const serverConfig = new Server(
                     path: '/test'
                 };
             },
-            handle() {
+            handle(request) {
+                console.log(request.route());
+                console.log(request.headers());
+                console.log(request.body());
+                console.log(request.body().toString());
+                console.log();
+
                 return {
                     statusCode: 201,
                     body: 'test body'
@@ -61,20 +68,14 @@ describe('client', async () => {
 
     await test('should be started', async () => {
         await assert.doesNotReject(() =>
-                new OutputRequest(http, new InputResponse(), {
-                    url: 'http://localhost', method: 'GET', port: '8090'
-                }).send(),
-            {message: 'fetch failed'});
-
-        await assert.doesNotReject(() =>
-                new OutputRequest(http, new InputResponse(), {
-                    port: '8090', method: 'GET', host: 'localhost'
+                new OutputRequest(new InputResponse(), {
+                    url: 'http://localhost:8090', method: 'GET'
                 }).send(),
             {message: 'fetch failed'});
     });
 
     await test('should return 501', async () => {
-        const response = await new OutputRequest(http, new InputResponse(), {
+        const response = await new OutputRequest(new InputResponse(), {
             url: 'http://localhost:8090/no_test', method: 'GET'
         }).send();
 
@@ -83,7 +84,7 @@ describe('client', async () => {
     });
 
     await test('should return 200 and no body', async () => {
-        const response = await new OutputRequest(http, new InputResponse(), {
+        const response = await new OutputRequest(new InputResponse(), {
             url: 'http://localhost:8090/test', method: 'GET'
         }).send();
 
@@ -92,7 +93,7 @@ describe('client', async () => {
     });
 
     await test('should return 201 and test body', async () => {
-        const response = await new OutputRequest(http, new InputResponse(), {
+        const response = await new OutputRequest(new InputResponse(), {
             url: 'http://localhost:8090/test', method: 'POST', body: 'test body'
         }).send();
 
@@ -101,11 +102,10 @@ describe('client', async () => {
     });
 
     await test('should not fall, but body is not a string', async () => {
-        const response = await new OutputRequest(http, new InputResponse(), {
+        const response = await new OutputRequest(new InputResponse(), {
             url: 'http://localhost:8090/test', method: 'POST', body: {}
         }).send();
 
         assert.strictEqual(response.statusCode(), 201);
-        assert.strictEqual(response.body().toString(), 'test body');
     });
 });

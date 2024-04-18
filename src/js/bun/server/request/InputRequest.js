@@ -19,7 +19,7 @@ module.exports = class InputRequest {
                 path: new URL(this.#inputStream.url).pathname,
                 query: new URL(this.#inputStream.url).searchParams,
                 headers: this.#inputStream.headers,
-                body: new Buffer(await (await this.#inputStream.blob()).arrayBuffer())
+                body: Buffer.from(await (await this.#inputStream.blob()).arrayBuffer())
             }
         );
     }
