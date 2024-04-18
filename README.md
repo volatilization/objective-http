@@ -1,7 +1,10 @@
 # objective-http
 Proxy classes for creating a http server
 
-## Using
+## Server
+
+There are all ```Server``` classes feature. 
+Your endpoints must implement ```Endpoint``` class interface (```route``` and ```handle``` functions).
 
 ``` javascript
 const http = require('node:http');
@@ -40,4 +43,40 @@ new ClusteredServer(
     cluster,
     {workers: workers_count}
 ).start();
+```
+
+## Client
+
+``` javascript
+const https = require('node:https');
+const {
+    OutputRequest,
+    InputResponse
+} = require('objective-http').client;
+
+
+const response = await new OutputRequest(
+    https,
+    new InputResponse(),
+    {
+        url: 'https://example.com',
+        method: 'POST',
+        body: 'test body'
+    })
+    .send();
+
+console.log(response.body().toString());
+
+//or
+
+const request = new OutputRequest(https, new InputResponse());
+
+const otherResponse = await (request
+    .copy({
+        url: 'https://example.com',
+        method: 'POST',
+        body: 'test body'
+    }))
+    .send()
+
 ```
