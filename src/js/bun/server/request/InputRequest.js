@@ -12,17 +12,15 @@ module.exports = class InputRequest {
     }
 
     async flush() {
-        if (!this.#isChunkedInputStream(this.#inputStream)) {
-            return new InputRequest(
-                this.#inputStream,
-                this.#extractOptionsFromInputStream(this.#inputStream)
-            );
-        }
-
         return new InputRequest(
             this.#inputStream,
-            {... this.#extractOptionsFromInputStream(this.#inputStream),
-                body: new Buffer(await (await this.#inputStream.blob()).arrayBuffer())}
+            {
+                method: this.#inputStream.method,
+                path: new URL(this.#inputStream.url).pathname,
+                query: new URL(this.#inputStream.url).searchParams,
+                headers: this.#inputStream.headers,
+                body: new Buffer(await (await this.#inputStream.blob()).arrayBuffer())
+            }
         );
     }
 
@@ -43,18 +41,5 @@ module.exports = class InputRequest {
 
     headers() {
         return this.#options.headers;
-    }
-
-    #isChunkedInputStream(inputStream) {
-        return ['POST', 'PUT'].some(method => method === inputStream.method.toString().toUpperCase());
-    }
-
-    #extractOptionsFromInputStream(inputStream) {
-        return {
-            method: inputStream.method,
-            path: new URL(inputStream.url).pathname,
-            query: new URL(inputStream.url).searchParams,
-            headers: inputStream.headers
-        };
     }
 }

@@ -13,5 +13,9 @@ module.exports = {
         JsonOutputResponse: require('./server/response/JsonOutputResponse'),
         LoggedOutputResponse: require('./server/response/LoggedOutputResponse')
     },
+    client: {
+        OutputRequest: require('./client/request/OutputRequest'),
+        InputResponse: require('./client/response/InputResponse')
+    },
     bun: require('./bun')
 }

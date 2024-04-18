@@ -5,6 +5,7 @@ const assert = require('node:assert');
 
 const {OutputResponse} = require('../../../../js/index').server;
 
+
 const testOptions = {
     statusCode: 0,
     body: 'test',

@@ -44,7 +44,7 @@ new LoggedServer(
                 handle(request) {
                     return {
                         statusCode: 201,
-                        body: JSON.stringify(request.body())
+                        body: request.body()
                     };
                 }
             },

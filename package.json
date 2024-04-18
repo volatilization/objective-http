@@ -12,8 +12,8 @@
   ],
   "scripts": {
     "prepareToPublish": "node dist/prepareToPublish.js",
-    "test": "node --test **/test/**/*.js **/test/**/[!b][!u][!n]*/**/*.js",
-    "testBun": "bun test **/test/**/bun/**"
+    "test": "node --test **/test/**/[!b][!u][!n]*/**/*.js",
+    "testBun": "bun test **/test/**/bun/**/**"
   },
   "author": {
     "name": "volatilization",

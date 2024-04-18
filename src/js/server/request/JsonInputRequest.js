@@ -28,10 +28,6 @@ module.exports = class JsonInputRequest {
     }
 
     body() {
-        if (this.#origin.body() == null) {
-            return null;
-        }
-
         try {
             return JSON.parse(this.#origin.body().toString());
 
