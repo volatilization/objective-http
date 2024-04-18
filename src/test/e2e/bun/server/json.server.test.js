@@ -7,9 +7,7 @@ const {
     Server,
     JsonInputRequest,
     JsonOutputResponse,
-    Endpoints
-} = require('../../../../js').server;
-const {
+    Endpoints,
     InputRequest,
     OutputResponse
 } = require('../../../../js').bun.server;

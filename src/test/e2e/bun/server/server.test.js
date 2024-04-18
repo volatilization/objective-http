@@ -5,9 +5,7 @@ const assert = require('node:assert');
 
 const {
     Server,
-    Endpoints
-} = require('../../../../js').server;
-const {
+    Endpoints,
     InputRequest,
     OutputResponse
 } = require('../../../../js').bun.server;

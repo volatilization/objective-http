@@ -1,16 +1,16 @@
 module.exports = class OutputRequest {
-    #http;
     #response;
+    #http;
     #options;
 
-    constructor(http, response, options) {
-        this.#http = http;
+    constructor(response, http, options) {
         this.#response = response;
+        this.#http = http;
         this.#options = {method: 'GET', ...options};
     }
 
     copy(options = this.#options, response = this.#response, http = this.#http) {
-        return new OutputRequest(http, response, {method: 'GET', ...options});
+        return new OutputRequest(response, http,  {method: 'GET', ...options});
     }
 
     send() {
