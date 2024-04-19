@@ -1,7 +1,6 @@
 module.exports = {
     Server: require('./Server'),
     LoggedServer: require('./LoggedServer'),
-    ClusteredServer: require('./ClusteredServer'),
     Endpoint: require('./endpoint/Endpoint'),
     LoggedEndpoint: require('./endpoint/LoggedEndpoint'),
     Endpoints: require('./endpoint/Endpoints'),

@@ -9,11 +9,9 @@ Your endpoints must implement `Endpoint` class interface (`route()` and `async h
 
 ```javascript
 const http = require('node:http');
-const cluster = require('node:cluster');
 
 const {
     Server,
-    ClusteredServer,
     LoggedServer,
     InputRequest,
     JsonInputRequest,
@@ -26,26 +24,52 @@ const {
     Endpoints
 } = require('objective-http').server;
 
-new ClusteredServer(
-    new LoggedServer(
-        new Server(
-            new Endpoints([
-                new MyFirstEndpoint(new LoggedEndpoint(new Endpoint(), console)),
-                new MySecondEndpoint(new LoggedEndpoint(new Endpoint(), console)),
-                new MyThirdEndpoint(new LoggedEndpoint(new Endpoint(), console))
-            ]),
-            {port: server_port},
-            new LoggedInputRequest(new JsonInputRequest(new InputRequest()), console),
-            new LoggedOutputResponse(new JsonOutputResponse(new OutputResponse()), console),
-            http
-        ),
-        console
+new LoggedServer(
+    new Server(
+        new Endpoints([
+            new MyFirstEndpoint(new LoggedEndpoint(new Endpoint(), console)),
+            new MySecondEndpoint(new LoggedEndpoint(new Endpoint(), console)),
+            new MyThirdEndpoint(new LoggedEndpoint(new Endpoint(), console))
+        ]),
+        {port: server_port},
+        new LoggedInputRequest(new JsonInputRequest(new InputRequest()), console),
+        new LoggedOutputResponse(new JsonOutputResponse(new OutputResponse()), console),
+        http
     ),
-    cluster,
-    {workers: workers_count}
+    console
 ).start();
 ```
 
+`MyEndpoint` class example:
+
+```javascript
+class MyEndpoint {
+    route() {
+        return {
+            method: 'GET',
+            path: '/test'
+        };
+    }
+
+    async handle(request) {
+        try {
+            const processResult = await someProcess();
+
+            return {
+                statusCode: 200,
+                body: processResult.toString()
+            };
+        
+        } catch (e) {
+            return {
+                statusCode: 404,
+                body: 'process does not found anything'
+            };
+        }
+    }
+}
+
+```
 
 ## Client
 
@@ -90,8 +114,7 @@ console.log(response.body().toString());
 
 `server` and `client` packages support Bun by default.  
 But there ara special `bun` package with native [Bun API](https://bun.sh/docs/runtime/bun-apis) implementation (like `Bun.serve()`). 
-And you should replace `node:http` package with `objective-http.bun.bunttp` in your `Server` configuration.   
-[Don't use](https://bun.sh/docs/runtime/nodejs-apis#node-cluster) `ClusteredServer` with `Bun`!!!
+And you should replace `node:http` package with `objective-http.bun.bunttp` in your `Server` configuration.
 
 
 ### Server Bun usage
