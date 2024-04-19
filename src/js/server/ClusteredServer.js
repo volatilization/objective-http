@@ -3,10 +3,10 @@ module.exports = class ClusteredServer {
     #cluster;
     #options;
 
-    constructor(origin, cluster, options) {
+    constructor(origin, options, cluster) {
         this.#origin = origin;
-        this.#cluster = cluster;
         this.#options = options;
+        this.#cluster = cluster;
     }
 
     async start() {
@@ -18,6 +18,10 @@ module.exports = class ClusteredServer {
         } else {
             return new ClusteredServer(await this.#origin.start(), this.#cluster, this.#options);
         }
+    }
+
+    async stop() {
+        return new ClusteredServer(await this.#origin.stop(), this.#cluster, this.#options);
     }
 
     options() {

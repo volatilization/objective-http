@@ -1,16 +1,17 @@
 /* node:coverage disable */
 
+const {describe, test, beforeAll, afterAll} = require('bun:test');
+const assert = require('node:assert');
+
+const http = require('../../../../js').bun.bunttp;
 const {
     Server,
-    InputRequest,
     JsonInputRequest,
-    OutputResponse,
     JsonOutputResponse,
-    Endpoints
-} = require('../../../js').server;
-const {describe, it, before, after} = require('node:test');
-const assert = require('node:assert');
-const http = require('node:http');
+    Endpoints,
+    InputRequest,
+    OutputResponse
+} = require('../../../../js').bun.server;
 
 const testBody = {value: 'value', queryValue: 'otherQueryValue'};
 
@@ -54,17 +55,17 @@ const serverConfig = new Server(
 
 describe('JSON server', async () => {
     let serverInstance;
-    before(async () => {
+    beforeAll(async () => {
         serverInstance = await serverConfig.start();
     });
-    after(async () => await serverInstance.stop());
+    afterAll(async () => await serverInstance.stop());
 
-    await it('should be started', async () => {
+    await test('should be started', async () => {
         await assert.doesNotReject(() => fetch('http://localhost:8081'),
             {message: 'fetch failed'});
     });
 
-    await it('should return 501', async () => {
+    await test('should return 501', async () => {
         const response = await fetch('http://localhost:8081/test0',
             {method: 'GET'});
         const body = await (await response.blob()).text();
@@ -73,7 +74,7 @@ describe('JSON server', async () => {
         assert.strictEqual(body, 'There are no handler for request.');
     });
 
-    await it('should return 200 and queryValue in body', async () => {
+    await test('should return 200 and queryValue in body', async () => {
         const response = await fetch('http://localhost:8081/test?queryKey=queryValue',
             {method: 'GET'});
         const body = await response.json();
@@ -83,7 +84,7 @@ describe('JSON server', async () => {
         assert.deepStrictEqual(body, {queryKey: 'queryValue'});
     });
 
-    await it('should return 400, cause content-type is not application/json', async () => {
+    await test('should return 400, cause content-type is not application/json', async () => {
         const response = await fetch('http://localhost:8081/test',
             {
                 method: 'POST',
@@ -95,7 +96,7 @@ describe('JSON server', async () => {
         assert.strictEqual(body, 'Wrong content-type. Only application/json accepted.');
     });
 
-    await it('should return 400, cause content-type is not set', async () => {
+    await test('should return 400, cause content-type is not set', async () => {
         const response = await fetch('http://localhost:8081/test',
             {method: 'POST'});
         const body = await (await response.blob()).text();
@@ -104,7 +105,7 @@ describe('JSON server', async () => {
         assert.strictEqual(body, 'Wrong content-type. Only application/json accepted.');
     });
 
-    await it('should return 201 and test body', async () => {
+    await test('should return 201 and test body', async () => {
         const response = await fetch('http://localhost:8081/test?queryKey=queryValue',
             {
                 method: 'POST',

@@ -1,9 +1,9 @@
 /* node:coverage disable */
 
-const {Server} = require('../../../js/index').server;
 const {describe, it, mock, beforeEach, afterEach} = require('node:test');
 const assert = require('node:assert');
 
+const {Server} = require('../../../js/index').server;
 
 function prepareDiagnostic() {
 }

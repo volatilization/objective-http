@@ -19,10 +19,8 @@ const diagnosticResponse = {
     }
 };
 
-const diagnosticHttp = {
-    request() {
-    }
-};
+let diagnosticRequestFunction = () => {}
+const diagnosticRequestFunctionOptions = {}
 
 const diagnosticOutputStream = {
     write() {
@@ -43,21 +41,18 @@ function prepareDiagnostic() {
     mock.method(diagnosticOutputStream, 'write');
     mock.method(diagnosticOutputStream, 'end');
 
-    diagnosticHttp.options = {};
-    diagnosticHttp.request = (url, options, cb) => {
+    diagnosticRequestFunction = mock.fn((url, options, cb) => {
         if (typeof url === 'object') {
             cb = options;
             options = url;
             url = undefined;
         }
 
-        diagnosticHttp.options.url = url;
-        diagnosticHttp.options.options = options;
+        diagnosticRequestFunctionOptions.url = url;
+        diagnosticRequestFunctionOptions.options = options;
         setTimeout(() => cb(testOptions), 0);
         return diagnosticOutputStream;
-    };
-
-    mock.method(diagnosticHttp, 'request');
+    });
 
     diagnosticResponse.options = {};
     diagnosticResponse.copy = (options) => {
@@ -84,11 +79,11 @@ describe('OutputRequest', () => {
         it('should not call anything', () => {
             assert.doesNotThrow(() => {
                 new OutputRequest();
-                new OutputRequest(diagnosticHttp, diagnosticResponse, testOptions);
+                new OutputRequest(diagnosticResponse, diagnosticRequestFunction, testOptions);
             });
 
             assert.strictEqual(diagnosticResponse.copy.mock.calls.length, 0);
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 0);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 0);
         });
     });
 
@@ -96,9 +91,10 @@ describe('OutputRequest', () => {
         it('should not call anything', () => {
             assert.doesNotThrow(() => {
                 new OutputRequest().copy();
-                new OutputRequest(diagnosticHttp, diagnosticResponse, testOptions).copy();
-                new OutputRequest().copy(testOptions, diagnosticResponse, diagnosticHttp);
-                new OutputRequest(diagnosticHttp, diagnosticResponse, testOptions).copy(testOptions, diagnosticResponse, diagnosticHttp);
+                new OutputRequest(diagnosticResponse, diagnosticRequestFunction, testOptions).copy();
+                new OutputRequest().copy(testOptions, diagnosticResponse, diagnosticRequestFunction);
+                new OutputRequest(diagnosticResponse, diagnosticRequestFunction, testOptions)
+                    .copy(testOptions, diagnosticResponse, diagnosticRequestFunction);
             });
         });
 
@@ -112,23 +108,22 @@ describe('OutputRequest', () => {
     });
 
     describe('send', () => {
-        it('should fall, cause http is null', async () => {
-            await assert.rejects(() => new OutputRequest(undefined).send(),
+        it('should fall, cause requestFunction is null', async () => {
+            await assert.rejects(() => new OutputRequest(diagnosticResponse,undefined).send(),
                 {cause: 'INVALID_REQUEST'});
 
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 0);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
         });
 
-        it('should fall, cause http throws error ', async () => {
-            diagnosticHttp.request = () => {throw new Error('http error')};
-            mock.method(diagnosticHttp, 'request');
+        it('should fall, cause requestFunction throws error ', async () => {
+            diagnosticRequestFunction = mock.fn(() => {throw new Error('requestFunction error')});
 
-            await assert.rejects(() => new OutputRequest(diagnosticHttp, undefined, {}).send(),
-                {message: 'http error'});
+            await assert.rejects(() => new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {}).send(),
+                {message: 'requestFunction error'});
 
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 1);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
         });
@@ -138,10 +133,10 @@ describe('OutputRequest', () => {
             mock.method(diagnosticOutputStream, 'end');
 
             await assert.rejects(() =>
-                    new OutputRequest(diagnosticHttp, diagnosticResponse, {method: 'GET'}).send(),
+                    new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {method: 'GET'}).send(),
                 {message: 'request end error'});
 
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 1);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
@@ -151,30 +146,30 @@ describe('OutputRequest', () => {
             mock.method(diagnosticOutputStream, 'write');
 
             await assert.rejects(() =>
-                    new OutputRequest(diagnosticHttp, diagnosticResponse, {method: 'POST', body: 'test body'})
+                    new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {method: 'POST', body: 'test body'})
                         .send(),
                 {message: 'request write error'});
 
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 1);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 0);
         });
 
         it('should not fall, but options is null', async () => {
             await assert.doesNotReject(() =>
-                    new OutputRequest(diagnosticHttp, diagnosticResponse, undefined).send());
+                    new OutputRequest(diagnosticResponse, diagnosticRequestFunction, undefined).send());
 
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 1);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
 
         it('should fall, cause response is null', async () => {
             await assert.rejects(() =>
-                    new OutputRequest(diagnosticHttp, undefined, testOptions).send(),
+                    new OutputRequest(undefined, diagnosticRequestFunction, testOptions).send(),
                 {name: 'TypeError'});
 
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 1);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
@@ -184,10 +179,10 @@ describe('OutputRequest', () => {
             mock.method(diagnosticResponse, 'copy');
 
             await assert.rejects(() =>
-                    new OutputRequest(diagnosticHttp, diagnosticResponse, testOptions).send(),
+                    new OutputRequest(diagnosticResponse, diagnosticRequestFunction, testOptions).send(),
                 {message: 'response copy error'});
 
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 1);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticResponse.copy.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
@@ -198,10 +193,10 @@ describe('OutputRequest', () => {
             mock.method(diagnosticResponse, 'flush');
 
             await assert.rejects(() =>
-                    new OutputRequest(diagnosticHttp, diagnosticResponse, testOptions).send(),
+                    new OutputRequest(diagnosticResponse, diagnosticRequestFunction, testOptions).send(),
                 {message: 'response flush error'});
 
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 1);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticResponse.copy.mock.calls.length, 1);
             assert.strictEqual(diagnosticResponse.flush.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
@@ -210,47 +205,47 @@ describe('OutputRequest', () => {
 
         it('should not fall on GET request', async () => {
             await assert.doesNotReject(() =>
-                new OutputRequest(diagnosticHttp, diagnosticResponse, {method: 'GET'}).send());
+                new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {method: 'GET'}).send());
 
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 1);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
 
         it('should not fall on POST request with body', async () => {
             await assert.doesNotReject(() =>
-                new OutputRequest(diagnosticHttp, diagnosticResponse, {method: 'POST', body: 'test body'}).send());
+                new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {method: 'POST', body: 'test body'}).send());
 
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 1);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
 
         it('should not fall on POST request without body', async () => {
             await assert.doesNotReject(() =>
-                new OutputRequest(diagnosticHttp, diagnosticResponse, {method: 'POST'}).send());
+                new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {method: 'POST'}).send());
 
-            assert.strictEqual(diagnosticHttp.request.mock.calls.length, 1);
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
 
         it('should return response with test options', async () => {
-            const resultResponseInputStream = await new OutputRequest(diagnosticHttp, diagnosticResponse, testOptions).send();
+            const resultResponseInputStream = await new OutputRequest(diagnosticResponse, diagnosticRequestFunction, testOptions).send();
 
             assert.deepStrictEqual(resultResponseInputStream.options.options, testOptions);
         });
 
         it('should send request with url', async () => {
-            await new OutputRequest(diagnosticHttp, diagnosticResponse, {url: 'test', method: 'GET'}).send();
+            await new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {url: 'test', method: 'GET'}).send();
 
-            assert.strictEqual(diagnosticHttp.options.url, 'test');
+            assert.strictEqual(diagnosticRequestFunctionOptions.url, 'test');
         });
 
         it('should send request without url', async () => {
-            await new OutputRequest(diagnosticHttp, diagnosticResponse, testOptions).send();
+            await new OutputRequest(diagnosticResponse, diagnosticRequestFunction, testOptions).send();
 
-            assert.strictEqual(diagnosticHttp.options.url, undefined);
+            assert.strictEqual(diagnosticRequestFunctionOptions.url, undefined);
         });
     });
 });

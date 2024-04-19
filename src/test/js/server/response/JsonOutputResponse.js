@@ -1,8 +1,14 @@
 /* node:coverage disable */
 
-const {JsonOutputResponse} = require('../../../../js/index').server;
 const {describe, it, mock, beforeEach, afterEach} = require('node:test');
 const assert = require('node:assert');
+
+const {JsonOutputResponse} = require('../../../../js/index').server;
+
+
+const testOptions = {
+    body: {}
+}
 
 const diagnosticOrigin = {
     copy() {
@@ -15,9 +21,9 @@ const diagnosticOrigin = {
 
 function prepareDiagnostic() {
     diagnosticOrigin.options = {};
-    diagnosticOrigin.copy = (outputStream, options) => {
-        diagnosticOrigin.options.outputStream = outputStream;
+    diagnosticOrigin.copy = (options, outputStream) => {
         diagnosticOrigin.options.options = options;
+        diagnosticOrigin.options.outputStream = outputStream;
         return diagnosticOrigin;
     };
     diagnosticOrigin.update = (options) => {
@@ -44,8 +50,9 @@ describe('JsonOutputResponse', () => {
         it('should not call anything', () => {
             assert.doesNotThrow(() => {
                 new JsonOutputResponse();
-                new JsonOutputResponse(null);
-                new JsonOutputResponse(diagnosticOrigin);
+                new JsonOutputResponse(null, null);
+                new JsonOutputResponse(diagnosticOrigin, null);
+                new JsonOutputResponse(null, testOptions);
             });
 
             assert.strictEqual(diagnosticOrigin.copy.mock.calls.length, 0);
@@ -62,7 +69,7 @@ describe('JsonOutputResponse', () => {
             const testOutputStream = {content: 'test'};
             const testOptions = {content: 'test'};
 
-            new JsonOutputResponse(diagnosticOrigin).copy(testOutputStream, testOptions);
+            new JsonOutputResponse(diagnosticOrigin).copy(testOptions, testOutputStream);
 
             assert.strictEqual(diagnosticOrigin.copy.mock.calls.length, 1);
             assert.deepStrictEqual(diagnosticOrigin.options.outputStream, testOutputStream);
@@ -114,15 +121,22 @@ describe('JsonOutputResponse', () => {
         afterEach(resetDiagnostic);
 
         it('should call flush of origin', () => {
-            new JsonOutputResponse(diagnosticOrigin).flush();
+            new JsonOutputResponse(diagnosticOrigin, testOptions).flush();
 
             assert.strictEqual(diagnosticOrigin.flush.mock.calls.length, 1);
         });
 
         it('should call update of origin', () => {
-            new JsonOutputResponse(diagnosticOrigin).flush();
+            new JsonOutputResponse(diagnosticOrigin, testOptions).flush();
 
             assert.strictEqual(diagnosticOrigin.update.mock.calls.length, 1);
+        });
+
+        it('should not call update of origin', () => {
+            new JsonOutputResponse(diagnosticOrigin, {body: null}).flush();
+            new JsonOutputResponse(diagnosticOrigin, {body: 'simple string'}).flush();
+
+            assert.strictEqual(diagnosticOrigin.update.mock.calls.length, 0);
         });
 
         it('should fall when call origin, cause null', () => {
@@ -138,7 +152,7 @@ describe('JsonOutputResponse', () => {
             };
             mock.method(diagnosticOrigin, 'update');
 
-            assert.throws(() => new JsonOutputResponse(diagnosticOrigin).flush(), {message: 'update error'});
+            assert.throws(() => new JsonOutputResponse(diagnosticOrigin, testOptions).flush(), {message: 'update error'});
 
             assert.strictEqual(diagnosticOrigin.flush.mock.calls.length, 0);
             assert.strictEqual(diagnosticOrigin.update.mock.calls.length, 1);
@@ -150,7 +164,7 @@ describe('JsonOutputResponse', () => {
             };
             mock.method(diagnosticOrigin, 'flush');
 
-            assert.throws(() => new JsonOutputResponse(diagnosticOrigin).flush(), {message: 'flush error'});
+            assert.throws(() => new JsonOutputResponse(diagnosticOrigin, testOptions).flush(), {message: 'flush error'});
 
             assert.strictEqual(diagnosticOrigin.flush.mock.calls.length, 1);
             assert.strictEqual(diagnosticOrigin.update.mock.calls.length, 1);
@@ -163,14 +177,20 @@ describe('JsonOutputResponse', () => {
             };
             mock.method(diagnosticOrigin, 'flush');
 
-            const resultOutputStream = new JsonOutputResponse(diagnosticOrigin).flush();
+            const resultOutputStream = new JsonOutputResponse(diagnosticOrigin, testOptions).flush();
 
             assert.equal(resultOutputStream, testOutputStream);
             assert.deepStrictEqual(resultOutputStream, testOutputStream);
         });
 
-        it('should update headers by content-type', () => {
-            new JsonOutputResponse(diagnosticOrigin).flush();
+        it('should update headers with content-type, cause object body', () => {
+            new JsonOutputResponse(diagnosticOrigin, testOptions).flush();
+
+            assert.deepStrictEqual(diagnosticOrigin.options.options.headers, {'Content-Type': 'application/json; charset=utf-8'});
+        });
+
+        it('should update headers with content-type, cause string object body', () => {
+            new JsonOutputResponse(diagnosticOrigin, {body: JSON.stringify({})}).flush();
 
             assert.deepStrictEqual(diagnosticOrigin.options.options.headers, {'Content-Type': 'application/json; charset=utf-8'});
         });

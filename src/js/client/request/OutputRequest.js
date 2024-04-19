@@ -1,23 +1,23 @@
 module.exports = class OutputRequest {
-    #http;
     #response;
+    #requestFunction;
     #options;
 
-    constructor(http, response, options) {
-        this.#http = http;
+    constructor(response, requestFunction, options) {
         this.#response = response;
+        this.#requestFunction = requestFunction;
         this.#options = {method: 'GET', ...options};
     }
 
-    copy(options = this.#options, response = this.#response, http = this.#http) {
-        return new OutputRequest(http, response, {method: 'GET', ...options});
+    copy(options = this.#options, response = this.#response, http = this.#requestFunction) {
+        return new OutputRequest(response, http,  {method: 'GET', ...options});
     }
 
     send() {
         return new Promise((resolve, reject) => {
             try {
                 this.#sendRequestOutputStream(
-                    this.#configureRequestOutputStream(this.#http, this.#response, this.#options, resolve, reject),
+                    this.#configureRequestOutputStream(this.#requestFunction, this.#response, this.#options, resolve, reject),
                     this.#options);
 
             } catch (e) {
@@ -26,9 +26,9 @@ module.exports = class OutputRequest {
         });
     }
 
-    #configureRequestOutputStream(http, response, options, resolve, reject) {
+    #configureRequestOutputStream(requestFunction, response, options, resolve, reject) {
         if (options.url != null) {
-            return http.request(
+            return requestFunction(
                 options.url,
                 options,
                 async (responseInputStream) => {
@@ -36,7 +36,7 @@ module.exports = class OutputRequest {
                 });
         }
 
-        return http.request(
+        return requestFunction(
             options,
             async (responseInputStream) => {
                 await this.#flushResponseInputStream(responseInputStream, response, resolve, reject);

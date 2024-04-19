@@ -3,10 +3,17 @@
   "version": "master",
   "private": "true",
   "description": "Proxy classes for creating a http server",
-  "keywords": ["web", "web-server", "http", "http-server", "oop"],
+  "keywords": [
+    "web",
+    "web-server",
+    "http",
+    "http-server",
+    "oop"
+  ],
   "scripts": {
     "prepareToPublish": "node dist/prepareToPublish.js",
-    "test": "node --test"
+    "test": "node --test **/test/**/[!b][!u][!n]*/**/*.js",
+    "testBun": "bun test **/test/**/bun/**/**"
   },
   "author": {
     "name": "volatilization",
