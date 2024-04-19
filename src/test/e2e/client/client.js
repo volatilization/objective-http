@@ -2,13 +2,14 @@
 
 const {describe, it, before, after} = require('node:test');
 const assert = require('node:assert');
-const http = require('node:http');
 
+
+const http = require('node:http');
+const requestFunction = http.request;
 const {
     OutputRequest,
     InputResponse
 } = require('../../../js/index').client;
-
 const {
     Server,
     InputRequest,
@@ -51,7 +52,7 @@ const serverConfig = new Server(
     new OutputResponse(),
     http
 );
-const request = new OutputRequest(new InputResponse(), http);
+const request = new OutputRequest(new InputResponse(), requestFunction);
 
 describe('client', async () => {
     let serverInstance;

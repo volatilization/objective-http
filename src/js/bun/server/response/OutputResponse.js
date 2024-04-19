@@ -16,10 +16,15 @@ module.exports = class OutputResponse {
     }
 
     flush() {
-        return new Response(this.#options.body, {
-            status: this.#options.statusCode,
-            headers: this.#options.headers
-        });
+        try {
+            return new Response(this.#options.body, {
+                status: this.#options.statusCode,
+                headers: this.#options.headers
+            });
+
+        } catch (e) {
+            throw new Error(e.message, {cause: 'INVALID_RESPONSE'})
+        }
     }
 
     #mergeOptions(existedOptions, newOptions) {

@@ -3,13 +3,13 @@
 const {describe, test, beforeAll, afterAll} = require('bun:test');
 const assert = require('node:assert');
 
+const http = require('../../../../js').bun.bunttp;
 const {
     Server,
     Endpoints,
     InputRequest,
     OutputResponse
 } = require('../../../../js').bun.server;
-const http = require('../../../../js').bun.bunttp;
 
 const testBody = {value: 'value', queryValue: 'otherQueryValue'};
 

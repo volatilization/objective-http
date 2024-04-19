@@ -12,13 +12,18 @@ module.exports = class InputResponse {
     }
 
     async flush() {
-        return new InputResponse(this.#inputStream,
-            {
-                statusCode: this.#inputStream.status,
-                headers: this.#inputStream.headers,
-                body: Buffer.from(await (await this.#inputStream.blob()).arrayBuffer())
-            }
-        );
+        try {
+            return new InputResponse(this.#inputStream,
+                {
+                    statusCode: this.#inputStream.status,
+                    headers: this.#inputStream.headers,
+                    body: Buffer.from(await (await this.#inputStream.blob()).arrayBuffer())
+                }
+            );
+
+        } catch (e) {
+            throw new Error(e.message, {cause: 'INVALID_RESPONSE'});
+        }
     }
 
     statusCode() {

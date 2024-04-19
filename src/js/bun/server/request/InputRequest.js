@@ -12,16 +12,21 @@ module.exports = class InputRequest {
     }
 
     async flush() {
-        return new InputRequest(
-            this.#inputStream,
-            {
-                method: this.#inputStream.method,
-                path: new URL(this.#inputStream.url).pathname,
-                query: new URL(this.#inputStream.url).searchParams,
-                headers: this.#inputStream.headers,
-                body: Buffer.from(await (await this.#inputStream.blob()).arrayBuffer())
-            }
-        );
+        try {
+            return new InputRequest(
+                this.#inputStream,
+                {
+                    method: this.#inputStream.method,
+                    path: new URL(this.#inputStream.url).pathname,
+                    query: new URL(this.#inputStream.url).searchParams,
+                    headers: this.#inputStream.headers,
+                    body: Buffer.from(await (await this.#inputStream.blob()).arrayBuffer())
+                }
+            );
+
+        } catch (e) {
+            throw new Error(e.message, {cause: 'INVALID_REQUEST'});
+        }
     }
 
     route() {

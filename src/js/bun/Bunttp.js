@@ -24,4 +24,6 @@ module.exports = class Bunttp {
         cb();
         return this;
     }
+
+    request = fetch;
 }

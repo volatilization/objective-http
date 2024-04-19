@@ -3,9 +3,11 @@
 const {describe, test, beforeAll, afterAll} = require('bun:test');
 const assert = require('node:assert');
 
+
 const http =
     // require('node:http');
     require('../../../../js').bun.bunttp;
+const requestFunction  = http.request;
 const {
     OutputRequest,
     InputResponse
@@ -57,7 +59,7 @@ const serverConfig = new Server(
     http
 );
 
-const request = new OutputRequest(new InputResponse());
+const request = new OutputRequest(new InputResponse(), requestFunction);
 
 describe('client', async () => {
     let serverInstance;

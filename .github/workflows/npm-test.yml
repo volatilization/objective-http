@@ -14,4 +14,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 21
-      - run: npm test
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.1.4
+      - run: node --test **/test/**/[!b][!u][!n]*/**/*.js
+      - run: bun test **/test/**/bun/**/**
+
