@@ -12,8 +12,8 @@ module.exports = class InputResponse {
     }
 
     flush() {
-        try {
-            return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
+            try {
                 this.#inputStream.once('error', (e) => reject(new Error(e.message, {cause: 'INVALID_RESPONSE'})));
 
                 let chunks = [];
@@ -25,11 +25,11 @@ module.exports = class InputResponse {
                         body: Buffer.concat(chunks)
                     }
                 )));
-            });
 
-        } catch (e) {
-            throw new Error(e.message, {cause: 'INVALID_RESPONSE'});
-        }
+            } catch (e) {
+                throw new Error(e.message, {cause: 'INVALID_RESPONSE'});
+            }
+        });
     }
 
     statusCode() {

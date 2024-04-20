@@ -23,7 +23,7 @@ module.exports = class OutputResponse {
             });
 
         } catch (e) {
-            throw new Error(e.message, {cause: 'INVALID_RESPONSE'})
+            throw new Error(e.message, {cause: 'INVALID_RESPONSE'});
         }
     }
 

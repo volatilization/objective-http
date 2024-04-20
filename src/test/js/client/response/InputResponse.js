@@ -123,7 +123,8 @@ describe('InputResponse', () => {
     describe('flush', () => {
 
         it('should fall on inputStream, cause null', async () => {
-            await assert.rejects(() => new InputResponse().flush(), {name: 'TypeError'});
+            await assert.rejects(() => new InputResponse().flush(),
+                {cause: 'INVALID_RESPONSE'});
 
             assert.strictEqual(diagnosticInputStream.once.mock.calls.length, 0);
             assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 0);

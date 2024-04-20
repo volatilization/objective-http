@@ -60,6 +60,7 @@ describe('OutputResponse', () => {
             assert.doesNotThrow(() => {
                 new OutputResponse();
                 new OutputResponse(testOptions);
+                new OutputResponse(testOptions, {});
             });
         });
     });
@@ -111,7 +112,7 @@ describe('OutputResponse', () => {
             diagnosticOptions.spy.diagnosticStatusCode = spyOn(diagnosticOptions, 'diagnosticStatusCode');
 
             assert.throws(() => new OutputResponse(diagnosticOptions).flush(),
-                {message: 'statusCode error'});
+                {message: 'statusCode error', cause: 'INVALID_RESPONSE'});
 
             expect(diagnosticOptions.spy.diagnosticBody).toHaveBeenCalledTimes(0);
             expect(diagnosticOptions.spy.diagnosticStatusCode).toHaveBeenCalledTimes(1);
@@ -125,7 +126,7 @@ describe('OutputResponse', () => {
             diagnosticOptions.spy.diagnosticHeaders = spyOn(diagnosticOptions, 'diagnosticHeaders');
 
             assert.throws(() => new OutputResponse(diagnosticOptions).flush(),
-                {message: 'headers error'});
+                {message: 'headers error', cause: 'INVALID_RESPONSE'});
 
             expect(diagnosticOptions.spy.diagnosticBody).toHaveBeenCalledTimes(0);
             expect(diagnosticOptions.spy.diagnosticStatusCode).toHaveBeenCalledTimes(1);
@@ -139,7 +140,7 @@ describe('OutputResponse', () => {
             diagnosticOptions.spy.diagnosticBody = spyOn(diagnosticOptions, 'diagnosticBody');
 
             assert.throws(() => new OutputResponse(diagnosticOptions).flush(),
-                {message: 'body error'});
+                {message: 'body error', cause: 'INVALID_RESPONSE'});
 
             expect(diagnosticOptions.spy.diagnosticBody).toHaveBeenCalledTimes(1);
             expect(diagnosticOptions.spy.diagnosticStatusCode).toHaveBeenCalledTimes(1);
@@ -159,6 +160,17 @@ describe('OutputResponse', () => {
                 new Response(undefined, {
                     status: 200,
                     headers: {}
+                }));
+        });
+
+        test('should not be updated', () => {
+            const resultedOutputStream = new OutputResponse(testOptions)
+                .update().flush();
+
+            assert.deepStrictEqual(resultedOutputStream,
+                new Response(testOptions.body, {
+                    status: testOptions.statusCode,
+                    headers: testOptions.headers
                 }));
         });
 

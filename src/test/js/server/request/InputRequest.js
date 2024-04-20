@@ -156,7 +156,8 @@ describe('InputRequest', () => {
         afterEach(resetDiagnostic);
 
         it('should fall on inputStream, cause null', async () => {
-            await assert.rejects(() => new InputRequest().flush(), {name: 'TypeError'});
+            await assert.rejects(() => new InputRequest().flush(),
+                {cause: 'INVALID_REQUEST'});
 
             assert.strictEqual(diagnosticInputStream.once.mock.calls.length, 0);
             assert.strictEqual(diagnosticInputStream.on.mock.calls.length, 0);
