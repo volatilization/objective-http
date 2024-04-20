@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 21
           registry-url: https://registry.npmjs.org/
-      - run: npm run prepareToPublish
+      - run: npm run prepublishOnly
         env:
           RELEASE: ${{github.event.release.name}}
       - run: npm publish
