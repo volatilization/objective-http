@@ -14,9 +14,7 @@ module.exports = class InputResponse {
     flush() {
         try {
             return new Promise((resolve, reject) => {
-                this.#inputStream.once('error', (e) =>
-                    reject(new Error(e.message, {cause: 'INVALID_RESPONSE'}))
-                );
+                this.#inputStream.once('error', (e) => reject(new Error(e.message, {cause: 'INVALID_RESPONSE'})));
 
                 let chunks = [];
                 this.#inputStream.on('data', (chunk) => chunks.push(chunk));
@@ -30,7 +28,7 @@ module.exports = class InputResponse {
             });
 
         } catch (e) {
-            throw new Error(e.message, {cause: 'INVALID_RESPONSE'})
+            throw new Error(e.message, {cause: 'INVALID_RESPONSE'});
         }
     }
 
