@@ -8,21 +8,20 @@ module.exports = class Bunttp {
     }
 
     createServer(cb) {
-        this.#serverConfig.fetch = cb;
-        return this;
+        return new Bunttp({fetch: cb});
     }
 
     listen(options, cb) {
-        this.#serverConfig.port = options.port;
-        this.#server = Bun.serve(this.#serverConfig);
+        const config = {...this.#serverConfig, port: options.port};
+        const server = Bun.serve(config);
         cb();
-        return this;
+        return new Bunttp(config, server);
     }
 
     close(cb) {
-        this.#server.stop();
+        const server = this.#server.stop();
         cb();
-        return this;
+        return new Bunttp(this.#serverConfig, server);
     }
 
     request = fetch;

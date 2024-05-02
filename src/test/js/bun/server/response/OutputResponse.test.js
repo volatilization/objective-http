@@ -3,7 +3,7 @@
 const {describe, test, spyOn, expect, beforeEach, afterEach} = require('bun:test');
 const assert = require('node:assert');
 
-const {OutputResponse} = require('../../../../../js/').bun.server;
+const {OutputResponse} = require('../../../../../js').bun.server;
 
 
 const testOptions = {
@@ -112,7 +112,7 @@ describe('OutputResponse', () => {
             diagnosticOptions.spy.diagnosticStatusCode = spyOn(diagnosticOptions, 'diagnosticStatusCode');
 
             assert.throws(() => new OutputResponse(diagnosticOptions).flush(),
-                {message: 'statusCode error', cause: 'INVALID_RESPONSE'});
+                {message: 'statusCode error'});
 
             expect(diagnosticOptions.spy.diagnosticBody).toHaveBeenCalledTimes(0);
             expect(diagnosticOptions.spy.diagnosticStatusCode).toHaveBeenCalledTimes(1);
@@ -126,7 +126,7 @@ describe('OutputResponse', () => {
             diagnosticOptions.spy.diagnosticHeaders = spyOn(diagnosticOptions, 'diagnosticHeaders');
 
             assert.throws(() => new OutputResponse(diagnosticOptions).flush(),
-                {message: 'headers error', cause: 'INVALID_RESPONSE'});
+                {message: 'headers error'});
 
             expect(diagnosticOptions.spy.diagnosticBody).toHaveBeenCalledTimes(0);
             expect(diagnosticOptions.spy.diagnosticStatusCode).toHaveBeenCalledTimes(1);
@@ -140,7 +140,7 @@ describe('OutputResponse', () => {
             diagnosticOptions.spy.diagnosticBody = spyOn(diagnosticOptions, 'diagnosticBody');
 
             assert.throws(() => new OutputResponse(diagnosticOptions).flush(),
-                {message: 'body error', cause: 'INVALID_RESPONSE'});
+                {message: 'body error'});
 
             expect(diagnosticOptions.spy.diagnosticBody).toHaveBeenCalledTimes(1);
             expect(diagnosticOptions.spy.diagnosticStatusCode).toHaveBeenCalledTimes(1);

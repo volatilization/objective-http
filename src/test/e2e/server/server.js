@@ -3,7 +3,7 @@
 const {describe, it, before, after} = require('node:test');
 const assert = require('node:assert');
 
-const http = require('node:http');
+const createServerFunction = require('node:http').createServer;
 const {
     Server,
     InputRequest,
@@ -48,7 +48,7 @@ const serverConfig = new Server(
     {port: 8080},
     new InputRequest(),
     new OutputResponse(),
-    http
+    createServerFunction
 );
 
 describe('server', async () => {

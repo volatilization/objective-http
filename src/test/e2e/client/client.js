@@ -4,8 +4,8 @@ const {describe, it, before, after} = require('node:test');
 const assert = require('node:assert');
 
 
-const http = require('node:http');
-const requestFunction = http.request;
+const creatServerFunction = require('node:http').createServer;
+const requestFunction = require('node:http').request;
 const {
     OutputRequest,
     InputResponse
@@ -50,7 +50,7 @@ const serverConfig = new Server(
     {port: 8090},
     new InputRequest(),
     new OutputResponse(),
-    http
+    creatServerFunction
 );
 const request = new OutputRequest(new InputResponse(), requestFunction);
 
