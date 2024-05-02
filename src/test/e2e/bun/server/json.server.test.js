@@ -3,7 +3,7 @@
 const {describe, test, beforeAll, afterAll} = require('bun:test');
 const assert = require('node:assert');
 
-const http = require('../../../../js').bun.bunttp;
+const createServerFunction = require('../../../../js').bun.bunttp.createServer;
 const {
     Server,
     JsonInputRequest,
@@ -49,7 +49,7 @@ const serverConfig = new Server(
     {port: 8081},
     new JsonInputRequest(new InputRequest()),
     new JsonOutputResponse(new OutputResponse()),
-    http
+    createServerFunction
 );
 
 

@@ -3,20 +3,20 @@ module.exports = class Server {
     #options;
     #request;
     #response;
-    #http;
+    #createServerFunction;
     #server;
 
-    constructor(endpoints, options, request, response, http, server) {
+    constructor(endpoints, options, request, response, createServerFunction, server) {
         this.#endpoints = endpoints;
         this.#options = options;
         this.#request = request;
         this.#response = response;
-        this.#http = http;
+        this.#createServerFunction = createServerFunction;
         this.#server = server;
     }
 
     start() {
-        const server = this.#http.createServer(async (requestStream, responseStream) => {
+        const server = this.#createServerFunction(async (requestStream, responseStream) => {
             try {
                 return await (this.#response
                     .copy(await this.#endpoints
@@ -53,7 +53,7 @@ module.exports = class Server {
                         this.#options,
                         this.#request,
                         this.#response,
-                        this.#http,
+                        this.#createServerFunction,
                         server));
                 }
             );
@@ -68,7 +68,7 @@ module.exports = class Server {
                     this.#options,
                     this.#request,
                     this.#response,
-                    this.#http))
+                    this.#createServerFunction))
             );
         });
     }

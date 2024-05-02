@@ -4,10 +4,12 @@ const {describe, test, beforeAll, afterAll} = require('bun:test');
 const assert = require('node:assert');
 
 
-const http =
-    // require('node:http');
-    require('../../../../js').bun.bunttp;
-const requestFunction  = http.request;
+const createServerFunction =
+    // require('node:http').createServer;
+    require('../../../../js').bun.bunttp.createServer;
+const requestFunction  =
+    // require('node:http').request;
+    require('../../../../js').bun.bunttp.request;
 const {
     OutputRequest,
     InputResponse
@@ -56,7 +58,7 @@ const serverConfig = new Server(
     {port: 8090},
     new InputRequest(),
     new OutputResponse(),
-    http
+    createServerFunction
 );
 
 const request = new OutputRequest(new InputResponse(), requestFunction);

@@ -10,7 +10,7 @@ const {
 } = require('../../../js').server;
 const {describe, it, before, after} = require('node:test');
 const assert = require('node:assert');
-const http = require('node:http');
+const createServerFunction = require('node:http').createServer;
 
 const testBody = {value: 'value', queryValue: 'otherQueryValue'};
 
@@ -48,7 +48,7 @@ const serverConfig = new Server(
     {port: 8081},
     new JsonInputRequest(new InputRequest()),
     new JsonOutputResponse(new OutputResponse()),
-    http
+    createServerFunction
 );
 
 
