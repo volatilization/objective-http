@@ -8,7 +8,7 @@ There are all `Server` classes feature.
 Your endpoints must implement `Endpoint` class interface (`route()` and `async handle(request)` methods).
 
 ```javascript
-const http = require('node:http');
+const createServerFunction = require('node:http').createServer;
 
 const {
     Server,
@@ -34,7 +34,7 @@ new LoggedServer(
         {port: server_port},
         new LoggedInputRequest(new JsonInputRequest(new InputRequest()), console),
         new LoggedOutputResponse(new JsonOutputResponse(new OutputResponse()), console),
-        http
+        createServerFunction
     ),
     console
 ).start();
@@ -74,8 +74,8 @@ class MyEndpoint {
 ## Client
 
 ```javascript
-const http = require('node:http');
-const requestFunction = http.request;
+const requestFunction = require('node:http').request;
+
 const {
     OutputRequest,
     InputResponse
@@ -122,7 +122,7 @@ And you should replace `node:http` package with `objective-http.bun.bunttp` in y
 It should work with `node` and `bun`:
 
 ```javascript
-const http = require('node:http');
+const createServerFunction = require('node:http').createServer;
 
 const {
     Server,
@@ -148,7 +148,7 @@ new LoggedServer(
         {port: server_port},
         new LoggedInputRequest(new JsonInputRequest(new InputRequest()), console),
         new LoggedOutputResponse(new JsonOutputResponse(new OutputResponse()), console),
-        http
+        createServerFunction
     ),
     console
 ).start()
@@ -158,7 +158,7 @@ In order for the code to be executed only by `bun` (with `Bun API` inside), you 
 `bun` package redeclare only `InputRequest` and `OutputResponse` classes. Other classes taken from `server` package.
 
 ```javascript
-const http = require('objective-http').bun.bunttp;
+const createServerFunction = require('objective-http').bun.bunttp.createServer;
 
 const {
     Server,
@@ -181,8 +181,8 @@ const {
 It should work with `node` and `bun`:
 
 ```javascript
-const http = require('node:http');
-const requestFunction = http.request;
+const requestFunction = require('node:http').request;
+
 const {
     OutputRequest,
     InputResponse
@@ -200,8 +200,8 @@ await (new OutputRequest(new InputResponse(), requestFunction)
 In order for the code to be executed only by `bun`, you need to make changes to the import block.
 
 ```javascript
-const http = require('objective-http').bun.bunttp;
-const requestFunction = http.request;
+const requestFunction = require('objective-http').bun.bunttp.request;
+
 const {
     OutputRequest,
     InputResponse
