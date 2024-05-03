@@ -21,6 +21,8 @@ const diagnosticOrigin = {
 
 const diagnosticLogger = {
     debug() {
+    },
+    error() {
     }
 };
 
@@ -54,11 +56,15 @@ function prepareDiagnostic() {
     mock.method(diagnosticOrigin, 'body');
     mock.method(diagnosticOrigin, 'headers');
 
-    diagnosticLogger.message = null;
+    diagnosticLogger.options = {};
     diagnosticLogger.debug = (message) => {
-        diagnosticLogger.message = message;
+        diagnosticLogger.options.message = message;
+    };
+    diagnosticLogger.error = (message) => {
+        diagnosticLogger.options.error = message;
     };
     mock.method(diagnosticLogger, 'debug');
+    mock.method(diagnosticLogger, 'error');
 }
 
 function resetDiagnostic() {
@@ -144,17 +150,33 @@ describe('LoggedInputRequest', () => {
         beforeEach(prepareDiagnostic);
         afterEach(resetDiagnostic);
 
+        it('should call flush of origin', async () => {
+            await new LoggedInputRequest(diagnosticOrigin, diagnosticLogger, {}).flush();
+
+            assert.strictEqual(diagnosticOrigin.flush.mock.calls.length, 1);
+        });
+
         it('should call debug of logger', async () => {
             await new LoggedInputRequest(diagnosticOrigin, diagnosticLogger, {}).flush();
 
             assert.strictEqual(diagnosticLogger.debug.mock.calls.length, 1);
         });
 
-        it('should call flush of origin', async () => {
+        it('should call error of logger', async () => {
+            diagnosticOrigin.flush = () => {throw new Error('flush error')};
+            mock.method(diagnosticOrigin, 'flush');
+
+            await assert.rejects(() => new LoggedInputRequest(diagnosticOrigin, diagnosticLogger, {}).flush());
+
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 1);
+        });
+
+        it('should not call error of logger', async () => {
             await new LoggedInputRequest(diagnosticOrigin, diagnosticLogger, {}).flush();
 
-            assert.strictEqual(diagnosticOrigin.flush.mock.calls.length, 1);
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 0);
         });
+
 
         it('should fall when call debug of logger, cause null', async () => {
             await assert.rejects(() => new LoggedInputRequest(null, null, {}).flush(),
@@ -178,11 +200,15 @@ describe('LoggedInputRequest', () => {
         });
 
         it('should fall when call flush of origin, cause null', async () => {
-            await assert.rejects(() => new LoggedInputRequest(null, diagnosticLogger, {}).flush(),
+            await assert.rejects(() => new LoggedInputRequest(
+                    null, diagnosticLogger, {method: 'method', url: 'url'}
+                ).flush(),
                 {name: 'TypeError'});
 
             assert.strictEqual(diagnosticLogger.debug.mock.calls.length, 1);
             assert.strictEqual(diagnosticOrigin.flush.mock.calls.length, 0);
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 1);
+            assert.strictEqual(diagnosticLogger.options.error.includes('HttpRequest: [method] url error:'), true)
         });
 
         it('should fall when call flush of origin, cause error', async () => {
@@ -191,11 +217,15 @@ describe('LoggedInputRequest', () => {
             };
             mock.method(diagnosticOrigin, 'flush');
 
-            await assert.rejects(() => new LoggedInputRequest(diagnosticOrigin, diagnosticLogger, {}).flush(),
+            await assert.rejects(() => new LoggedInputRequest(
+                    diagnosticOrigin, diagnosticLogger, {method: 'method', url: 'url'}
+                ).flush(),
                 {message: 'flush error'});
 
             assert.strictEqual(diagnosticLogger.debug.mock.calls.length, 1);
             assert.strictEqual(diagnosticOrigin.flush.mock.calls.length, 1);
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 1);
+            assert.strictEqual(diagnosticLogger.options.error.includes('HttpRequest: [method] url error: flush error'), true)
         });
 
         it('should log correct message', async () => {
@@ -205,7 +235,7 @@ describe('LoggedInputRequest', () => {
                 headers: {header: 'header'}
             }).flush();
 
-            assert.strictEqual(diagnosticLogger.message, 'HttpRequest: [method] url {"header":"header"}');
+            assert.strictEqual(diagnosticLogger.options.message, 'HttpRequest: [method] url {"header":"header"}');
         });
 
         it('should return another LoggedInputRequest', async () => {

@@ -20,6 +20,8 @@ const diagnosticOrigin = {
 
 const diagnosticLogger = {
     debug() {
+    },
+    error() {
     }
 };
 
@@ -47,11 +49,15 @@ function prepareDiagnostic() {
     mock.method(diagnosticOrigin, 'route');
     mock.method(diagnosticOrigin, 'handle');
 
-    diagnosticLogger.message = null;
+    diagnosticLogger.options = {};
     diagnosticLogger.debug = (message) => {
-        diagnosticLogger.message = message;
+        diagnosticLogger.options.message = message;
+    };
+    diagnosticLogger.error = (message) => {
+        diagnosticLogger.options.error = message;
     };
     mock.method(diagnosticLogger, 'debug');
+    mock.method(diagnosticLogger, 'error');
 
     mock.method(diagnosticRequest, 'route');
 }
@@ -186,6 +192,21 @@ describe('LoggedEndpoint', () => {
             assert.strictEqual(diagnosticLogger.debug.mock.calls.length, 1);
         });
 
+        it('should call error of logger', async () => {
+            diagnosticOrigin.handle = () => {throw new Error('handle error')};
+            mock.method(diagnosticOrigin, 'handle');
+
+            await assert.rejects(() => new LoggedEndpoint(diagnosticOrigin, diagnosticLogger).handle(diagnosticRequest));
+
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 1);
+        });
+
+        it('should not call error of logger', async () => {
+            await new LoggedEndpoint(diagnosticOrigin, diagnosticLogger).handle(diagnosticRequest);
+
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 0);
+        });
+
         it('should call handle of origin', async () => {
             await new LoggedEndpoint(diagnosticOrigin, diagnosticLogger).handle(diagnosticRequest);
 
@@ -219,6 +240,8 @@ describe('LoggedEndpoint', () => {
 
             assert.strictEqual(diagnosticLogger.debug.mock.calls.length, 1);
             assert.strictEqual(diagnosticOrigin.handle.mock.calls.length, 0);
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 1);
+            assert.strictEqual(diagnosticLogger.options.error.includes(`HttpEndpoint's handling [${testRoute.method}] ${testRoute.path} error:`), true);
         });
 
         it('should fall when call handle of origin, cause error', async () => {
@@ -232,12 +255,14 @@ describe('LoggedEndpoint', () => {
 
             assert.strictEqual(diagnosticLogger.debug.mock.calls.length, 1);
             assert.strictEqual(diagnosticOrigin.handle.mock.calls.length, 1);
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 1);
+            assert.strictEqual(diagnosticLogger.options.error, `HttpEndpoint's handling [${testRoute.method}] ${testRoute.path} error: handle error`);
         });
 
         it('should log correct message', async () => {
             await new LoggedEndpoint(diagnosticOrigin, diagnosticLogger).handle(diagnosticRequest);
 
-            assert.strictEqual(diagnosticLogger.message, `HttpEndpoint's handling [${testRoute.method}] ${testRoute.path}`);
+            assert.strictEqual(diagnosticLogger.options.message, `HttpEndpoint's handling [${testRoute.method}] ${testRoute.path}`);
         });
 
         it('should return same response object', async () => {

@@ -16,7 +16,14 @@ module.exports = class LoggedInputRequest {
     async flush() {
         this.#logger.debug(`HttpRequest: [${this.#inputStream.method}] ${this.#inputStream.url} ${JSON.stringify(this.#inputStream.headers)}`);
 
-        return new LoggedInputRequest(await this.#origin.flush(), this.#logger);
+        try {
+            return new LoggedInputRequest(await this.#origin.flush(), this.#logger);
+
+        } catch (e) {
+            this.#logger.error(`HttpRequest: [${this.#inputStream.method}] ${this.#inputStream.url} error: ${e.message}`, e);
+
+            throw e;
+        }
     }
 
     route() {
