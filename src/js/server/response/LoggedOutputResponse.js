@@ -16,10 +16,21 @@ module.exports = class LoggedOutputResponse {
     }
 
     flush() {
-        const outputStream = this.#origin.flush();
+        const outputStream = this.#loggedFlush();
 
         this.#logger.debug(`HttpResponse: [${outputStream.req.method}] ${outputStream.req.url} - ${outputStream.statusCode}`);
 
         return outputStream;
+    }
+
+    #loggedFlush() {
+        try {
+            return this.#origin.flush();
+
+        } catch (e) {
+            this.#logger.error(`HttpResponse error: ${e.message}`, e);
+
+            throw e;
+        }
     }
 }

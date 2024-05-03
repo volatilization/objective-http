@@ -18,6 +18,13 @@ module.exports = class LoggedEndpoint {
     async handle(request) {
         this.#logger.debug(`HttpEndpoint's handling [${request.route().method}] ${request.route().path}`);
 
-        return await this.#origin.handle(request);
+        try {
+            return await this.#origin.handle(request);
+
+        } catch (e) {
+            this.#logger.error(`HttpEndpoint's handling [${request.route().method}] ${request.route().path} error: ${e.message}`, e);
+
+            throw e;
+        }
     }
 }

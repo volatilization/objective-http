@@ -15,6 +15,8 @@ const diagnosticOrigin = {
 
 const diagnosticLogger = {
     debug() {
+    },
+    error() {
     }
 };
 
@@ -37,11 +39,15 @@ function prepareDiagnostic() {
     mock.method(diagnosticOrigin, 'update');
     mock.method(diagnosticOrigin, 'flush');
 
-    diagnosticLogger.message = null;
+    diagnosticLogger.options = {};
     diagnosticLogger.debug = (message) => {
-        diagnosticLogger.message = message;
+        diagnosticLogger.options.message = message;
+    };
+    diagnosticLogger.error = (message) => {
+        diagnosticLogger.options.error = message;
     };
     mock.method(diagnosticLogger, 'debug');
+    mock.method(diagnosticLogger, 'error');
 }
 
 function resetDiagnostic() {
@@ -141,11 +147,29 @@ describe('LoggedOutputResponse', () => {
             assert.strictEqual(diagnosticLogger.debug.mock.calls.length, 1);
         });
 
+        it('should call error of logger', () => {
+            diagnosticOrigin.flush = () => {throw new Error('flush error')};
+            mock.method(diagnosticOrigin, 'flush');
+
+            assert.throws(() => new LoggedOutputResponse(diagnosticOrigin, diagnosticLogger).flush());
+
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 1);
+        });
+
+        it('should not call error of logger', async () => {
+            await new LoggedOutputResponse(diagnosticOrigin, diagnosticLogger).flush();
+
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 0);
+        });
+
         it('should fall when call flush of origin, cause null', () => {
-            assert.throws(() => new LoggedOutputResponse(null, diagnosticLogger).flush(), {name: 'TypeError'});
+            assert.throws(() => new LoggedOutputResponse(null, diagnosticLogger).flush(),
+                {name: 'TypeError'});
 
             assert.strictEqual(diagnosticOrigin.flush.mock.calls.length, 0);
             assert.strictEqual(diagnosticLogger.debug.mock.calls.length, 0);
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 1);
+            assert.strictEqual(diagnosticLogger.options.error.includes(`HttpResponse error:`), true);
         });
 
         it('should fall when call flush of origin, cause error', () => {
@@ -154,16 +178,19 @@ describe('LoggedOutputResponse', () => {
             };
             mock.method(diagnosticOrigin, 'flush');
 
-            assert.throws(() => new LoggedOutputResponse(diagnosticOrigin, diagnosticLogger).flush(), {message: 'flush error'});
+            assert.throws(() => new LoggedOutputResponse(diagnosticOrigin, diagnosticLogger).flush(),
+                {message: 'flush error'});
 
             assert.strictEqual(diagnosticOrigin.flush.mock.calls.length, 1);
             assert.strictEqual(diagnosticLogger.debug.mock.calls.length, 0);
+            assert.strictEqual(diagnosticLogger.error.mock.calls.length, 1);
+            assert.strictEqual(diagnosticLogger.options.error.includes(`HttpResponse error: flush error`), true);
         });
 
         it('should log correct message', () => {
             new LoggedOutputResponse(diagnosticOrigin, diagnosticLogger).flush();
 
-            assert.strictEqual(diagnosticLogger.message, 'HttpResponse: [method] url - statusCode');
+            assert.strictEqual(diagnosticLogger.options.message, 'HttpResponse: [method] url - statusCode');
         });
 
         it('should return same outputStream', () => {
