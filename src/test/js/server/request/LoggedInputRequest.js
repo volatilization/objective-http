@@ -1,8 +1,10 @@
 /* node:coverage disable */
 
-const {LoggedInputRequest} = require('../../../../js/index').server;
 const {describe, it, mock, beforeEach, afterEach} = require('node:test');
 const assert = require('node:assert');
+
+const {LoggedInputRequest} = require('../../../../js/index').server.request;
+
 
 const diagnosticOrigin = {
     copy() {

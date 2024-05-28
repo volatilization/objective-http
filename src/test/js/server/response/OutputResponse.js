@@ -3,7 +3,7 @@
 const {describe, it, mock, beforeEach, afterEach} = require('node:test');
 const assert = require('node:assert');
 
-const {OutputResponse} = require('../../../../js/index').server;
+const {OutputResponse} = require('../../../../js/index').server.response;
 
 
 const testOptions = {

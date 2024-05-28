@@ -3,7 +3,7 @@
 const {describe, test, spyOn, expect, beforeEach, afterEach} = require('bun:test');
 const assert = require('node:assert');
 
-const {OutputResponse} = require('../../../../../js').bun.server;
+const {OutputResponse} = require('../../../../../js').bun.server.response;
 
 
 const testOptions = {

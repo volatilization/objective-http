@@ -11,11 +11,11 @@
     "oop"
   ],
   "scripts": {
-    "prepublishOnly": "node dist/prepublish.js",
+    "prepublish": "node src/scripts/prepublish.js",
     "test": "node --test  --experimental-test-coverage --test-reporter=spec **/test/**/[!b][!u][!n]*/**/*.js **/test/**/[!b][!u][!n]*/*.js",
-    "testWithCoverageCheck": "node src/test/static/coverageCheck.js",
-    "bunTest": "bun test --coverage **/test/**/bun/**/**",
-    "bunTestWithCoverageCheck": "bun src/test/static/bun/coverageCheck.js"
+    "test:coverage": "node src/scripts/coverage.js",
+    "test:bun": "bun test --coverage **/test/**/bun/**/**",
+    "test:bun:coverage": "bun src/scripts/bun/coverage.js"
   },
   "author": {
     "name": "volatilization",

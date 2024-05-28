@@ -2,11 +2,17 @@
 
 const {
     Server,
-    InputRequest,
-    JsonInputRequest,
-    OutputResponse,
-    JsonOutputResponse,
-    Endpoints
+    endpoint: {
+        Endpoints
+    },
+    request: {
+        InputRequest,
+        JsonInputRequest
+    },
+    response: {
+        OutputResponse,
+        JsonOutputResponse
+    }
 } = require('../../../js').server;
 const {describe, it, before, after} = require('node:test');
 const assert = require('node:assert');

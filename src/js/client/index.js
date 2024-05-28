@@ -1,4 +1,4 @@
 module.exports = {
-    OutputRequest: require('./request/OutputRequest'),
-    InputResponse: require('./response/InputResponse')
+    request: require('./request'),
+    response: require('./response')
 }

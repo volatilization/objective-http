@@ -7,14 +7,24 @@ const assert = require('node:assert');
 const creatServerFunction = require('node:http').createServer;
 const requestFunction = require('node:http').request;
 const {
-    OutputRequest,
-    InputResponse
+    request: {
+        OutputRequest
+    },
+    response: {
+        InputResponse
+    }
 } = require('../../../js/index').client;
 const {
     Server,
-    InputRequest,
-    OutputResponse,
-    Endpoints
+    endpoint: {
+        Endpoints
+    },
+    request: {
+        InputRequest
+    },
+    response: {
+        OutputResponse
+    }
 } = require('../../../js').server;
 
 const serverConfig = new Server(
@@ -75,6 +85,13 @@ describe('client', async () => {
                         port: '8090', method: 'GET', host: 'localhost'
                     }).send(),
             {message: 'fetch failed'});
+
+        await assert.rejects(() =>
+                request
+                    .copy({
+                        port: '8091', method: 'GET', host: 'localhost'
+                    }).send(),
+            {cause: 'INVALID_REQUEST'});
     });
 
     await it('should return 501', async () => {

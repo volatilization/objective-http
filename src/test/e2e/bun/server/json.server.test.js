@@ -6,12 +6,24 @@ const assert = require('node:assert');
 const createServerFunction = require('../../../../js').bun.bunttp.createServer;
 const {
     Server,
-    JsonInputRequest,
-    JsonOutputResponse,
-    Endpoints,
-    InputRequest,
-    OutputResponse
-} = require('../../../../js').bun.server;
+    endpoint: {
+        Endpoints
+    },
+    request: {
+        JsonInputRequest
+    },
+    response: {
+        JsonOutputResponse
+    }
+} = require('../../../../js').server;
+const {
+    request: {
+        InputRequest
+    },
+    response: {
+        OutputResponse
+    }
+} = require('../../../../js').bun.server
 
 const testBody = {value: 'value', queryValue: 'otherQueryValue'};
 

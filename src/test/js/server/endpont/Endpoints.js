@@ -1,8 +1,10 @@
 /* node:coverage disable */
 
-const {Endpoints} = require('../../../../js/index').server;
 const {describe, it, mock, beforeEach, afterEach} = require('node:test');
 const assert = require('node:assert');
+
+const {Endpoints} = require('../../../../js/index').server.endpoint;
+
 
 const testRoute = {
     method: 'method',

@@ -1,4 +1,4 @@
-const testRunnerResult = Bun.spawnSync(["bun", "run", "bunTest"]);
+const testRunnerResult = Bun.spawnSync(["bun", "run", "test:bun"]);
 console.log(testRunnerResult.stderr.toString());
 
 const codeCoverageResultTableHeaderLine = testRunnerResult.stderr.toString()

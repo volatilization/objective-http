@@ -3,7 +3,7 @@
 const {describe, it, mock, beforeEach, afterEach} = require('node:test');
 const assert = require('node:assert');
 
-const {JsonOutputResponse} = require('../../../../js/index').server;
+const {JsonOutputResponse} = require('../../../../js/index').server.response;
 
 
 const testOptions = {

@@ -13,23 +13,29 @@ const createServerFunction = require('node:http').createServer;
 const {
     Server,
     LoggedServer,
-    InputRequest,
-    JsonInputRequest,
-    LoggedInputRequest,
-    OutputResponse,
-    JsonOutputResponse,
-    LoggedOutputResponse,
-    Endpoint,
-    LoggedEndpoint,
-    Endpoints
+    endpoint: {
+        Endpoint,
+        LoggedEndpoint,
+        Endpoints
+    },
+    request: {
+        InputRequest,
+        JsonInputRequest,
+        LoggedInputRequest,
+    },
+    response: {
+        OutputResponse,
+        JsonOutputResponse,
+        LoggedOutputResponse
+    }
 } = require('objective-http').server;
 
 new LoggedServer(
     new Server(
         new Endpoints([
-            new MyFirstEndpoint(new LoggedEndpoint(new Endpoint(), console)),
-            new MySecondEndpoint(new LoggedEndpoint(new Endpoint(), console)),
-            new MyThirdEndpoint(new LoggedEndpoint(new Endpoint(), console))
+            new LoggedEndpoint(new MyFirstEndpoint(), console),
+            new LoggedEndpoint(new MySecondEndpoint(), console),
+            new LoggedEndpoint(new MyThirdEndpoint(), console)
         ]),
         {port: server_port},
         new LoggedInputRequest(new JsonInputRequest(new InputRequest()), console),
@@ -77,8 +83,12 @@ class MyEndpoint {
 const requestFunction = require('node:http').request;
 
 const {
-    OutputRequest,
-    InputResponse
+    request: {
+        OutputRequest
+    },
+    response: {
+        InputResponse
+    }
 } = require('objective-http').client;
 
 
@@ -127,23 +137,29 @@ const createServerFunction = require('node:http').createServer;
 const {
     Server,
     LoggedServer,
-    InputRequest,
-    JsonInputRequest,
-    LoggedInputRequest,
-    OutputResponse,
-    JsonOutputResponse,
-    LoggedOutputResponse,
-    Endpoint,
-    LoggedEndpoint,
-    Endpoints
+    endpoint: {
+        Endpoint,
+        LoggedEndpoint,
+        Endpoints
+    },
+    request: {
+        InputRequest,
+        JsonInputRequest,
+        LoggedInputRequest,
+    },
+    response: {
+        OutputResponse,
+        JsonOutputResponse,
+        LoggedOutputResponse
+    }
 } = require('objective-http').server;
 
 new LoggedServer(
     new Server(
         new Endpoints([
-            new MyFirstEndpoint(new LoggedEndpoint(new Endpoint(), console)),
-            new MySecondEndpoint(new LoggedEndpoint(new Endpoint(), console)),
-            new MyThirdEndpoint(new LoggedEndpoint(new Endpoint(), console))
+            new LoggedEndpoint(new MyFirstEndpoint(), console),
+            new LoggedEndpoint(new MySecondEndpoint(), console),
+            new LoggedEndpoint(new MyThirdEndpoint(), console)
         ]),
         {port: server_port},
         new LoggedInputRequest(new JsonInputRequest(new InputRequest()), console),
@@ -163,15 +179,28 @@ const createServerFunction = require('objective-http').bun.bunttp.createServer;
 const {
     Server,
     LoggedServer,
-    InputRequest,
-    JsonInputRequest,
-    LoggedInputRequest,
-    OutputResponse,
-    JsonOutputResponse,
-    LoggedOutputResponse,
-    Endpoint,
-    LoggedEndpoint,
-    Endpoints
+    endpoint: {
+        Endpoint,
+        LoggedEndpoint,
+        Endpoints
+    },
+    request: {
+        JsonInputRequest,
+        LoggedInputRequest,
+    },
+    response: {
+        JsonOutputResponse,
+        LoggedOutputResponse
+    }
+} = require('objective-http').server;
+
+const {
+    request: {
+        InputRequest
+    },
+    response: {
+        OutputResponse
+    }
 } = require('objective-http').bun.server;
 ```
 
@@ -184,8 +213,12 @@ It should work with `node` and `bun`:
 const requestFunction = require('node:http').request;
 
 const {
-    OutputRequest,
-    InputResponse
+    request: {
+        OutputRequest
+    },
+    response: {
+        InputResponse
+    }
 } = require('objective-http').client;
 
 await (new OutputRequest(new InputResponse(), requestFunction)
@@ -203,7 +236,11 @@ In order for the code to be executed only by `bun`, you need to make changes to 
 const requestFunction = require('objective-http').bun.bunttp.request;
 
 const {
-    OutputRequest,
-    InputResponse
+    request: {
+        OutputRequest
+    },
+    response: {
+        InputResponse
+    }
 } = require('objective-http').bun.client;
 ```

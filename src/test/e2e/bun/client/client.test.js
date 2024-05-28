@@ -3,7 +3,6 @@
 const {describe, test, beforeAll, afterAll} = require('bun:test');
 const assert = require('node:assert');
 
-
 const createServerFunction =
     // require('node:http').createServer;
     require('../../../../js').bun.bunttp.createServer;
@@ -11,19 +10,27 @@ const requestFunction  =
     // require('node:http').request;
     require('../../../../js').bun.bunttp.request;
 const {
-    OutputRequest,
-    InputResponse
-} = require('../../../../js')
-    .bun
-    .client;
+    request: {
+        OutputRequest
+    },
+    response: {
+        InputResponse
+    }
+} = require('../../../../js').bun.client;
 const {
     Server,
-    Endpoints,
-    InputRequest,
-    OutputResponse,
-} = require('../../../../js')
-    .bun
-    .server;
+    endpoint: {
+        Endpoints
+    }
+} = require('../../../../js').server;
+const {
+    request: {
+        InputRequest,
+    },
+    response: {
+        OutputResponse
+    }
+} = require('../../../../js').bun.server
 
 const serverConfig = new Server(
     new Endpoints([
