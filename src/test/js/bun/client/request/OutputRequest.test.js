@@ -3,7 +3,7 @@
 const {describe, test, mock, spyOn, expect, beforeEach, afterEach} = require('bun:test');
 const assert = require('node:assert');
 
-const {OutputRequest} = require('../../../../../js').bun.client;
+const {OutputRequest} = require('../../../../../js').bun.client.request;
 
 const testOptions = {
     statusCode: 200,

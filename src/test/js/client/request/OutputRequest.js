@@ -3,7 +3,7 @@
 const {describe, it, mock, beforeEach, afterEach} = require('node:test');
 const assert = require('node:assert');
 
-const {OutputRequest} = require('../../../../js').client;
+const {OutputRequest} = require('../../../../js').client.request;
 
 const testOptions = {
     statusCode: 200,
@@ -23,6 +23,8 @@ let diagnosticRequestFunction = () => {}
 const diagnosticRequestFunctionOptions = {}
 
 const diagnosticOutputStream = {
+    once() {
+    },
     write() {
     },
     end() {
@@ -31,6 +33,9 @@ const diagnosticOutputStream = {
 
 function prepareDiagnostic() {
     diagnosticOutputStream.options = {};
+    diagnosticOutputStream.once = (event) => {
+        diagnosticOutputStream.options.event = event;
+    };
     diagnosticOutputStream.write = (body) => {
         diagnosticOutputStream.options.body = body;
     };
@@ -38,6 +43,7 @@ function prepareDiagnostic() {
         return diagnosticOutputStream.options;
     };
 
+    mock.method(diagnosticOutputStream, 'once');
     mock.method(diagnosticOutputStream, 'write');
     mock.method(diagnosticOutputStream, 'end');
 
@@ -113,6 +119,7 @@ describe('OutputRequest', () => {
                 {cause: 'INVALID_REQUEST'});
 
             assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 0);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
         });
@@ -121,11 +128,26 @@ describe('OutputRequest', () => {
             diagnosticRequestFunction = mock.fn(() => {throw new Error('requestFunction error')});
 
             await assert.rejects(() => new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {}).send(),
-                {message: 'requestFunction error'});
+                {message: 'requestFunction error', cause: 'INVALID_REQUEST'});
 
             assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
+        });
+
+        it('should fall, cause requestOutputStream.end throws error', async () => {
+            diagnosticOutputStream.once = () => {throw new Error('request once error')};
+            mock.method(diagnosticOutputStream, 'once');
+
+            await assert.rejects(() =>
+                    new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {method: 'GET'}).send(),
+                {message: 'request once error', cause: 'INVALID_REQUEST'});
+
+            assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
+            assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 0);
         });
 
         it('should fall, cause requestOutputStream.end throws error', async () => {
@@ -137,6 +159,7 @@ describe('OutputRequest', () => {
                 {message: 'request end error'});
 
             assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
@@ -151,6 +174,7 @@ describe('OutputRequest', () => {
                 {message: 'request write error'});
 
             assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 0);
         });
@@ -160,6 +184,7 @@ describe('OutputRequest', () => {
                     new OutputRequest(diagnosticResponse, diagnosticRequestFunction, undefined).send());
 
             assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
@@ -167,9 +192,10 @@ describe('OutputRequest', () => {
         it('should fall, cause response is null', async () => {
             await assert.rejects(() =>
                     new OutputRequest(undefined, diagnosticRequestFunction, testOptions).send(),
-                {name: 'TypeError'});
+                {cause: 'INVALID_REQUEST'});
 
             assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
@@ -184,6 +210,7 @@ describe('OutputRequest', () => {
 
             assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticResponse.copy.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
@@ -199,6 +226,7 @@ describe('OutputRequest', () => {
             assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
             assert.strictEqual(diagnosticResponse.copy.mock.calls.length, 1);
             assert.strictEqual(diagnosticResponse.flush.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
@@ -208,6 +236,7 @@ describe('OutputRequest', () => {
                 new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {method: 'GET'}).send());
 
             assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
@@ -217,6 +246,7 @@ describe('OutputRequest', () => {
                 new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {method: 'POST', body: 'test body'}).send());
 
             assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });
@@ -226,6 +256,7 @@ describe('OutputRequest', () => {
                 new OutputRequest(diagnosticResponse, diagnosticRequestFunction, {method: 'POST'}).send());
 
             assert.strictEqual(diagnosticRequestFunction.mock.calls.length, 1);
+            assert.strictEqual(diagnosticOutputStream.once.mock.calls.length, 1);
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
             assert.strictEqual(diagnosticOutputStream.end.mock.calls.length, 1);
         });

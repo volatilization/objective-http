@@ -1,8 +1,10 @@
 /* node:coverage disable */
 
-const {Endpoint} = require('../../../../js/index').server;
 const {describe, it} = require('node:test');
 const assert = require('node:assert');
+
+const {Endpoint} = require('../../../../js/index').server.endpoint;
+
 
 const testRoute = {
     method: 'method',

@@ -17,9 +17,9 @@ jobs:
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: 1.1.4
-      - run: npm run testWithCoverageCheck
+      - run: npm run test:coverage
         env:
           COVERAGE_MIN_PERCENT: ${{vars.coverage_min_percent}}
-      - run: bun run bunTestWithCoverageCheck
+      - run: bun run test:bun:coverage
         env:
           COVERAGE_MIN_PERCENT: ${{vars.coverage_min_percent}}

@@ -27,6 +27,6 @@ function rewritePackage(packageJSON) {
 
 function removeNotSources() {
     fileSystem.rmSync('src/test', {recursive: true, force: true});
-    fileSystem.rmSync('dist', {recursive: true, force: true});
+    fileSystem.rmSync('src/scripts', {recursive: true, force: true});
     fileSystem.rmSync('.github', {recursive: true, force: true});
 }

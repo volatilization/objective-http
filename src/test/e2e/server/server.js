@@ -6,9 +6,15 @@ const assert = require('node:assert');
 const createServerFunction = require('node:http').createServer;
 const {
     Server,
-    InputRequest,
-    OutputResponse,
-    Endpoints
+    endpoint: {
+        Endpoints
+    },
+    request: {
+        InputRequest
+    },
+    response: {
+        OutputResponse
+    }
 } = require('../../../js').server;
 
 

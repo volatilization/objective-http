@@ -3,7 +3,7 @@
 const {describe, test, spyOn, expect, beforeEach, afterEach} = require('bun:test');
 const assert = require('node:assert');
 
-const {InputRequest} = require('../../../../../js').bun.server;
+const {InputRequest} = require('../../../../../js').bun.server.request;
 
 const testInputStream = {
     method: 'GET',
