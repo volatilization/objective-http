@@ -13,17 +13,42 @@ module.exports = class OutputRequest {
         return new OutputRequest(response, http,  {method: 'GET', ...options});
     }
 
-    send() {
-        return new Promise((resolve, reject) => {
-            try {
+    async send() {
+        try {
+            return await new Promise((resolve, reject) => {
                 this.#sendRequestOutputStream(
                     this.#configureRequestOutputStream(this.#requestFunction, this.#response, this.#options, resolve, reject),
-                    this.#options);
+                    this.#options,
+                    reject);
+            });
 
-            } catch (e) {
+        } catch (e) {
+            if (e.cause == null) {
                 throw new Error(e.message, {cause: 'INVALID_REQUEST'});
             }
-        });
+
+            throw e;
+        }
+    }
+
+    #sendRequestOutputStream(requestOutputStream, options, reject) {
+        try {
+            requestOutputStream.once('error', e => reject(e));
+
+            if (this.#needToByWritten(options)) {
+                requestOutputStream.write(options.body);
+            }
+
+            requestOutputStream.end();
+
+        } catch (e) {
+            reject(e);
+        }
+    }
+
+    #needToByWritten(options) {
+        return ['POST', 'PUT'].some(method => method === options.method.toString().toUpperCase())
+            && (options.body != null && typeof options.body === 'string');
     }
 
     #configureRequestOutputStream(requestFunction, response, options, resolve, reject) {
@@ -52,18 +77,5 @@ module.exports = class OutputRequest {
         } catch (e) {
             reject(e);
         }
-    }
-
-    #sendRequestOutputStream(requestOutputStream, options) {
-        if (this.#needToByWritten(options)) {
-            requestOutputStream.write(options.body);
-        }
-
-        requestOutputStream.end();
-    }
-
-    #needToByWritten(options) {
-        return ['POST', 'PUT'].some(method => method === options.method.toString().toUpperCase())
-            && (options.body != null && typeof options.body === 'string');
     }
 };
