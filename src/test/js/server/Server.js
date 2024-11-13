@@ -84,7 +84,7 @@ function prepareDiagnostic() {
     mock.method(diagnosticEndpoints, 'handle');
 
     diagnosticResponse.options = {};
-    diagnosticResponse.copy = (options, responseStream) => {
+    diagnosticResponse.copy = (responseStream, options) => {
         diagnosticResponse.options.options = options;
         diagnosticResponse.options.responseStream = responseStream;
         return diagnosticResponse;

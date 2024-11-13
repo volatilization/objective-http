@@ -15,17 +15,14 @@ const {
     LoggedServer,
     endpoint: {
         Endpoint,
-        LoggedEndpoint,
         Endpoints
     },
     request: {
         InputRequest,
-        JsonInputRequest,
         LoggedInputRequest,
     },
     response: {
         OutputResponse,
-        JsonOutputResponse,
         LoggedOutputResponse
     }
 } = require('objective-http').server;
@@ -33,13 +30,13 @@ const {
 new LoggedServer(
     new Server(
         new Endpoints([
-            new LoggedEndpoint(new MyFirstEndpoint(), console),
-            new LoggedEndpoint(new MySecondEndpoint(), console),
-            new LoggedEndpoint(new MyThirdEndpoint(), console)
+            new MyFirstEndpoint(),
+            new MySecondEndpoint(),
+            new MyThirdEndpoint()
         ]),
         {port: server_port},
-        new LoggedInputRequest(new JsonInputRequest(new InputRequest()), console),
-        new LoggedOutputResponse(new JsonOutputResponse(new OutputResponse()), console),
+        new LoggedInputRequest(new InputRequest(), console),
+        new LoggedOutputResponse(new OutputResponse(), console),
         createServerFunction
     ),
     console
@@ -139,17 +136,14 @@ const {
     LoggedServer,
     endpoint: {
         Endpoint,
-        LoggedEndpoint,
         Endpoints
     },
     request: {
         InputRequest,
-        JsonInputRequest,
         LoggedInputRequest,
     },
     response: {
         OutputResponse,
-        JsonOutputResponse,
         LoggedOutputResponse
     }
 } = require('objective-http').server;
@@ -157,13 +151,13 @@ const {
 new LoggedServer(
     new Server(
         new Endpoints([
-            new LoggedEndpoint(new MyFirstEndpoint(), console),
-            new LoggedEndpoint(new MySecondEndpoint(), console),
-            new LoggedEndpoint(new MyThirdEndpoint(), console)
+            new MyFirstEndpoint(),
+            new MySecondEndpoint(),
+            new MyThirdEndpoint()
         ]),
         {port: server_port},
-        new LoggedInputRequest(new JsonInputRequest(new InputRequest()), console),
-        new LoggedOutputResponse(new JsonOutputResponse(new OutputResponse()), console),
+        new LoggedInputRequest(new InputRequest(), console),
+        new LoggedOutputResponse(new OutputResponse(), console),
         createServerFunction
     ),
     console
@@ -181,15 +175,12 @@ const {
     LoggedServer,
     endpoint: {
         Endpoint,
-        LoggedEndpoint,
         Endpoints
     },
     request: {
-        JsonInputRequest,
         LoggedInputRequest,
     },
     response: {
-        JsonOutputResponse,
         LoggedOutputResponse
     }
 } = require('objective-http').server;

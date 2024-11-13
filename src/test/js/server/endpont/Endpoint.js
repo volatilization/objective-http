@@ -3,7 +3,7 @@
 const {describe, it} = require('node:test');
 const assert = require('node:assert');
 
-const {Endpoint} = require('../../../../js/index').server.endpoint;
+const {Endpoint} = require('../../../../js').server.endpoint;
 
 
 const testRoute = {
@@ -16,53 +16,18 @@ describe('Endpoint', () => {
         it('should not call anything', () => {
             assert.doesNotThrow(() => {
                 new Endpoint();
-                new Endpoint(testRoute.method, null);
-                new Endpoint(null, testRoute.path);
-                new Endpoint(testRoute.method, testRoute.path);
+                new Endpoint({method: testRoute.method, path: null});
+                new Endpoint({method: null, path: testRoute.path});
+                new Endpoint(testRoute);
             });
-        });
-    });
-
-    describe('copy', () => {
-        it('should not call anything', () => {
-            assert.doesNotThrow(() => {
-                new Endpoint().copy();
-                new Endpoint().copy(testRoute.method);
-                new Endpoint().copy(null, testRoute.path);
-                new Endpoint().copy(testRoute.method, testRoute.path);
-            });
-        });
-
-        it('should return new Endpoint instance', () => {
-            const endpoint = new Endpoint();
-            const copyEndpoint = endpoint.copy();
-
-            assert.notEqual(endpoint, copyEndpoint);
-            assert.strictEqual(typeof copyEndpoint, typeof endpoint);
         });
     });
 
     describe('route', () => {
-        it('should fall, cause method is null', () => {
-            assert.throws(() => new Endpoint(null, testRoute.path).route(),
-                {name: 'TypeError'});
-        });
+        it('should return route', () => {
+            const resultRoute = new Endpoint(testRoute).route();
 
-        it('should fall, cause path is null', () => {
-            assert.throws(() => new Endpoint(testRoute.method, null).route(),
-                {name: 'TypeError'});
-        });
-
-        it('should return method name in upper case', () => {
-            const resultRoute = new Endpoint(testRoute.method, testRoute.path).route();
-
-            assert.deepStrictEqual(resultRoute.method, resultRoute.method.toUpperCase());
-        });
-
-        it('should return path name in lower case', () => {
-            const resultRoute = new Endpoint(testRoute.method, testRoute.path).route();
-
-            assert.deepStrictEqual(resultRoute.path, resultRoute.path.toLowerCase());
+            assert.deepStrictEqual(testRoute, resultRoute);
         });
     });
 
@@ -70,7 +35,7 @@ describe('Endpoint', () => {
         it('should return {}', async () => {
             const result = await new Endpoint().handle();
 
-            assert.deepStrictEqual(result, {});
+            assert.deepStrictEqual(result, {statusCode: 200});
         });
     });
 });

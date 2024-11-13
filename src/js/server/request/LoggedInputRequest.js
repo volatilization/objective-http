@@ -13,19 +13,6 @@ module.exports = class LoggedInputRequest {
         return new LoggedInputRequest(origin, logger, inputStream);
     }
 
-    async flush() {
-        this.#logger.debug(`HttpRequest: [${this.#inputStream.method}] ${this.#inputStream.url} ${JSON.stringify(this.#inputStream.headers)}`);
-
-        try {
-            return new LoggedInputRequest(await this.#origin.flush(), this.#logger);
-
-        } catch (e) {
-            this.#logger.error(`HttpRequest: [${this.#inputStream.method}] ${this.#inputStream.url} error: ${e.message}`, e);
-
-            throw e;
-        }
-    }
-
     route() {
         return this.#origin.route();
     }
@@ -40,5 +27,18 @@ module.exports = class LoggedInputRequest {
 
     headers() {
         return this.#origin.headers();
+    }
+
+    async flush() {
+        this.#logger.debug(`HttpRequest: [${this.#inputStream.method}] ${this.#inputStream.url} ${JSON.stringify(this.#inputStream.headers)}`);
+
+        try {
+            return new LoggedInputRequest(await this.#origin.flush(), this.#logger);
+
+        } catch (e) {
+            this.#logger.error(`HttpRequest: [${this.#inputStream.method}] ${this.#inputStream.url} error: ${e.message}`, e);
+
+            throw e;
+        }
     }
 }

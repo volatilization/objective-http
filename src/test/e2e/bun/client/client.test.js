@@ -6,7 +6,7 @@ const assert = require('node:assert');
 const createServerFunction =
     // require('node:http').createServer;
     require('../../../../js').bun.bunttp.createServer;
-const requestFunction  =
+const requestFunction =
     // require('node:http').request;
     require('../../../../js').bun.bunttp.request;
 const {
@@ -30,7 +30,7 @@ const {
     response: {
         OutputResponse
     }
-} = require('../../../../js').bun.server
+} = require('../../../../js').bun.server;
 
 const serverConfig = new Server(
     new Endpoints([
@@ -79,43 +79,43 @@ describe('client', async () => {
 
     await test('should be started', async () => {
         await assert.doesNotReject(() =>
-                request.copy( {
+                request.copy({
                     url: 'http://localhost:8090', method: 'GET'
                 }).send(),
             {message: 'fetch failed'});
     });
 
     await test('should return 501', async () => {
-        const response = await (request.copy( {
+        const response = await request.copy({
             url: 'http://localhost:8090/no_test', method: 'GET'
-        })).send();
+        }).send();
 
         assert.strictEqual(response.statusCode(), 501);
         assert.strictEqual(response.body().toString(), 'There are no handler for request.');
     });
 
     await test('should return 200 and no body', async () => {
-        const response =  await (request.copy( {
+        const response = await request.copy({
             url: 'http://localhost:8090/test', method: 'GET'
-        })).send();
+        }).send();
 
         assert.strictEqual(response.statusCode(), 200);
         assert.strictEqual(response.body().length, 0);
     });
 
     await test('should return 201 and test body', async () => {
-        const response =  await (request.copy( {
+        const response = await request.copy({
             url: 'http://localhost:8090/test', method: 'POST', body: 'test body'
-        })).send();
+        }).send();
 
         assert.strictEqual(response.statusCode(), 201);
         assert.strictEqual(response.body().toString(), 'test body');
     });
 
     await test('should not fall, but body is not a string', async () => {
-        const response =  await (request.copy( {
+        const response = await request.copy({
             url: 'http://localhost:8090/test', method: 'POST', body: {}
-        })).send();
+        }).send();
 
         assert.strictEqual(response.statusCode(), 201);
         assert.strictEqual(response.body().toString(), 'test body');

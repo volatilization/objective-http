@@ -179,47 +179,4 @@ describe('OutputResponse', () => {
             assert.strictEqual(diagnosticOutputStream.write.mock.calls.length, 0);
         });
     });
-
-    describe('update', () => {
-        beforeEach(prepareDiagnostic);
-        afterEach(resetDiagnostic);
-
-        it('should be default', () => {
-            const resultedOutputStream = new OutputResponse(undefined, diagnosticOutputStream)
-                .update().flush();
-
-            assert.deepStrictEqual(resultedOutputStream.options, {statusCode: 200, headers: {}});
-        });
-
-        it('should be updated by statusCode, body and headers', () => {
-            const resultedOutputStream = new OutputResponse(undefined, diagnosticOutputStream)
-                .update(testOptions).flush();
-
-            assert.deepStrictEqual(resultedOutputStream.options, testOptions);
-        });
-
-        it('should be equal before and after update', () => {
-            const beforeUpdateResultedOutputStream = new OutputResponse(testOptions, diagnosticOutputStream)
-                .flush();
-            assert.deepStrictEqual(beforeUpdateResultedOutputStream.options, testOptions);
-
-            const afterUpdateResultedOutputStream = new OutputResponse(testOptions, diagnosticOutputStream)
-                .update(testOptions).flush();
-            assert.deepStrictEqual(afterUpdateResultedOutputStream.options, testOptions);
-
-            assert.deepStrictEqual(beforeUpdateResultedOutputStream.options, afterUpdateResultedOutputStream.options);
-        });
-
-        it('should not be updated by null or undefined option param', () => {
-            const beforeUpdateResultedOutputStream = new OutputResponse(testOptions, diagnosticOutputStream)
-                .flush();
-            assert.deepStrictEqual(beforeUpdateResultedOutputStream.options, testOptions);
-
-            const afterUpdateResultedOutputStream = new OutputResponse(testOptions, diagnosticOutputStream)
-                .update({statusCode: null, headers: undefined}).flush();
-            assert.deepStrictEqual(afterUpdateResultedOutputStream.options, testOptions);
-
-            assert.deepStrictEqual(beforeUpdateResultedOutputStream.options, afterUpdateResultedOutputStream.options);
-        });
-    });
 });

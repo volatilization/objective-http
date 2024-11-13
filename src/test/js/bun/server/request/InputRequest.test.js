@@ -13,8 +13,10 @@ const testInputStream = {
 };
 
 const testOptions = {
-    method: 'GET',
-    path: '/test',
+    route: {
+        method: 'GET',
+        path: '/test'
+    },
     query: 'query=test',
     headers: {header: 'header'},
     body: 'test body',
@@ -40,11 +42,8 @@ const diagnosticInputStream = {
 };
 
 const diagnosticOptions = {
-    get method() {
-        return this.diagnosticMethod();
-    },
-    get path() {
-        return this.diagnosticPath();
+    get route() {
+        return this.diagnosticRoute();
     },
     get headers() {
         return this.diagnosticHeaders();
@@ -55,9 +54,7 @@ const diagnosticOptions = {
     get query() {
         return this.diagnosticQuery();
     },
-    diagnosticMethod() {
-    },
-    diagnosticPath() {
+    diagnosticRoute() {
     },
     diagnosticHeaders() {
     },
@@ -91,11 +88,8 @@ function prepareDiagnostic() {
         blob: spyOn(diagnosticInputStream, 'blob'),
     };
 
-    diagnosticOptions.diagnosticMethod = () => {
-        return testOptions.method;
-    };
-    diagnosticOptions.diagnosticPath = () => {
-        return testOptions.path;
+    diagnosticOptions.diagnosticRoute = () => {
+        return testOptions.route;
     };
     diagnosticOptions.diagnosticHeaders = () => {
         return testOptions.headers;
@@ -107,8 +101,7 @@ function prepareDiagnostic() {
         return testOptions.query;
     };
     diagnosticOptions.spy = {
-        diagnosticMethod: spyOn(diagnosticOptions, 'diagnosticMethod'),
-        diagnosticPath: spyOn(diagnosticOptions, 'diagnosticPath'),
+        diagnosticRoute: spyOn(diagnosticOptions, 'diagnosticRoute'),
         diagnosticHeaders: spyOn(diagnosticOptions, 'diagnosticHeaders'),
         diagnosticBody: spyOn(diagnosticOptions, 'diagnosticBody'),
         diagnosticQuery: spyOn(diagnosticOptions, 'diagnosticQuery'),
@@ -309,69 +302,20 @@ describe('InputResponse', () => {
         test('should not fall', () => {
             assert.doesNotThrow(() => new InputRequest(undefined, diagnosticOptions).route());
 
-            expect(diagnosticOptions.spy.diagnosticMethod).toHaveBeenCalledTimes(1);
-            expect(diagnosticOptions.spy.diagnosticPath).toHaveBeenCalledTimes(1);
+            expect(diagnosticOptions.spy.diagnosticRoute).toHaveBeenCalledTimes(1);
         });
 
         test('should fall, cause null', () => {
             assert.throws(() => new InputRequest().route(),
                 {name: 'TypeError'});
 
-            expect(diagnosticOptions.spy.diagnosticMethod).toHaveBeenCalledTimes(0);
-            expect(diagnosticOptions.spy.diagnosticPath).toHaveBeenCalledTimes(0);
-        });
-
-        test('should fall, cause method is null', () => {
-            diagnosticOptions.diagnosticMethod = () => {return null};
-            diagnosticOptions.spy.diagnosticMethod = spyOn(diagnosticOptions, 'diagnosticMethod');
-
-            assert.throws(() => new InputRequest(undefined, diagnosticOptions).route(),
-                {name: 'TypeError'});
-
-            expect(diagnosticOptions.spy.diagnosticMethod).toHaveBeenCalledTimes(1);
-            expect(diagnosticOptions.spy.diagnosticPath).toHaveBeenCalledTimes(0);
-        });
-
-        test('should fall, cause path is null', () => {
-            diagnosticOptions.diagnosticPath = () => {return null};
-            diagnosticOptions.spy.diagnosticPath = spyOn(diagnosticOptions, 'diagnosticPath');
-
-            assert.throws(() => new InputRequest(undefined, diagnosticOptions).route(),
-                {name: 'TypeError'});
-
-            expect(diagnosticOptions.spy.diagnosticMethod).toHaveBeenCalledTimes(1);
-            expect(diagnosticOptions.spy.diagnosticPath).toHaveBeenCalledTimes(1);
-        });
-
-        test('should fall, cause method throws error', () => {
-            diagnosticOptions.diagnosticMethod = () => {throw new Error('method error')};
-            diagnosticOptions.spy.diagnosticMethod = spyOn(diagnosticOptions, 'diagnosticMethod');
-
-            assert.throws(() => new InputRequest(undefined, diagnosticOptions).route(),
-                {message: 'method error'});
-
-            expect(diagnosticOptions.spy.diagnosticMethod).toHaveBeenCalledTimes(1);
-            expect(diagnosticOptions.spy.diagnosticPath).toHaveBeenCalledTimes(0);
-        });
-
-        test('should fall, cause path throws error', () => {
-            diagnosticOptions.diagnosticPath = () => {throw new Error('path error')};
-            diagnosticOptions.spy.diagnosticPath = spyOn(diagnosticOptions, 'diagnosticPath');
-
-            assert.throws(() => new InputRequest(undefined, diagnosticOptions).route(),
-                {message: 'path error'});
-
-            expect(diagnosticOptions.spy.diagnosticMethod).toHaveBeenCalledTimes(1);
-            expect(diagnosticOptions.spy.diagnosticPath).toHaveBeenCalledTimes(1);
+            expect(diagnosticOptions.spy.diagnosticRoute).toHaveBeenCalledTimes(0);
         });
 
         test('should return route value in right cases', () => {
             const resultRoute = new InputRequest(undefined, diagnosticOptions).route();
 
-            assert.deepStrictEqual(resultRoute, {
-                path: testOptions.path.toString().toLowerCase(),
-                method: testOptions.method.toString().toUpperCase()
-            });
+            assert.deepStrictEqual(resultRoute, testOptions.route);
         });
     });
 

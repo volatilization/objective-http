@@ -1,24 +1,17 @@
 module.exports = class Endpoint {
-    #method;
-    #path;
+    #route;
 
-    constructor(method, path) {
-        this.#method = method;
-        this.#path = path;
-    }
-
-    copy(method = this.#method, path = this.#path) {
-        return new Endpoint(method, path);
+    constructor(route) {
+        this.#route = route;
     }
 
     route() {
-        return {
-            method: this.#method.toString().toUpperCase(),
-            path: this.#path.toString().toLowerCase()
-        };
+        return this.#route;
     }
 
-    async handle(request) {
-        return {};
+    async handle() {
+        return {
+            statusCode: 200
+        };
     }
 }

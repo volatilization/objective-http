@@ -9,8 +9,6 @@ const {LoggedOutputResponse} = require('../../../../js/index').server.response;
 const diagnosticOrigin = {
     copy() {
     },
-    update() {
-    },
     flush() {
     }
 };
@@ -29,16 +27,11 @@ function prepareDiagnostic() {
         diagnosticOrigin.options.options = options;
         return diagnosticOrigin;
     };
-    diagnosticOrigin.update = (options) => {
-        diagnosticOrigin.options.options = options;
-        return diagnosticOrigin;
-    };
     diagnosticOrigin.flush = () => {
         return {req: {method: 'method', url: 'url'}, statusCode: 'statusCode'};
     };
 
     mock.method(diagnosticOrigin, 'copy');
-    mock.method(diagnosticOrigin, 'update');
     mock.method(diagnosticOrigin, 'flush');
 
     diagnosticLogger.options = {};
@@ -71,7 +64,6 @@ describe('LoggedOutputResponse', () => {
             });
 
             assert.strictEqual(diagnosticOrigin.copy.mock.calls.length, 0);
-            assert.strictEqual(diagnosticOrigin.update.mock.calls.length, 0);
             assert.strictEqual(diagnosticOrigin.flush.mock.calls.length, 0);
 
             assert.strictEqual(diagnosticLogger.debug.mock.calls.length, 0);
@@ -206,42 +198,6 @@ describe('LoggedOutputResponse', () => {
 
             assert.equal(resultOutputStream, testOutputStream);
             assert.deepStrictEqual(resultOutputStream, testOutputStream);
-        });
-    });
-
-    describe('update', () => {
-        beforeEach(prepareDiagnostic);
-        afterEach(resetDiagnostic);
-
-        it('should call update of origin', () => {
-            new LoggedOutputResponse(diagnosticOrigin, diagnosticLogger).update();
-
-            assert.strictEqual(diagnosticOrigin.update.mock.calls.length, 1);
-        });
-
-        it('should fall when call update of origin, cause null', () => {
-            assert.throws(() => new LoggedOutputResponse(null, diagnosticLogger).update(),
-                {name: 'TypeError'});
-        });
-
-        it('should fall when call update of origin, cause error', () => {
-            diagnosticOrigin.update = () => {
-                throw new Error('update error');
-            };
-            mock.method(diagnosticOrigin, 'update');
-
-            assert.throws(() => new LoggedOutputResponse(diagnosticOrigin, diagnosticLogger).update(),
-                {message: 'update error'});
-
-            assert.strictEqual(diagnosticOrigin.update.mock.calls.length, 1);
-        });
-
-        it('should return new LoggedOutputResponse instance', () => {
-            const loggedOutputResponse = new LoggedOutputResponse(diagnosticOrigin, diagnosticLogger);
-            const updatedLoggedOutputResponse = loggedOutputResponse.update();
-
-            assert.strictEqual(diagnosticOrigin.update.mock.calls.length, 1);
-            assert.notEqual(loggedOutputResponse, updatedLoggedOutputResponse);
         });
     });
 });
