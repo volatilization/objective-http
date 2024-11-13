@@ -9,7 +9,7 @@ const {
     endpoint: {
         Endpoints
     }
-} = require('../../../../js').bun.server;
+} = require('../../../../js').server;
 const {
     request: {
         InputRequest
@@ -64,7 +64,9 @@ describe('server', async () => {
     beforeAll(async () => {
         serverInstance = await serverConfig.start();
     })
-    afterAll(async () => await serverInstance.stop());
+    afterAll(async () => {
+        await serverInstance.stop();
+    });
 
     await test('should be started', async () => {
         await assert.doesNotReject(() => fetch('http://localhost:8080'),

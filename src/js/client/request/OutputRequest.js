@@ -10,72 +10,44 @@ module.exports = class OutputRequest {
     }
 
     copy(options = this.#options, response = this.#response, http = this.#requestFunction) {
-        return new OutputRequest(response, http,  {method: 'GET', ...options});
+        return new OutputRequest(response, http, {method: 'GET', ...options});
     }
 
-    async send() {
-        try {
-            return await new Promise((resolve, reject) => {
-                this.#sendRequestOutputStream(
-                    this.#configureRequestOutputStream(this.#requestFunction, this.#response, this.#options, resolve, reject),
+    send() {
+        return new Promise((resolve, reject) => {
+            try {
+                const requestOutputStream = this.#requestFunction(
+                    this.#options.url,
                     this.#options,
-                    reject);
-            });
+                    async (responseInputStream) => {
+                        try {
+                            resolve(await this.#response
+                                .copy(responseInputStream)
+                                .flush());
 
-        } catch (e) {
-            if (e.cause == null) {
-                throw new Error(e.message, {cause: 'INVALID_REQUEST'});
+                        } catch (e) {
+                            reject(new Error(e.message, {cause: 'INVALID_REQUEST'}));
+                        }
+                    });
+
+                requestOutputStream.once('error', e => {
+                    reject(new Error(e.message, {cause: 'INVALID_REQUEST'}));
+                });
+
+                if (this.#needToByWritten(this.#options)) {
+                    requestOutputStream.write(this.#options.body);
+                }
+
+                requestOutputStream.end();
+
+            } catch (e) {
+                reject(new Error(e.message, {cause: 'INVALID_REQUEST'}));
             }
-
-            throw e;
-        }
-    }
-
-    #sendRequestOutputStream(requestOutputStream, options, reject) {
-        try {
-            requestOutputStream.once('error', e => reject(e));
-
-            if (this.#needToByWritten(options)) {
-                requestOutputStream.write(options.body);
-            }
-
-            requestOutputStream.end();
-
-        } catch (e) {
-            reject(e);
-        }
+        });
     }
 
     #needToByWritten(options) {
         return ['POST', 'PUT'].some(method => method === options.method.toString().toUpperCase())
             && (options.body != null && typeof options.body === 'string');
-    }
-
-    #configureRequestOutputStream(requestFunction, response, options, resolve, reject) {
-        if (options.url != null) {
-            return requestFunction(
-                options.url,
-                options,
-                async (responseInputStream) => {
-                    await this.#flushResponseInputStream(responseInputStream, response, resolve, reject);
-                });
-        }
-
-        return requestFunction(
-            options,
-            async (responseInputStream) => {
-                await this.#flushResponseInputStream(responseInputStream, response, resolve, reject);
-            });
-    }
-
-    async #flushResponseInputStream(responseInputStream, response, resolve, reject) {
-        try {
-            resolve(await response
-                .copy(responseInputStream)
-                .flush());
-
-        } catch (e) {
-            reject(e);
-        }
     }
 };

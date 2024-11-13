@@ -13,7 +13,7 @@ const {
     response: {
         InputResponse
     }
-} = require('../../../js/index').client;
+} = require('../../../js').client;
 const {
     Server,
     endpoint: {
@@ -75,30 +75,23 @@ describe('client', async () => {
         await assert.doesNotReject(() =>
                 request
                     .copy({
-                        url: 'http://localhost', method: 'GET', port: '8090'
-                    }).send(),
-            {message: 'fetch failed'});
-
-        await assert.doesNotReject(() =>
-                request
-                    .copy({
-                        port: '8090', method: 'GET', host: 'localhost'
-                    }).send(),
+                        url: 'http://localhost', method: 'GET', port: '8090'})
+                    .send(),
             {message: 'fetch failed'});
 
         await assert.rejects(() =>
                 request
                     .copy({
-                        port: '8091', method: 'GET', host: 'localhost'
-                    }).send(),
+                        port: '8091', method: 'GET', host: 'localhost'})
+                    .send(),
             {cause: 'INVALID_REQUEST'});
     });
 
     await it('should return 501', async () => {
         const response = await (request
             .copy({
-                url: 'http://localhost:8090/no_test', method: 'GET'
-            })).send();
+                url: 'http://localhost:8090/no_test', method: 'GET'}))
+            .send();
 
         assert.strictEqual(response.statusCode(), 501);
         assert.strictEqual(response.body().toString(), 'There are no handler for request.');
@@ -107,8 +100,8 @@ describe('client', async () => {
     await it('should return 200 and no body', async () => {
         const response = await (request
             .copy({
-                url: 'http://localhost:8090/test', method: 'GET'
-            })).send();
+                url: 'http://localhost:8090/test', method: 'GET'}))
+            .send();
 
         assert.strictEqual(response.statusCode(), 200);
         assert.strictEqual(response.body().length, 0);
@@ -117,8 +110,8 @@ describe('client', async () => {
     await it('should return 201 and test body', async () => {
         const response = await (request
             .copy({
-                url: 'http://localhost:8090/test', method: 'POST', body: 'test body'
-            })).send();
+                url: 'http://localhost:8090/test', method: 'POST', body: 'test body'}))
+            .send();
 
         assert.strictEqual(response.statusCode(), 201);
         assert.strictEqual(response.body().toString(), 'test body');
@@ -127,8 +120,8 @@ describe('client', async () => {
     await it('should not fall, but body is not a string', async () => {
         const response = await (request
             .copy({
-                url: 'http://localhost:8090/test', method: 'POST', body: {}
-            })).send();
+                url: 'http://localhost:8090/test', method: 'POST', body: {}}))
+            .send();
 
         assert.strictEqual(response.statusCode(), 201);
         assert.strictEqual(response.body().toString(), 'test body');

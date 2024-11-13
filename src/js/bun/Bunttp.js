@@ -12,16 +12,13 @@ module.exports = class Bunttp {
     }
 
     listen(options, cb) {
-        const config = {...this.#serverConfig, port: options.port};
-        const server = Bun.serve(config);
+        this.#server = Bun.serve({...this.#serverConfig, port: options.port});
         cb();
-        return new Bunttp(config, server);
     }
 
     close(cb) {
-        const server = this.#server.stop();
+        this.#server.stop();
         cb();
-        return new Bunttp(this.#serverConfig, server);
     }
 
     request = fetch;

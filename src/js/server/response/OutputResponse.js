@@ -7,12 +7,8 @@ module.exports = class OutputResponse {
         this.#outputStream = outputStream;
     }
 
-    copy(options = this.#options, outputStream = this.#outputStream) {
+    copy(outputStream = this.#outputStream, options = this.#options) {
         return new OutputResponse({...{statusCode: 200, headers: {}}, ...options}, outputStream);
-    }
-
-    update(options) {
-        return new OutputResponse(this.#mergeOptions(this.#options, options), this.#outputStream);
     }
 
     flush() {
@@ -28,25 +24,5 @@ module.exports = class OutputResponse {
         } finally {
             this.#outputStream.end();
         }
-    }
-
-    #mergeOptions(existedOptions, newOptions) {
-        if (newOptions == null) {
-            return existedOptions;
-        }
-
-        if (newOptions.statusCode != null) {
-            existedOptions.statusCode = newOptions.statusCode;
-        }
-
-        if (newOptions.body != null) {
-            existedOptions.body = newOptions.body;
-        }
-
-        if (newOptions.headers != null) {
-            existedOptions.headers = {...existedOptions.headers, ...newOptions.headers};
-        }
-
-        return existedOptions;
     }
 }

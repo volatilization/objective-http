@@ -16,8 +16,10 @@ module.exports = class InputRequest {
             return new InputRequest(
                 this.#inputStream,
                 {
-                    method: this.#inputStream.method,
-                    path: new URL(this.#inputStream.url).pathname,
+                    route: {
+                        method: this.#inputStream.method,
+                        path: new URL(this.#inputStream.url).pathname
+                    },
                     query: new URL(this.#inputStream.url).searchParams,
                     headers: this.#inputStream.headers,
                     body: Buffer.from(await (await this.#inputStream.blob()).arrayBuffer())
@@ -30,10 +32,7 @@ module.exports = class InputRequest {
     }
 
     route() {
-        return {
-            method: this.#options.method.toString().toUpperCase(),
-            path: this.#options.path.toString().toLowerCase()
-        }
+        return this.#options.route;
     }
 
     query() {

@@ -3,7 +3,7 @@
 const {describe, it, mock, beforeEach, afterEach} = require('node:test');
 const assert = require('node:assert');
 
-const {Endpoints} = require('../../../../js/index').server.endpoint;
+const {Endpoints} = require('../../../../js').server.endpoint;
 
 
 const testRoute = {
@@ -12,8 +12,6 @@ const testRoute = {
 };
 
 const diagnosticEndpoint = {
-    copy() {
-    },
     route() {
     },
     handle() {
@@ -29,11 +27,6 @@ const diagnosticRequest = {
 
 function prepareDiagnostic() {
     diagnosticEndpoint.options = {};
-    diagnosticEndpoint.copy = (method, path) => {
-        diagnosticEndpoint.options.method = method;
-        diagnosticEndpoint.options.path = path;
-        return diagnosticEndpoint;
-    };
     diagnosticEndpoint.route = () => {
         return testRoute;
     };
@@ -41,7 +34,6 @@ function prepareDiagnostic() {
         return {statusCode: 200};
     };
 
-    mock.method(diagnosticEndpoint, 'copy');
     mock.method(diagnosticEndpoint, 'route');
     mock.method(diagnosticEndpoint, 'handle');
 
@@ -61,6 +53,12 @@ describe('Endpoints', () => {
                 new Endpoints();
                 new Endpoints([]);
             });
+        });
+
+        it('should fall cause of null collection', () => {
+            assert.throws(() => {
+                new Endpoints(null)
+            }, {name: 'TypeError'});
         });
     });
 
@@ -86,8 +84,10 @@ describe('Endpoints', () => {
         afterEach(resetDiagnostic);
 
         it('should fall on collections, cause null', async () => {
-            await assert.rejects(() => new Endpoints(null).handle(),
+            await assert.throws(() => new Endpoints(null).handle(),
                 {name: 'TypeError'});
+
+            assert.strictEqual(diagnosticEndpoint.handle.mock.calls.length, 0);
         });
 
         it('should fall on request, cause null', async () => {
@@ -96,12 +96,8 @@ describe('Endpoints', () => {
         });
 
         it('should return 501 statusCode and body', async () => {
-            const handleResult = await new Endpoints([]).handle();
-
-            assert.deepStrictEqual(handleResult, {
-                statusCode: 501,
-                body: 'There are no handler for request.'
-            });
+            await assert.rejects(() => new Endpoints([]).handle(diagnosticRequest),
+                {name: 'Error', cause: 'HANDLER_NOT_FOUND'});
         });
 
         it('should return endpoint handle result', async () => {

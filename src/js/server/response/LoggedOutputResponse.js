@@ -11,10 +11,6 @@ module.exports = class LoggedOutputResponse {
         return new LoggedOutputResponse(origin, logger);
     }
 
-    update(options) {
-        return new LoggedOutputResponse(this.#origin.update(options), this.#logger);
-    }
-
     flush() {
         const outputStream = this.#loggedFlush();
 

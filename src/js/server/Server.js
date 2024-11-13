@@ -15,31 +15,39 @@ module.exports = class Server {
         this.#server = server;
     }
 
+    options() {
+        return this.#options;
+    }
+
     start() {
         const server = this.#createServerFunction(async (requestStream, responseStream) => {
             try {
-                return await (this.#response
-                    .copy(await this.#endpoints
-                        .handle(await (this.#request
-                            .copy(requestStream))
-                            .flush()), responseStream))
+                return await this.#response
+                    .copy(responseStream,
+                        await this.#endpoints
+                            .handle(await this.#request
+                                .copy(requestStream)
+                                .flush()))
                     .flush();
 
             } catch (e) {
                 if (e.cause === 'INVALID_REQUEST') {
                     return this.#response
-                        .copy({
-                            statusCode: 400,
-                            body: e.message
-                        }, responseStream)
+                        .copy(responseStream,
+                            {statusCode: 400, body: e.message})
+                        .flush();
+                }
+
+                if (e.cause === 'HANDLER_NOT_FOUND') {
+                    return this.#response
+                        .copy(responseStream,
+                            {statusCode: 501, body: e.message})
                         .flush();
                 }
 
                 return this.#response
-                    .copy({
-                        statusCode: 500,
-                        body: 'Unexpected server error.'
-                    }, responseStream)
+                    .copy(responseStream,
+                        {statusCode: 500, body: 'Unexpected server error.'})
                     .flush();
             }
         });
@@ -47,21 +55,21 @@ module.exports = class Server {
         return new Promise(resolve => {
             server.listen(
                 this.#options,
-                () => {
-                    resolve(new Server(
-                        this.#endpoints,
-                        this.#options,
-                        this.#request,
-                        this.#response,
-                        this.#createServerFunction,
-                        server));
-                }
+                () => resolve(new Server(
+                    this.#endpoints,
+                    this.#options,
+                    this.#request,
+                    this.#response,
+                    this.#createServerFunction,
+                    server))
             );
         });
     }
 
     stop() {
         return new Promise(resolve => {
+            console.log('stop ', this.#server);
+
             this.#server.close(
                 () => resolve(new Server(
                     this.#endpoints,
@@ -71,9 +79,5 @@ module.exports = class Server {
                     this.#createServerFunction))
             );
         });
-    }
-
-    options() {
-        return this.#options;
     }
 };
