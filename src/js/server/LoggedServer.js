@@ -2,28 +2,59 @@ module.exports = class LoggedServer {
     #origin;
     #logger;
 
-    constructor(origin, logger) {
+    constructor({ origin, logger }) {
         this.#origin = origin;
         this.#logger = logger;
     }
 
-    options() {
-        return this.#origin.options();
+    with({
+        endpoints,
+        options,
+        request,
+        response,
+        createServerFunction,
+        server,
+        origin = this.#origin.with({
+            endpoints,
+            options,
+            request,
+            response,
+            createServerFunction,
+            server,
+        }),
+        logger = this.#logger,
+    }) {
+        return new LoggedServer({
+            origin,
+            logger,
+        });
+    }
+
+    get options() {
+        return this.#origin.options;
     }
 
     async start() {
         const server = await this.#origin.start();
 
-        this.#logger.debug(`HttpServer is running at port: ${this.#origin.options().port}`);
+        this.#logger.debug(
+            `HttpServer is running at port: ${this.options.port}`,
+        );
 
-        return new LoggedServer(server, this.#logger);
+        return this.with({
+            origin: server,
+        });
     }
 
     async stop() {
         const server = await this.#origin.stop();
 
-        this.#logger.debug(`HttpServer at port: ${this.#origin.options().port} is stopped`);
+        this.#logger.debug(
+            `HttpServer at port: ${this.options.port} is stopped`,
+        );
 
-        return new LoggedServer(server, this.#logger);
+        return this.with({
+            origin: server,
+        });
     }
-}
+};

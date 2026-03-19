@@ -1,3 +1,3 @@
 module.exports = {
-    InputResponse: require('./InputResponse')
+    JsonResponse: require('./JsonResponse'),
 };

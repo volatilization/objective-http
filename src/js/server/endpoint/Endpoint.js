@@ -1,17 +1,21 @@
 module.exports = class Endpoint {
     #route;
 
-    constructor(route) {
+    constructor({ route }) {
         this.#route = route;
     }
 
-    route() {
+    with({ route = this.#route }) {
+        return new Endpoint({ route });
+    }
+
+    get route() {
         return this.#route;
     }
 
-    async handle() {
+    handle() {
         return {
-            statusCode: 200
+            status: 200,
         };
     }
-}
+};

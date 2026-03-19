@@ -1,3 +1,3 @@
 module.exports = {
-    OutputRequest: require('./OutputRequest')
+    JsonRequest: require('./JsonRequest'),
 };
