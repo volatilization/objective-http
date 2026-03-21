@@ -1,4 +1,4 @@
-module.exports = class JsonRequest {
+module.exports = class ClientRequest {
     #http;
     #options;
     #body;
@@ -17,7 +17,7 @@ module.exports = class JsonRequest {
         body = this.#body,
         response = this.#response,
     }) {
-        return new JsonRequest({ http, options, body, response });
+        return new ClientRequest({ http, options, body, response });
     }
 
     get http() {
@@ -39,17 +39,16 @@ module.exports = class JsonRequest {
     send() {
         return new Promise((resolve, reject) => {
             const req = this.http.request(this.options, (res) => {
-                res.setEncoding('utf8');
-                var chunks = '';
+                var chunks = [];
                 res.on('data', (chunk) => {
-                    chunks += chunk;
+                    chunks = chunks.push(chunk);
                 });
                 res.on('end', () => {
                     resolve(
                         this.response.with({
                             status: res.statusCode,
                             headers: new Headers(res.headers),
-                            body: JSON.parse(chunks),
+                            body: Buffer.concat(chunks),
                         }),
                     );
                 });
@@ -64,7 +63,7 @@ module.exports = class JsonRequest {
             });
 
             if (this.body != null) {
-                req.write(JSON.stringify(this.body));
+                req.write(this.body);
             }
 
             req.end();

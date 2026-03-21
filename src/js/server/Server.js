@@ -18,16 +18,12 @@ module.exports = class Server {
     with({
         endpoints = this.#endpoints,
         options = this.#options,
-        request = this.#request,
-        response = this.#response,
         http = this.#http,
         server = this.#server,
     }) {
         return new Server({
             endpoints,
             options,
-            request,
-            response,
             http,
             server,
         });
@@ -78,25 +74,13 @@ module.exports = class Server {
         );
 
         return new Promise((resolve) => {
-            server.listen(this.options, () =>
-                resolve(
-                    this.with({
-                        server,
-                    }),
-                ),
-            );
+            server.listen(this.options, () => resolve(this.with({ server })));
         });
     }
 
     stop() {
         return new Promise((resolve) => {
-            this.#server.close(() =>
-                resolve(
-                    this.with({
-                        server: null,
-                    }),
-                ),
-            );
+            this.#server.close(() => resolve(this.with({ server: null })));
         });
     }
 };

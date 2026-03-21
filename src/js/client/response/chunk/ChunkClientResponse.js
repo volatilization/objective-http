@@ -1,4 +1,4 @@
-module.exports = class JsonResponse {
+module.exports = class ClientResponse {
     #status;
     #headers;
     #body;
@@ -10,7 +10,7 @@ module.exports = class JsonResponse {
     }
 
     with({ status, headers, body }) {
-        return new JsonResponse({ status, headers, body });
+        return new ClientResponse({ status, headers, body });
     }
 
     get ok() {
