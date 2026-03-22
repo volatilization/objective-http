@@ -8,18 +8,14 @@ module.exports = class LoggedServer {
     }
 
     with({
-        endpoints,
+        handler,
         options,
-        request,
-        response,
-        createServerFunction,
+        http,
         server,
         origin = this.#origin.with({
-            endpoints,
+            handler,
             options,
-            request,
-            response,
-            createServerFunction,
+            http,
             server,
         }),
         logger = this.#logger,

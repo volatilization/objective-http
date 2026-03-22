@@ -1,32 +1,30 @@
-module.exports = class JsonClientResponse {
+module.exports = class JsonServerResponse {
     #origin;
 
     constructor({ origin }) {
         this.#origin = origin.with({
+            headers: {
+                ...{ 'Content-type': 'application/json' },
+                ...origin.headers,
+            },
             body:
-                origin.body != null || origin.body.length > 0
-                    ? JSON.parse(origin.body.toString())
-                    : origin.body,
+                origin.body != null ? JSON.stringify(origin.body) : origin.body,
         });
     }
 
     with({
-        responseStream,
+        outputStream,
         status,
         headers,
         body,
-        origin = this.#origin.with({
-            responseStream,
+        origin = this.#origin({
+            outputStream,
             status,
             headers,
             body,
         }),
     }) {
-        return new JsonClientResponse({ origin });
-    }
-
-    get ok() {
-        return this.#origin.ok;
+        return new JsonServerResponse({ origin });
     }
 
     get status() {
@@ -41,9 +39,9 @@ module.exports = class JsonClientResponse {
         return this.#origin.body;
     }
 
-    async accept() {
+    send() {
         return this.with({
-            origin: await this.#origin.accept(),
+            origin: this.#origin.send(),
         });
     }
 };

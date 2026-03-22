@@ -43,8 +43,10 @@ module.exports = class JsonServerRequest {
     async accept() {
         const accepted = await this.#origin.accept();
 
-        return accepted.with({
-            body: JSON.parse(accepted.body.toString()),
+        return this.with({
+            origin: accepted.with({
+                body: JSON.parse(accepted.body.toString()),
+            }),
         });
     }
 };

@@ -1,3 +1,3 @@
 module.exports = {
-    chunk: require('./chunk')
-}
+    chunk: require('./chunk'),
+};

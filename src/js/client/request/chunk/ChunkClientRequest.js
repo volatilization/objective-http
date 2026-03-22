@@ -1,4 +1,4 @@
-module.exports = class ClientRequest {
+module.exports = class ChunkClientRequest {
     #http;
     #options;
     #body;
@@ -17,7 +17,7 @@ module.exports = class ClientRequest {
         body = this.#body,
         response = this.#response,
     }) {
-        return new ClientRequest({ http, options, body, response });
+        return new ChunkClientRequest({ http, options, body, response });
     }
 
     get http() {
@@ -38,23 +38,20 @@ module.exports = class ClientRequest {
 
     send() {
         return new Promise((resolve, reject) => {
-            const req = this.http.request(this.options, (res) => {
-                var chunks = [];
-                res.on('data', (chunk) => {
-                    chunks = chunks.push(chunk);
-                });
-                res.on('end', () => {
-                    resolve(
-                        this.response.with({
-                            status: res.statusCode,
-                            headers: new Headers(res.headers),
-                            body: Buffer.concat(chunks),
-                        }),
-                    );
-                });
-            });
+            const requestStream = this.http.request(
+                this.options,
+                (responseStream) => {
+                    this.response
+                        .with({
+                            responseStream,
+                        })
+                        .accept()
+                        .then(resolve)
+                        .catch(reject);
+                },
+            );
 
-            req.on('error', (e) => {
+            requestStream.on('error', (e) => {
                 reject(
                     new Error('Request error.', {
                         cause: { error: e, code: 'REQUEST_ERROR' },
@@ -63,10 +60,10 @@ module.exports = class ClientRequest {
             });
 
             if (this.body != null) {
-                req.write(this.body);
+                requestStream.write(this.body);
             }
 
-            req.end();
+            requestStream.end();
         });
     }
 };
