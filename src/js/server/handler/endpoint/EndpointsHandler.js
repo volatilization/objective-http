@@ -21,8 +21,6 @@ module.exports = class EndpointsHandler {
             })
             .accept();
 
-        console.log(request.route);
-
         if (!this.#routeToEndpointMap.has(JSON.stringify(request.route))) {
             throw new Error(
                 `Handler for ${JSON.stringify(request.route)} not found`,

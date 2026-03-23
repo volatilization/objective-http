@@ -11,6 +11,7 @@ module.exports = class UnexpectedErrorHandler {
         try {
             return await this.#origin.handle(requestStream, responseStream);
         } catch (e) {
+            console.error('Unexpected', e);
             return this.#response
                 .with({
                     responseStream,

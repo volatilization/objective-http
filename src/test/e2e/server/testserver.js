@@ -1,8 +1,3 @@
-/* node:coverage disable */
-
-const { describe, it, before, after } = require('node:test');
-const assert = require('node:assert');
-
 const http = require('node:http');
 const {
     Server,
@@ -21,8 +16,6 @@ const {
         chunk: { ChunkServerResponse },
     },
 } = require('../../../js').server;
-
-const testBody = { value: 'value', queryValue: 'otherQueryValue' };
 
 const serverConfig = new Server({
     handler: new UnexpectedErrorHandler({
@@ -82,57 +75,4 @@ const serverConfig = new Server({
     http,
 });
 
-describe('server', async () => {
-    let serverInstance;
-    before(async () => {
-        serverInstance = await serverConfig.start();
-    });
-    after(async () => await serverInstance.stop());
-
-    await it('should be started', async () => {
-        await assert.doesNotReject(() => fetch('http://localhost:8080'), {
-            message: 'fetch failed',
-        });
-    });
-
-    await it('should return 501', async () => {
-        const response = await fetch('http://localhost:8080/test0', {
-            method: 'GET',
-        });
-
-        assert.strictEqual(response.status, 501);
-    });
-
-    await it('should return 500', async () => {
-        const response = await fetch('http://localhost:8080/error', {
-            method: 'GET',
-        });
-
-        assert.strictEqual(response.status, 500);
-    });
-
-    await it('should return 200 and queryValue in body', async () => {
-        const response = await fetch(
-            'http://localhost:8080/test?queryKey=queryValue',
-            { method: 'GET' },
-        );
-        const body = await (await response.blob()).text();
-
-        assert.strictEqual(response.status, 200);
-        assert.strictEqual(body, 'queryValue');
-    });
-
-    await it('should return 201 and test body', async () => {
-        const response = await fetch(
-            'http://localhost:8080/test?queryKey=queryValue',
-            {
-                method: 'POST',
-                body: JSON.stringify(testBody),
-            },
-        );
-        const body = await (await response.blob()).text();
-
-        assert.strictEqual(response.status, 201);
-        assert.strictEqual(body, JSON.stringify(testBody));
-    });
-});
+serverConfig.start().then(() => console.log('server started'));

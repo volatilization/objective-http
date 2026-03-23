@@ -40,32 +40,16 @@ module.exports = class ChunkClientRequest {
         return new Promise((resolve, reject) => {
             const requestStream = this.http.request(
                 this.options,
-                async (responseStream) => {
-                    console.log('server responding ...');
-
-                    try {
-                        resolve(
-                            await this.response
-                                .with({
-                                    responseStream,
-                                })
-                                .accept(),
-                        );
-                    } catch (e) {
-                        reject(e);
-                    }
-
-                    /* this.response
+                (responseStream) => {
+                    this.response
                         .with({
                             responseStream,
                         })
                         .accept()
                         .then(resolve)
-                        .catch(reject);*/
+                        .catch(reject);
                 },
             );
-
-            console.log(requestStream);
 
             requestStream.on('error', (e) => {
                 console.error(e);

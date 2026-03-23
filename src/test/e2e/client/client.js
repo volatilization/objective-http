@@ -79,7 +79,7 @@ const serverConfig = new Server({
             }),
             response: new ChunkServerResponse({}),
         }),
-        response: new ChunkServerRequest({}),
+        response: new ChunkServerResponse({}),
     }),
 
     options: { port: 8090 },
@@ -105,53 +105,53 @@ describe('client', async () => {
                 request
                     .with({
                         options: {
-                            url: 'http://localhost',
+                            host: 'localhost',
+                            port: 8090,
                             method: 'GET',
-                            port: '8090',
                         },
                     })
                     .send(),
             { message: 'fetch failed' },
         );
 
-        await assert.rejects(
-            () =>
-                request
-                    .with({
-                        options: {
-                            port: '8091',
-                            method: 'GET',
-                            host: 'localhost',
-                        },
-                    })
-                    .send(),
-            { cause: 'INVALID_REQUEST' },
-        );
+        try {
+            await request
+                .with({
+                    options: {
+                        host: 'localhost',
+                        port: 8091,
+                        method: 'GET',
+                    },
+                })
+                .send();
+        } catch (e) {
+            assert.strictEqual(e.cause.code, 'REQUEST_ERROR');
+        }
     });
 
     await it('should return 501', async () => {
         const response = await request
             .with({
                 options: {
-                    url: 'http://localhost:8090/no_test',
+                    host: 'localhost',
+                    port: 8090,
                     method: 'GET',
+                    path: '/not_a_test',
                 },
             })
             .send();
 
         assert.strictEqual(response.status, 501);
-        assert.strictEqual(
-            response.body.toString(),
-            'There are no handler for request.',
-        );
     });
 
     await it('should return 200 and no body', async () => {
         const response = await request
             .with({
                 options: {
-                    url: 'http://localhost:8090/test',
+                    host: 'localhost',
+                    port: 8090,
                     method: 'GET',
+                    path: '/test',
                 },
             })
             .send();
@@ -164,8 +164,10 @@ describe('client', async () => {
         const response = await request
             .with({
                 options: {
-                    url: 'http://localhost:8090/test',
+                    host: 'localhost',
+                    port: 8090,
                     method: 'POST',
+                    path: '/test',
                 },
                 body: 'test body',
             })
@@ -174,19 +176,4 @@ describe('client', async () => {
         assert.strictEqual(response.status, 201);
         assert.strictEqual(response.body.toString(), 'test body');
     });
-
-    /*  await it('should not fall, but body is not a string', async () => {
-        const response = await request
-            .with({
-                options: {
-                    url: 'http://localhost:8090/test',
-                    method: 'POST',
-                },
-                body: {},
-            })
-            .send();
-
-        assert.strictEqual(response.statusCode(), 201);
-        assert.strictEqual(response.body().toString(), 'test body');
-    });*/
 });

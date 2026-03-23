@@ -38,7 +38,7 @@ module.exports = class ChunkClientResponse {
     }
 
     get ok() {
-        return Number(this.#status) === 200;
+        return Number(this.status) === 200;
     }
 
     accept() {
