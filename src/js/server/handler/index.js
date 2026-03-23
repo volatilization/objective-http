@@ -1,4 +1,4 @@
 module.exports = {
-    endpoint: require('/endpoint'),
+    endpoint: require('./endpoint'),
     error: require('./error'),
 };

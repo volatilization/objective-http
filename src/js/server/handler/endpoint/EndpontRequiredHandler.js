@@ -5,8 +5,8 @@ module.exports = class EndpontRequiredHandler {
         this.#origin = origin;
     }
 
-    async handle(requsetStream, responseStream) {
-        const response = this.#origin.handle(requsetStream, responseStream);
+    async handle(requestStream, responseStream) {
+        const response = this.#origin.handle(requestStream, responseStream);
 
         if (response == null) {
             throw new Error(

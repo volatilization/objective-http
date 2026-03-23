@@ -7,11 +7,11 @@ module.exports = class HandlerNotFoundErrorHandler {
         this.#response = response;
     }
 
-    handle(requsetStream, responseStream) {
+    async handle(requestStream, responseStream) {
         try {
-            return this.#origin.handle(requsetStream, responseStream);
+            return await this.#origin.handle(requestStream, responseStream);
         } catch (e) {
-            if (e.cause.code !== 'HANDLER_NOT_FOUND') {
+            if (e.cause == null || e.cause.code !== 'HANDLER_NOT_FOUND') {
                 throw e;
             }
 
@@ -19,7 +19,7 @@ module.exports = class HandlerNotFoundErrorHandler {
                 .with({
                     responseStream,
                     status: 501,
-                    message: e.message,
+                    body: e.message,
                 })
                 .send();
         }

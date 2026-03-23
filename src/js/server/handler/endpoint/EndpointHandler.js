@@ -1,18 +1,18 @@
 module.exports = class EndpointHandler {
     #endpoint;
-    #requset;
+    #request;
     #response;
 
-    constructor({ endpoint, requset, response }) {
+    constructor({ endpoint, request, response }) {
         this.#endpoint = endpoint;
-        this.#requset = requset;
+        this.#request = requset;
         this.#response = response;
     }
 
-    async handle(requsetStream, responseStream) {
-        const requset = await this.#requset
+    async handle(requestStream, responseStream) {
+        const request = await this.#request
             .with({
-                requsetStream,
+                requestStream,
             })
             .accept();
 
@@ -26,7 +26,7 @@ module.exports = class EndpointHandler {
         return this.#response
             .with({
                 responseStream,
-                ...(await this.#endpoint.handle(requset)),
+                ...(await this.#endpoint.handle(request)),
             })
             .send();
     }

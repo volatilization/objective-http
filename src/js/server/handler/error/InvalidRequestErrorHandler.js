@@ -7,11 +7,11 @@ module.exports = class InvalidRequestErrorHandler {
         this.#response = response;
     }
 
-    handle(requsetStream, responseStream) {
+    async handle(requestStream, responseStream) {
         try {
-            return this.#origin.handle(requsetStream, responseStream);
+            return await this.#origin.handle(requestStream, responseStream);
         } catch (e) {
-            if (e.cause.code !== 'INVALID_REQUEST') {
+            if (e.cause == null || e.cause.code !== 'INVALID_REQUEST') {
                 throw e;
             }
 
@@ -19,7 +19,7 @@ module.exports = class InvalidRequestErrorHandler {
                 .with({
                     responseStream,
                     status: 400,
-                    message: e.message,
+                    body: e.message,
                 })
                 .send();
         }

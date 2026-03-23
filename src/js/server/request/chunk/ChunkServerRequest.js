@@ -1,12 +1,12 @@
 module.exports = class ChunkServerRequest {
-    #inputStream;
+    #requestStream;
     #route;
     #query;
     #headers;
     #body;
 
-    constructor({ inputStream, route, query, headers, body }) {
-        this.#inputStream = inputStream;
+    constructor({ requestStream, route, query, headers, body }) {
+        this.#requestStream = requestStream;
         this.#route = route;
         this.#query = query;
         this.#headers = headers;
@@ -14,14 +14,14 @@ module.exports = class ChunkServerRequest {
     }
 
     with({
-        inputStream = this.#inputStream,
+        requestStream = this.#requestStream,
         route = this.#route,
         query = this.#query,
         headers = this.#headers,
         body = this.#body,
     }) {
         return new ChunkServerRequest({
-            inputStream,
+            requestStream,
             route,
             query,
             headers,
@@ -29,50 +29,57 @@ module.exports = class ChunkServerRequest {
         });
     }
 
-    route() {
+    get route() {
         return this.#route;
     }
 
-    query() {
+    get query() {
         return this.#query;
     }
 
-    body() {
+    get body() {
         return this.#body;
     }
 
-    headers() {
+    get headers() {
         return this.#headers;
     }
 
     accept() {
         return new Promise((resolve, reject) => {
             try {
-                this.#inputStream.once('error', (e) =>
+                console.log('nigga', this.#requestStream.url);
+                this.#requestStream.once('error', (e) => {
+                    console.error(e);
                     reject(
                         new Error(e.message, {
                             cause: { error: e, code: 'INVALID_REQUEST' },
                         }),
-                    ),
-                );
+                    );
+                });
 
                 let chunks = [];
-                this.#inputStream.on('data', (chunk) => chunks.push(chunk));
-                this.#inputStream.on('end', () =>
+                this.#requestStream.on('data', (chunk) => chunks.push(chunk));
+                this.#requestStream.on('end', () => {
+                    console.log('requsetp accepted');
                     resolve(
                         this.with({
                             route: {
-                                method: this.#inputStream.method,
-                                path: URL.parse(this.#inputStream.url).pathname,
+                                method: this.#requestStream.method,
+                                path: new URL(
+                                    `http://${process.env.HOST ?? 'localhost'}${this.#requestStream.url}`,
+                                ).pathname,
                             },
-                            query: URL.parse(this.#inputStream.url)
-                                .searchParams,
-                            headers: new Headers(this.#inputStream.headers),
+                            query: new URL(
+                                `http://${process.env.HOST ?? 'localhost'}${this.#requestStream.url}`,
+                            ).searchParams,
+                            headers: new Headers(this.#requestStream.headers),
                             body: Buffer.concat(chunks),
                         }),
-                    ),
-                );
+                    );
+                });
             } catch (e) {
+                console.error(e);
                 reject(
                     new Error(e.message, {
                         cause: { error: e, code: 'INVALID_REQUEST' },

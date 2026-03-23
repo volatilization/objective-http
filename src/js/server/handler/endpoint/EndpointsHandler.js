@@ -1,10 +1,10 @@
 module.exports = class EndpointsHandler {
     #routeToEndpointMap;
-    #requset;
+    #request;
     #response;
 
-    constructor({ endpoints, requset, response }) {
-        this.#requset = requset;
+    constructor({ endpoints, request, response }) {
+        this.#request = request;
         this.#response = response;
         this.#routeToEndpointMap = new Map(
             endpoints.map((endpoint) => [
@@ -14,25 +14,30 @@ module.exports = class EndpointsHandler {
         );
     }
 
-    async handle(requsetStream, responseStream) {
-        const requset = await this.#requset
+    async handle(requestStream, responseStream) {
+        const request = await this.#request
             .with({
-                requsetStream,
+                requestStream,
             })
             .accept();
 
-        if (!this.#routeToEndpointMap.has(JSON.stringify(requset.route))) {
-            throw new Error(`Handler for ${requset.route} not found`, {
-                cause: { code: 'HANDLER_NOT_FOUND' },
-            });
+        console.log(request.route);
+
+        if (!this.#routeToEndpointMap.has(JSON.stringify(request.route))) {
+            throw new Error(
+                `Handler for ${JSON.stringify(request.route)} not found`,
+                {
+                    cause: { code: 'HANDLER_NOT_FOUND' },
+                },
+            );
         }
 
         return this.#response
             .with({
                 responseStream,
                 ...(await this.#routeToEndpointMap
-                    .get(JSON.stringify(requset.route))
-                    .handle(requset)),
+                    .get(JSON.stringify(request.route))
+                    .handle(request)),
             })
             .send();
     }

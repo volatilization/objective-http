@@ -1,53 +1,36 @@
 /* node:coverage disable */
 
-const {describe, it, mock, beforeEach, afterEach} = require('node:test');
+const { describe, it, mock, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert');
 
-const {Server} = require('../../../js').server;
+const { Server } = require('../../../js').server;
 
 const testPort = 80;
 const testOptions = {
-    port: testPort
+    port: testPort,
 };
 const testResponseOptions = {
-    'statusCode': 200
+    statusCode: 200,
 };
 
-const diagnosticEndpoints = {
-    handle() {
-    }
+var diagnosticHandler = {
+    handle() {},
 };
 
-const diagnosticOptions = {
+var diagnosticOptions = {
     get port() {
         return this.diagnosticPort();
     },
-    diagnosticPort() {
-    }
+    diagnosticPort() {},
 };
 
-const diagnosticRequest = {
-    copy() {
-    },
-    flush() {
-    }
+var diagnosticHttp = {
+    createServer() {},
 };
 
-const diagnosticResponse = {
-    copy() {
-    },
-    flush() {
-    }
-};
-
-let diagnosticCreateServerFunction = () => {
-};
-
-const diagnosticServer = {
-    listen() {
-    },
-    close() {
-    }
+var diagnosticServer = {
+    listen() {},
+    close() {},
 };
 
 function prepareDiagnostic() {
@@ -57,9 +40,12 @@ function prepareDiagnostic() {
 
     mock.method(diagnosticOptions, 'diagnosticPort');
 
-    diagnosticCreateServerFunction = mock.fn(() => {
+    diagnosticHttp.options = {};
+    diagnosticHttp.createServer = () => {
         return diagnosticServer;
-    });
+    };
+
+    mock.method(diagnosticHttp, 'createServer');
 
     diagnosticServer.options = {};
     diagnosticServer.listen = (options, cb) => {
@@ -75,38 +61,14 @@ function prepareDiagnostic() {
     mock.method(diagnosticServer, 'listen');
     mock.method(diagnosticServer, 'close');
 
-    diagnosticEndpoints.options = {};
-    diagnosticEndpoints.handle = (request) => {
-        diagnosticEndpoints.options.request = request;
+    diagnosticHandler.options = {};
+    diagnosticHandler.handle = (requestStream, responseStream) => {
+        diagnosticHandler.options.requestStream = requestStream;
+        diagnosticHandler.options.responseStream = responseStream;
         return testResponseOptions;
     };
 
-    mock.method(diagnosticEndpoints, 'handle');
-
-    diagnosticResponse.options = {};
-    diagnosticResponse.copy = (responseStream, options) => {
-        diagnosticResponse.options.options = options;
-        diagnosticResponse.options.responseStream = responseStream;
-        return diagnosticResponse;
-    };
-    diagnosticResponse.flush = () => {
-        return testResponseOptions;
-    };
-
-    mock.method(diagnosticResponse, 'copy');
-    mock.method(diagnosticResponse, 'flush');
-
-    diagnosticRequest.options = {};
-    diagnosticRequest.copy = (requestStream) => {
-        diagnosticRequest.options.requestStream = requestStream;
-        return diagnosticRequest;
-    };
-    diagnosticRequest.flush = () => {
-        return diagnosticRequest;
-    };
-
-    mock.method(diagnosticRequest, 'copy');
-    mock.method(diagnosticRequest, 'flush');
+    mock.method(diagnosticHandler, 'handle');
 }
 
 function resetDiagnostic() {
@@ -120,60 +82,88 @@ describe('Server', () => {
     describe('constructor', () => {
         it('should not call anything', () => {
             assert.doesNotThrow(() => {
-                new Server();
-                new Server(
-                    diagnosticEndpoints,
-                    diagnosticOptions,
-                    diagnosticRequest,
-                    diagnosticResponse,
-                    diagnosticCreateServerFunction,
-                    diagnosticServer
-                );
+                new Server({});
+                new Server({
+                    handler: diagnosticHandler,
+                    options: diagnosticOptions,
+                    http: diagnosticHttp,
+                    server: diagnosticServer,
+                });
             });
         });
     });
 
     describe('start', () => {
         it('should fall, cause http is null', () => {
-            assert.throws(() => new Server(
-                diagnosticEndpoints,
-                diagnosticOptions,
-                diagnosticRequest,
-                diagnosticResponse,
-                null,
-                diagnosticServer).start(), {name: 'TypeError'});
+            assert.throws(
+                () =>
+                    new Server({
+                        handler: diagnosticHandler,
+                        options: diagnosticOptions,
+                        http: null,
+                        server: diagnosticServer,
+                    }).start(),
+                { name: 'TypeError' },
+            );
 
-            assert.strictEqual(diagnosticCreateServerFunction.mock.calls.length, 0);
+            assert.strictEqual(
+                diagnosticHttp.createServer.mock.calls.length,
+                0,
+            );
             assert.strictEqual(diagnosticServer.listen.mock.calls.length, 0);
         });
 
         it('should fall, cause http.createServer is null', async () => {
-            diagnosticCreateServerFunction = mock.fn(() => {return null});
+            diagnosticHttp = {
+                createServer() {
+                    return null;
+                },
+            };
 
-            await assert.rejects(() => new Server(
-                diagnosticEndpoints,
-                diagnosticOptions,
-                diagnosticRequest,
-                diagnosticResponse,
-                diagnosticCreateServerFunction,
-                diagnosticServer).start(), {name: 'TypeError'});
+            mock.method(diagnosticHttp, 'createServer');
 
-            assert.strictEqual(diagnosticCreateServerFunction.mock.calls.length, 1);
+            await assert.rejects(
+                () =>
+                    new Server({
+                        handler: diagnosticHandler,
+                        options: diagnosticOptions,
+                        http: diagnosticHttp,
+                        server: diagnosticServer,
+                    }).start(),
+                { name: 'TypeError' },
+            );
+
+            assert.strictEqual(
+                diagnosticHttp.createServer.mock.calls.length,
+                1,
+            );
             assert.strictEqual(diagnosticServer.listen.mock.calls.length, 0);
         });
 
         it('should fall, cause http.createServer throws error', () => {
-            diagnosticCreateServerFunction = mock.fn(() => {throw new Error('createServer error')});
+            diagnosticHttp = {
+                createServer() {
+                    throw new Error('createServer error');
+                },
+            };
 
-            assert.throws(() => new Server(
-                diagnosticEndpoints,
-                diagnosticOptions,
-                diagnosticRequest,
-                diagnosticResponse,
-                diagnosticCreateServerFunction,
-                diagnosticServer).start(), {message: 'createServer error'});
+            mock.method(diagnosticHttp, 'createServer');
 
-            assert.strictEqual(diagnosticCreateServerFunction.mock.calls.length, 1);
+            assert.throws(
+                () =>
+                    new Server({
+                        handler: diagnosticHandler,
+                        options: diagnosticOptions,
+                        http: diagnosticHttp,
+                        server: diagnosticServer,
+                    }).start(),
+                { message: 'createServer error' },
+            );
+
+            assert.strictEqual(
+                diagnosticHttp.createServer.mock.calls.length,
+                1,
+            );
             assert.strictEqual(diagnosticServer.listen.mock.calls.length, 0);
         });
 
@@ -183,156 +173,67 @@ describe('Server', () => {
             };
             mock.method(diagnosticServer, 'listen');
 
-            await assert.rejects(() => new Server(
-                diagnosticEndpoints,
-                diagnosticOptions,
-                diagnosticRequest,
-                diagnosticResponse,
-                diagnosticCreateServerFunction,
-                diagnosticServer)
-                .start(), {message: 'listen error'});
+            await assert.rejects(
+                () =>
+                    new Server({
+                        handler: diagnosticHandler,
+                        options: diagnosticOptions,
+                        http: diagnosticHttp,
+                        server: diagnosticServer,
+                    }).start(),
+                { message: 'listen error' },
+            );
 
-            assert.strictEqual(diagnosticCreateServerFunction.mock.calls.length, 1);
+            assert.strictEqual(
+                diagnosticHttp.createServer.mock.calls.length,
+                1,
+            );
             assert.strictEqual(diagnosticServer.listen.mock.calls.length, 1);
         });
 
-        it('should send response with 200 status', async () => {
-            diagnosticCreateServerFunction = mock.fn((cb) => {
-                setTimeout(() => cb('requestStream', 'responseStream'), 0);
-                return diagnosticServer;
-            });
+        it('should successfuly handle', async () => {
+            diagnosticHttp = {
+                createServer(cb) {
+                    setTimeout(() => cb('requestStream', 'responseStream'), 0);
+                    return diagnosticServer;
+                },
+            };
 
-            await assert.doesNotReject(() => new Server(
-                diagnosticEndpoints,
-                diagnosticOptions,
-                diagnosticRequest,
-                diagnosticResponse,
-                diagnosticCreateServerFunction,
-                diagnosticServer)
-                .start())
+            mock.method(diagnosticHttp, 'createServer');
 
-            assert.strictEqual(diagnosticCreateServerFunction.mock.calls.length, 1);
+            await assert.doesNotReject(() =>
+                new Server({
+                    handler: diagnosticHandler,
+                    options: diagnosticOptions,
+                    http: diagnosticHttp,
+                    server: diagnosticServer,
+                }).start(),
+            );
+
+            assert.strictEqual(
+                diagnosticHttp.createServer.mock.calls.length,
+                1,
+            );
             assert.strictEqual(diagnosticServer.listen.mock.calls.length, 1);
-            assert.strictEqual(diagnosticResponse.copy.mock.calls.length, 1);
-            assert.strictEqual(diagnosticResponse.flush.mock.calls.length, 1);
-            assert.strictEqual(diagnosticRequest.copy.mock.calls.length, 1);
-            assert.strictEqual(diagnosticRequest.flush.mock.calls.length, 1);
-            assert.strictEqual(diagnosticEndpoints.handle.mock.calls.length, 1);
+            assert.strictEqual(diagnosticHandler.handle.mock.calls.length, 1);
 
-            assert.deepStrictEqual(diagnosticResponse.options.options, testResponseOptions);
-            assert.strictEqual(diagnosticResponse.options.responseStream, 'responseStream');
-            assert.strictEqual(diagnosticRequest.options.requestStream, 'requestStream');
-            assert.deepStrictEqual(diagnosticEndpoints.options.request, diagnosticRequest);
-
-            assert.strictEqual(diagnosticResponse.options.options.statusCode, 200);
-        });
-
-        it('should send response with 400 status', async () => {
-            diagnosticCreateServerFunction = mock.fn((cb) => {
-                setTimeout(() => cb('requestStream', 'responseStream'), 0);
-                return diagnosticServer;
-            });
-
-            diagnosticRequest.flush = () => {throw new Error('request flush error', {cause: 'INVALID_REQUEST'})};
-            mock.method(diagnosticRequest, 'flush');
-
-            await assert.doesNotReject(() => new Server(
-                diagnosticEndpoints,
-                diagnosticOptions,
-                diagnosticRequest,
-                diagnosticResponse,
-                diagnosticCreateServerFunction,
-                diagnosticServer)
-                .start())
-
-            assert.strictEqual(diagnosticCreateServerFunction.mock.calls.length, 1);
-            assert.strictEqual(diagnosticServer.listen.mock.calls.length, 1);
-            assert.strictEqual(diagnosticResponse.copy.mock.calls.length, 1);
-            assert.strictEqual(diagnosticResponse.flush.mock.calls.length, 1);
-            assert.strictEqual(diagnosticRequest.copy.mock.calls.length, 1);
-            assert.strictEqual(diagnosticRequest.flush.mock.calls.length, 1);
-            assert.strictEqual(diagnosticEndpoints.handle.mock.calls.length, 0);
-
-            assert.deepStrictEqual(diagnosticResponse.options.options, {
-                statusCode: 400,
-                body: 'request flush error'
-            });
-            assert.strictEqual(diagnosticResponse.options.responseStream, 'responseStream');
-            assert.strictEqual(diagnosticRequest.options.requestStream, 'requestStream');
-
-            assert.strictEqual(diagnosticResponse.options.options.statusCode, 400);
-        });
-
-        it('should send response with 500 status', async () => {
-            diagnosticCreateServerFunction = mock.fn((cb) => {
-                setTimeout(() => cb('requestStream', 'responseStream'), 0);
-                return diagnosticServer;
-            });
-
-            diagnosticEndpoints.handle = () => {throw new Error('endpoint handle error')};
-            mock.method(diagnosticEndpoints, 'handle');
-
-            await assert.doesNotReject(() => new Server(
-                diagnosticEndpoints,
-                diagnosticOptions,
-                diagnosticRequest,
-                diagnosticResponse,
-                diagnosticCreateServerFunction,
-                diagnosticServer)
-                .start())
-
-            assert.strictEqual(diagnosticCreateServerFunction.mock.calls.length, 1);
-            assert.strictEqual(diagnosticServer.listen.mock.calls.length, 1);
-            assert.strictEqual(diagnosticResponse.copy.mock.calls.length, 1);
-            assert.strictEqual(diagnosticResponse.flush.mock.calls.length, 1);
-            assert.strictEqual(diagnosticRequest.copy.mock.calls.length, 1);
-            assert.strictEqual(diagnosticRequest.flush.mock.calls.length, 1);
-            assert.strictEqual(diagnosticEndpoints.handle.mock.calls.length, 1);
-
-            assert.deepStrictEqual(diagnosticResponse.options.options, {
-                statusCode: 500,
-                body: 'Unexpected server error.'
-            });
-            assert.strictEqual(diagnosticResponse.options.responseStream, 'responseStream');
-            assert.strictEqual(diagnosticRequest.options.requestStream, 'requestStream');
-
-            assert.strictEqual(diagnosticResponse.options.options.statusCode, 500);
-        });
-
-        it('should not fall', async () => {
-            await assert.doesNotReject(() => new Server(
-                diagnosticEndpoints,
-                diagnosticOptions,
-                diagnosticRequest,
-                diagnosticResponse,
-                diagnosticCreateServerFunction,
-                diagnosticServer)
-                .start());
-
-            assert.strictEqual(diagnosticCreateServerFunction.mock.calls.length, 1);
-            assert.strictEqual(diagnosticServer.listen.mock.calls.length, 1);
-        });
-
-        it('should accept options', async () => {
-            const server = await new Server(
-                undefined,
-                testOptions,
-                undefined,
-                undefined,
-                diagnosticCreateServerFunction).start();
-
-            assert.deepStrictEqual(server.options(), testOptions);
-            assert.deepStrictEqual(diagnosticServer.options.options, testOptions);
+            assert.strictEqual(
+                diagnosticHandler.options.responseStream,
+                'responseStream',
+            );
+            assert.strictEqual(
+                diagnosticHandler.options.requestStream,
+                'requestStream',
+            );
         });
 
         it('should return new Server instance', async () => {
-            const server = new Server(
-                diagnosticEndpoints,
-                diagnosticOptions,
-                diagnosticRequest,
-                diagnosticResponse,
-                diagnosticCreateServerFunction,
-                diagnosticServer);
+            const server = new Server({
+                handler: diagnosticHandler,
+                options: diagnosticOptions,
+                http: diagnosticHttp,
+                server: diagnosticServer,
+            });
             const staredServer = await server.start();
 
             assert.notEqual(staredServer, server);
@@ -342,7 +243,9 @@ describe('Server', () => {
 
     describe('stop', () => {
         it('should fall, cause null', async () => {
-            await assert.rejects(() => new Server().stop(), {name: 'TypeError'});
+            await assert.rejects(() => new Server({}).stop(), {
+                name: 'TypeError',
+            });
 
             assert.strictEqual(diagnosticServer.close.mock.calls.length, 0);
         });
@@ -353,39 +256,31 @@ describe('Server', () => {
             };
             mock.method(diagnosticServer, 'close');
 
-            await assert.rejects(() => new Server(
-                diagnosticEndpoints,
-                diagnosticOptions,
-                diagnosticRequest,
-                diagnosticResponse,
-                diagnosticCreateServerFunction,
-                diagnosticServer)
-                .stop(), {message: 'close error'});
+            await assert.rejects(
+                () =>
+                    new Server({
+                        server: diagnosticServer,
+                    }).stop(),
+                { message: 'close error' },
+            );
 
             assert.strictEqual(diagnosticServer.close.mock.calls.length, 1);
         });
 
         it('should not fall', async () => {
-            await assert.doesNotReject(() => new Server(
-                diagnosticEndpoints,
-                diagnosticOptions,
-                diagnosticRequest,
-                diagnosticResponse,
-                diagnosticCreateServerFunction,
-                diagnosticServer)
-                .stop());
+            await assert.doesNotReject(() =>
+                new Server({
+                    server: diagnosticServer,
+                }).stop(),
+            );
 
             assert.strictEqual(diagnosticServer.close.mock.calls.length, 1);
         });
 
         it('should return new Server instance', async () => {
-           const server = new Server(
-               diagnosticEndpoints,
-               diagnosticOptions,
-               diagnosticRequest,
-               diagnosticResponse,
-               diagnosticCreateServerFunction,
-               diagnosticServer);
+            const server = new Server({
+                server: diagnosticServer,
+            });
             const stoppedServer = await server.stop();
 
             assert.notEqual(stoppedServer, server);
@@ -395,7 +290,7 @@ describe('Server', () => {
 
     describe('options', () => {
         it('should return same options', () => {
-            const resultOptions = new Server(undefined, testOptions).options();
+            const resultOptions = new Server({ options: testOptions }).options;
 
             assert.deepStrictEqual(resultOptions, testOptions);
         });

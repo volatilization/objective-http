@@ -13,12 +13,12 @@ module.exports = class JsonServerResponse {
     }
 
     with({
-        outputStream,
+        responseStream,
         status,
         headers,
         body,
         origin = this.#origin({
-            outputStream,
+            responseStream,
             status,
             headers,
             body,

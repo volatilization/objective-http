@@ -42,20 +42,26 @@ module.exports = class ChunkClientResponse {
     }
 
     accept() {
-        return new Promise((resolve) => {
-            var chunks = [];
-            this.#responseStream.on('data', (chunk) => {
-                chunks = chunks.push(chunk);
-            });
-            this.#responseStream.on('end', () => {
-                resolve(
-                    this.with({
-                        status: this.#responseStream.statusCode,
-                        headers: new Headers(this.#responseStream.headers),
-                        body: Buffer.concat(chunks),
+        return new Promise((resolve, reject) => {
+            try {
+                var chunks = [];
+                this.#responseStream.on('data', (chunk) => chunks.push(chunk));
+                this.#responseStream.on('end', () => {
+                    resolve(
+                        this.with({
+                            status: this.#responseStream.statusCode,
+                            headers: new Headers(this.#responseStream.headers),
+                            body: Buffer.concat(chunks),
+                        }),
+                    );
+                });
+            } catch (e) {
+                reject(
+                    new Error('Client reponse error', {
+                        cause: { error: e, code: 'RESPONSE_ERROR' },
                     }),
                 );
-            });
+            }
         });
     }
 };

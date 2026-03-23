@@ -24,19 +24,19 @@ module.exports = class JsonServerRequest {
         });
     }
 
-    route() {
+    get route() {
         return this.#origin.route;
     }
 
-    query() {
+    get query() {
         return this.#origin.query;
     }
 
-    body() {
+    get body() {
         return this.#origin.body;
     }
 
-    headers() {
+    get headers() {
         return this.#origin.headers;
     }
 

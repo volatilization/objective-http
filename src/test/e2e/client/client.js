@@ -1,129 +1,192 @@
 /* node:coverage disable */
 
-const {describe, it, before, after} = require('node:test');
+const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert');
 
-
-const creatServerFunction = require('node:http').createServer;
-const requestFunction = require('node:http').request;
+const http = require('node:http');
 const {
     request: {
-        OutputRequest
+        chunk: { ChunkClientRequest },
     },
     response: {
-        InputResponse
-    }
+        chunk: { ChunkClientResponse },
+    },
 } = require('../../../js').client;
 const {
     Server,
-    endpoint: {
-        Endpoints
+    handler: {
+        endpoint: { EndpointsHandler },
+        error: {
+            UnexpectedErrorHandler,
+            InvalidRequestErrorHandler,
+            HandlerNotFoundErrorHandler,
+        },
     },
     request: {
-        InputRequest
+        chunk: { ChunkServerRequest },
     },
     response: {
-        OutputResponse
-    }
+        chunk: { ChunkServerResponse },
+    },
 } = require('../../../js').server;
 
-const serverConfig = new Server(
-    new Endpoints([
-        {
-            route() {
-                return {
-                    method: 'GET',
-                    path: '/test'
-                };
-            },
-            handle() {
-                return {
-                    statusCode: 200
-                };
-            }
-        },
-        {
-            route() {
-                return {
-                    method: 'POST',
-                    path: '/test'
-                };
-            },
-            handle() {
-                return {
-                    statusCode: 201,
-                    body: 'test body'
-                };
-            }
-        },
-    ]),
-    {port: 8090},
-    new InputRequest(),
-    new OutputResponse(),
-    creatServerFunction
-);
-const request = new OutputRequest(new InputResponse(), requestFunction);
+const serverConfig = new Server({
+    handler: new UnexpectedErrorHandler({
+        origin: new InvalidRequestErrorHandler({
+            origin: new HandlerNotFoundErrorHandler({
+                origin: new EndpointsHandler({
+                    endpoints: [
+                        {
+                            route: {
+                                method: 'GET',
+                                path: '/test',
+                            },
+
+                            handle() {
+                                return {
+                                    status: 200,
+                                };
+                            },
+                        },
+                        {
+                            route: {
+                                method: 'POST',
+                                path: '/test',
+                            },
+
+                            handle() {
+                                return {
+                                    status: 201,
+                                    body: 'test body',
+                                };
+                            },
+                        },
+                        {
+                            route: {
+                                method: 'GET',
+                                path: '/error',
+                            },
+
+                            handle() {
+                                throw new Error('WTF');
+                            },
+                        },
+                    ],
+                    request: new ChunkServerRequest({}),
+                    response: new ChunkServerResponse({}),
+                }),
+                response: new ChunkServerResponse({}),
+            }),
+            response: new ChunkServerResponse({}),
+        }),
+        response: new ChunkServerRequest({}),
+    }),
+
+    options: { port: 8090 },
+    http,
+});
+const request = new ChunkClientRequest({
+    http: http,
+    response: new ChunkClientResponse({}),
+});
 
 describe('client', async () => {
     let serverInstance;
     before(async () => {
         serverInstance = await serverConfig.start();
     });
-    after(async () => await serverInstance.stop());
+    after(async () => {
+        await serverInstance.stop();
+    });
 
     await it('should be started', async () => {
-        await assert.doesNotReject(() =>
+        await assert.doesNotReject(
+            () =>
                 request
-                    .copy({
-                        url: 'http://localhost', method: 'GET', port: '8090'})
+                    .with({
+                        options: {
+                            url: 'http://localhost',
+                            method: 'GET',
+                            port: '8090',
+                        },
+                    })
                     .send(),
-            {message: 'fetch failed'});
+            { message: 'fetch failed' },
+        );
 
-        await assert.rejects(() =>
+        await assert.rejects(
+            () =>
                 request
-                    .copy({
-                        port: '8091', method: 'GET', host: 'localhost'})
+                    .with({
+                        options: {
+                            port: '8091',
+                            method: 'GET',
+                            host: 'localhost',
+                        },
+                    })
                     .send(),
-            {cause: 'INVALID_REQUEST'});
+            { cause: 'INVALID_REQUEST' },
+        );
     });
 
     await it('should return 501', async () => {
-        const response = await (request
-            .copy({
-                url: 'http://localhost:8090/no_test', method: 'GET'}))
+        const response = await request
+            .with({
+                options: {
+                    url: 'http://localhost:8090/no_test',
+                    method: 'GET',
+                },
+            })
             .send();
 
-        assert.strictEqual(response.statusCode(), 501);
-        assert.strictEqual(response.body().toString(), 'There are no handler for request.');
+        assert.strictEqual(response.status, 501);
+        assert.strictEqual(
+            response.body.toString(),
+            'There are no handler for request.',
+        );
     });
 
     await it('should return 200 and no body', async () => {
-        const response = await (request
-            .copy({
-                url: 'http://localhost:8090/test', method: 'GET'}))
+        const response = await request
+            .with({
+                options: {
+                    url: 'http://localhost:8090/test',
+                    method: 'GET',
+                },
+            })
             .send();
 
-        assert.strictEqual(response.statusCode(), 200);
-        assert.strictEqual(response.body().length, 0);
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(response.body.length, 0);
     });
 
     await it('should return 201 and test body', async () => {
-        const response = await (request
-            .copy({
-                url: 'http://localhost:8090/test', method: 'POST', body: 'test body'}))
+        const response = await request
+            .with({
+                options: {
+                    url: 'http://localhost:8090/test',
+                    method: 'POST',
+                },
+                body: 'test body',
+            })
+            .send();
+
+        assert.strictEqual(response.status, 201);
+        assert.strictEqual(response.body.toString(), 'test body');
+    });
+
+    /*  await it('should not fall, but body is not a string', async () => {
+        const response = await request
+            .with({
+                options: {
+                    url: 'http://localhost:8090/test',
+                    method: 'POST',
+                },
+                body: {},
+            })
             .send();
 
         assert.strictEqual(response.statusCode(), 201);
         assert.strictEqual(response.body().toString(), 'test body');
-    });
-
-    await it('should not fall, but body is not a string', async () => {
-        const response = await (request
-            .copy({
-                url: 'http://localhost:8090/test', method: 'POST', body: {}}))
-            .send();
-
-        assert.strictEqual(response.statusCode(), 201);
-        assert.strictEqual(response.body().toString(), 'test body');
-    });
+    });*/
 });

@@ -1,4 +1,4 @@
 module.exports = {
-    ServerRequest: require('./ServerRequest'),
-    LoggedInputRequest: require('./LoggedInputRequest'),
+    ChunkServerRequest: require('./ChunkServerRequest'),
+    JsonServerRequest: require('./JsonServerRequest'),
 };

@@ -7,15 +7,15 @@ module.exports = class UnexpectedErrorHandler {
         this.#response = response;
     }
 
-    handle(requsetStream, responseStream) {
+    async handle(requestStream, responseStream) {
         try {
-            return this.#origin.handle(requsetStream, responseStream);
+            return await this.#origin.handle(requestStream, responseStream);
         } catch (e) {
             return this.#response
                 .with({
                     responseStream,
                     status: 500,
-                    message: 'Application unexpected error',
+                    body: 'Application unexpected error',
                 })
                 .send();
         }

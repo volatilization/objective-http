@@ -5,13 +5,13 @@ module.exports = class EndpointHandlers {
         this.#handlers = handlers;
     }
 
-    async handle(requsetStream, responseStream) {
+    async handle(requestStream, responseStream) {
         return this.#handlers.reduce(async (response, handler) => {
             if (response != null) {
                 return response;
             }
 
-            await handler.handle(requsetStream, responseStream);
+            await handler.handle(requestStream, responseStream);
         }, undefined);
     }
 };

@@ -32,10 +32,18 @@ module.exports = class Server {
     start() {
         return new Promise((resolve, reject) => {
             try {
-                const server = this.#http.createServer(this.#handler.handle);
-                server.listen(this.options, () => resolve(this.with({ server })));
+                const server = this.#http.createServer(async (req, res) => {
+                    await this.#handler.handle(req, res);
+                });
+                server.listen(this.options, () =>
+                    resolve(this.with({ server })),
+                );
             } catch (e) {
-                reject(new Error('Init server fail', {cause: {error: e, code: 'INITIAL_SERVER_FAIL'}}))
+                reject(
+                    new Error('Init server fail', {
+                        cause: { error: e, code: 'INITIAL_SERVER_FAIL' },
+                    }),
+                );
             }
         });
     }
