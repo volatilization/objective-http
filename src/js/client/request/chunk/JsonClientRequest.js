@@ -2,10 +2,7 @@ module.exports = class JsonClientRequest {
     #origin;
 
     constructor({ origin }) {
-        this.#origin = origin.with({
-            body:
-                origin.body != null ? JSON.stringify(origin.body) : origin.body,
-        });
+        this.#origin = origin;
     }
 
     with({
@@ -28,11 +25,19 @@ module.exports = class JsonClientRequest {
     }
 
     get options() {
-        return this.#origin.options;
+        return {
+            ...this.#origin.options,
+            headers: {
+                ...this.#origin.options.headers,
+                'content-type': 'application/json',
+            },
+        };
     }
 
     get body() {
-        return this.#origin.body;
+        return this.#origin.body
+            ? JSON.stringify(this.#origin.body)
+            : this.#origin.body;
     }
 
     get response() {
@@ -40,6 +45,11 @@ module.exports = class JsonClientRequest {
     }
 
     send() {
-        return this.#origin.send();
+        return this.#origin
+            .with({
+                body: this.body,
+                options: this.options,
+            })
+            .send();
     }
 };

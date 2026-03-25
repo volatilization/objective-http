@@ -48,9 +48,7 @@ module.exports = class ChunkServerRequest {
     accept() {
         return new Promise((resolve, reject) => {
             try {
-                console.log('nigga', this.#requestStream.url);
-                this.#requestStream.once('error', (e) => {
-                    console.error(e);
+                this.#requestStream.on('error', (e) => {
                     reject(
                         new Error(e.message, {
                             cause: { error: e, code: 'INVALID_REQUEST' },
@@ -61,7 +59,6 @@ module.exports = class ChunkServerRequest {
                 let chunks = [];
                 this.#requestStream.on('data', (chunk) => chunks.push(chunk));
                 this.#requestStream.on('end', () => {
-                    console.log('requsetp accepted');
                     resolve(
                         this.with({
                             route: {
@@ -79,7 +76,6 @@ module.exports = class ChunkServerRequest {
                     );
                 });
             } catch (e) {
-                console.error(e);
                 reject(
                     new Error(e.message, {
                         cause: { error: e, code: 'INVALID_REQUEST' },

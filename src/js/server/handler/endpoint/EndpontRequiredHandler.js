@@ -6,13 +6,15 @@ module.exports = class EndpontRequiredHandler {
     }
 
     async handle(requestStream, responseStream) {
-        const response = this.#origin.handle(requestStream, responseStream);
+        const response = await this.#origin.handle(
+            requestStream,
+            responseStream,
+        );
 
         if (response == null) {
-            throw new Error(
-                `Handler for ${URL.parse(requsetStream).pathname} not found`,
-                { cause: { code: 'HANDLER_NOT_FOUND' } },
-            );
+            throw new Error(`Handler for ${requestStream.url} not found`, {
+                cause: { code: 'HANDLER_NOT_FOUND' },
+            });
         }
 
         return response;

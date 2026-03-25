@@ -39,7 +39,6 @@ module.exports = class ChunkServerResponse {
 
     send() {
         try {
-            console.log('responding to client');
             this.#responseStream.writeHead(this.status, this.headers);
 
             if (this.body != null) {

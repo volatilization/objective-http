@@ -32,9 +32,14 @@ module.exports = class Server {
     start() {
         return new Promise((resolve, reject) => {
             try {
-                const server = this.#http.createServer(async (req, res) => {
-                    await this.#handler.handle(req, res);
-                });
+                const server = this.#http.createServer(
+                    async (requestStream, responseStream) =>
+                        await this.#handler.handle(
+                            requestStream,
+                            responseStream,
+                        ),
+                );
+
                 server.listen(this.options, () =>
                     resolve(this.with({ server })),
                 );

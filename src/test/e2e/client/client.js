@@ -42,7 +42,7 @@ const serverConfig = new Server({
                                 path: '/test',
                             },
 
-                            handle() {
+                            handle(request) {
                                 return {
                                     status: 200,
                                 };
@@ -151,7 +151,7 @@ describe('client', async () => {
                     host: 'localhost',
                     port: 8090,
                     method: 'GET',
-                    path: '/test',
+                    path: '/test?nigga=nigger',
                 },
             })
             .send();

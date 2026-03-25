@@ -6,7 +6,7 @@ module.exports = class EndpointHandlers {
     }
 
     async handle(requestStream, responseStream) {
-        return this.#handlers.reduce(async (response, handler) => {
+        return await this.#handlers.reduce(async (response, handler) => {
             if (response != null) {
                 return response;
             }

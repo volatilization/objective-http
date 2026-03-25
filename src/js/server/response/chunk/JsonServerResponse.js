@@ -2,14 +2,7 @@ module.exports = class JsonServerResponse {
     #origin;
 
     constructor({ origin }) {
-        this.#origin = origin.with({
-            headers: {
-                ...{ 'Content-type': 'application/json' },
-                ...origin.headers,
-            },
-            body:
-                origin.body != null ? JSON.stringify(origin.body) : origin.body,
-        });
+        this.#origin = origin;
     }
 
     with({
@@ -17,7 +10,7 @@ module.exports = class JsonServerResponse {
         status,
         headers,
         body,
-        origin = this.#origin({
+        origin = this.#origin.with({
             responseStream,
             status,
             headers,
@@ -32,16 +25,36 @@ module.exports = class JsonServerResponse {
     }
 
     get headers() {
-        return this.#origin.headers;
+        return {
+            ...this.#origin.headers,
+            'content-type': 'application/json',
+        };
     }
 
     get body() {
-        return this.#origin.body;
+        return this.#origin.body
+            ? JSON.stringify(this.#origin.body)
+            : this.#origin.body;
     }
 
     send() {
-        return this.with({
-            origin: this.#origin.send(),
-        });
+        try {
+            return this.with({
+                origin: this.#origin
+                    .with({
+                        headers: this.headers,
+                        body: this.body,
+                    })
+                    .send(),
+            });
+        } catch (e) {
+            if (!(e instanceof SyntaxError)) {
+                throw e;
+            }
+
+            return this.with({
+                origin: this.#origin.send(),
+            });
+        }
     }
 };

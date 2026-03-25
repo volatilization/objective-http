@@ -11,7 +11,7 @@ module.exports = class InvalidRequestErrorHandler {
         try {
             return await this.#origin.handle(requestStream, responseStream);
         } catch (e) {
-            if (e.cause == null || e.cause.code !== 'INVALID_REQUEST') {
+            if (e.cause?.code !== 'INVALID_REQUEST') {
                 throw e;
             }
 

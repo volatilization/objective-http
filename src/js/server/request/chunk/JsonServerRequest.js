@@ -6,13 +6,13 @@ module.exports = class JsonServerRequest {
     }
 
     with({
-        inputStream,
+        requestStream,
         route,
         query,
         headers,
         body,
         origin = this.#origin.with({
-            inputStream,
+            requestStream,
             route,
             query,
             headers,
@@ -45,7 +45,12 @@ module.exports = class JsonServerRequest {
 
         return this.with({
             origin: accepted.with({
-                body: JSON.parse(accepted.body.toString()),
+                body:
+                    accepted.body?.length > 0
+                        ? JSON.parse(accepted.body?.toString())
+                        : accepted.body,
+                headers: Object.fromEntries(accepted.headers),
+                query: Object.fromEntries(accepted.query),
             }),
         });
     }

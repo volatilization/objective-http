@@ -11,7 +11,7 @@ module.exports = class HandlerNotFoundErrorHandler {
         try {
             return await this.#origin.handle(requestStream, responseStream);
         } catch (e) {
-            if (e.cause == null || e.cause.code !== 'HANDLER_NOT_FOUND') {
+            if (e.cause?.code !== 'HANDLER_NOT_FOUND') {
                 throw e;
             }
 

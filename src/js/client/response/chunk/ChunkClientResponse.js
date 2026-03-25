@@ -44,6 +44,14 @@ module.exports = class ChunkClientResponse {
     accept() {
         return new Promise((resolve, reject) => {
             try {
+                this.#responseStream.on('error', (e) => {
+                    reject(
+                        new Error(e.message, {
+                            cause: { error: e, code: 'RESPONSE_ERROR' },
+                        }),
+                    );
+                });
+
                 var chunks = [];
                 this.#responseStream.on('data', (chunk) => chunks.push(chunk));
                 this.#responseStream.on('end', () => {

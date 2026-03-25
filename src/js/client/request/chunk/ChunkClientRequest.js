@@ -42,9 +42,7 @@ module.exports = class ChunkClientRequest {
                 this.options,
                 (responseStream) => {
                     this.response
-                        .with({
-                            responseStream,
-                        })
+                        .with({ responseStream })
                         .accept()
                         .then(resolve)
                         .catch(reject);
@@ -52,7 +50,6 @@ module.exports = class ChunkClientRequest {
             );
 
             requestStream.on('error', (e) => {
-                console.error(e);
                 reject(
                     new Error(e.message, {
                         cause: { error: e, code: 'REQUEST_ERROR' },

@@ -2,12 +2,7 @@ module.exports = class JsonClientResponse {
     #origin;
 
     constructor({ origin }) {
-        this.#origin = origin.with({
-            body:
-                origin.body != null || origin.body.length > 0
-                    ? JSON.parse(origin.body.toString())
-                    : origin.body,
-        });
+        this.#origin = origin;
     }
 
     with({
@@ -42,8 +37,26 @@ module.exports = class JsonClientResponse {
     }
 
     async accept() {
-        return this.with({
-            origin: await this.#origin.accept(),
-        });
+        const accepted = await this.#origin.accept();
+
+        try {
+            return this.with({
+                origin: accepted.with({
+                    body:
+                        accepted.body?.length > 0
+                            ? JSON.parse(accepted.body?.toString())
+                            : accepted.body,
+                    headers: Object.fromEntries(accepted.headers),
+                }),
+            });
+        } catch (e) {
+            if (!(e instanceof SyntaxError)) {
+                throw e;
+            }
+
+            return this.with({
+                origin: accepted,
+            });
+        }
     }
 };

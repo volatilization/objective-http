@@ -10,8 +10,7 @@ module.exports = class UnexpectedErrorHandler {
     async handle(requestStream, responseStream) {
         try {
             return await this.#origin.handle(requestStream, responseStream);
-        } catch (e) {
-            console.error('Unexpected', e);
+        } catch {
             return this.#response
                 .with({
                     responseStream,

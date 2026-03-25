@@ -5,7 +5,7 @@ module.exports = class EndpointHandler {
 
     constructor({ endpoint, request, response }) {
         this.#endpoint = endpoint;
-        this.#request = requset;
+        this.#request = request;
         this.#response = response;
     }
 
@@ -17,7 +17,7 @@ module.exports = class EndpointHandler {
             .accept();
 
         if (
-            JSON.stringify(requset.route) !==
+            JSON.stringify(request.route) !==
             JSON.stringify(this.#endpoint.route)
         ) {
             return;
