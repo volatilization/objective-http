@@ -15,16 +15,12 @@ module.exports = class EndpointsHandler {
     }
 
     async handle(requestStream, responseStream) {
-        if (
-            !this.#routeToEndpointMap.has(
-                JSON.stringify({
-                    method: requestStream.method,
-                    path: new URL(
-                        `http://${process.env.HOST ?? 'localhost'}${requestStream.url}`,
-                    ).pathname,
-                }),
-            )
-        ) {
+        const requestRoute = JSON.stringify({
+            method: requestStream.method,
+            path: new URL(`http://localhost${requestStream.url}`).pathname,
+        });
+
+        if (!this.#routeToEndpointMap.has(requestRoute)) {
             return;
         }
 
