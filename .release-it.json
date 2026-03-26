@@ -1,10 +1,15 @@
 {
     "git": {
-        "branch": ["master", "release/*"],
+        "requireBranch": "master",
         "commitMessage": "release v${version}",
+        "tagAnnotation": "v${version}",
         "push": false
     },
     "hooks": {
-        "before:init": ["git pull", "npm run lint", "npm run test:coverage"]
+        "before:init": [
+            "git pull",
+            "npm run lint",
+            "COVERAGE_MIN_PERCENT=75 npm run test:coverage"
+        ]
     }
 }

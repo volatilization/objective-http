@@ -59,14 +59,14 @@ new Server({
                                 }),
                                 new EndpointsHandler({
                                     endpoints: [
-                                       new MyJSONEndpoint(),
-                                       new MyJSONEndpoint(),
-                                       new MyJSONEndpoint(),
+                                       new MyJsonEndpoint(),
+                                       new MyJsonEndpoint(),
+                                       new MyJsonEndpoint(),
                                     ],
-                                    request: new JSONServerRequest({
+                                    request: new JsonServerRequest({
                                         origin: new ChunkServerRequest({}),
                                     }),
-                                    response: new JSONServerResponse({
+                                    response: new JsonServerResponse({
                                         origin: new ChunkServerResponse({}),
                                     }),
                                 }),
