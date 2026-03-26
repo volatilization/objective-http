@@ -4,7 +4,10 @@ export default {
         commitMessage: 'release v${version}',
     },
     github: {
-        release: false,
+        release: true,
+    },
+    npm: {
+        release: true,
     },
     hooks: {
         'before:init': [
