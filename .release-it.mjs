@@ -1,13 +1,13 @@
 export default {
     git: {
-        requireBranch: 'release/{version}',
+        requireBranch: ['master', 'release/*'],
         commitMessage: 'release v${version}',
     },
     github: {
-        release: true,
+        release: false,
     },
     npm: {
-        release: true,
+        release: false,
     },
     hooks: {
         'before:init': [
