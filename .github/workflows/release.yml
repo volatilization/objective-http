@@ -19,7 +19,7 @@ jobs:
             git config --global user.email "volatilization@yandex.ru" 
             git config --global user.name "volatilization"
       - name: Initialise the NPM config
-        run: npm config set https://registry.npmjs.org/:_authToken $NPM_TOKEN
+        run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
         env:
           NPM_TOKEN: $({ secrets.NPM_TOKEN })
       - name: Run release
