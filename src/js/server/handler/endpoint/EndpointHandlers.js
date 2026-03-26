@@ -6,12 +6,17 @@ module.exports = class EndpointHandlers {
     }
 
     async handle(requestStream, responseStream) {
-        return await this.#handlers.reduce(async (response, handler) => {
+        for (let i = 0; i < this.#handlers.length; i++) {
+            const response = await this.#handlers[i].handle(
+                requestStream,
+                responseStream,
+            );
+
             if (response != null) {
                 return response;
             }
+        }
 
-            await handler.handle(requestStream, responseStream);
-        }, undefined);
+        return;
     }
 };

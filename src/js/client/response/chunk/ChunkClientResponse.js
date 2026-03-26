@@ -46,7 +46,7 @@ module.exports = class ChunkClientResponse {
             try {
                 this.#responseStream.on('error', (e) => {
                     reject(
-                        new Error(e.message, {
+                        new Error('Client response error', {
                             cause: { error: e, code: 'RESPONSE_ERROR' },
                         }),
                     );

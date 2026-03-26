@@ -50,8 +50,8 @@ module.exports = class ChunkServerRequest {
             try {
                 this.#requestStream.on('error', (e) => {
                     reject(
-                        new Error(e.message, {
-                            cause: { error: e, code: 'INVALID_REQUEST' },
+                        new Error('Server request error', {
+                            cause: { error: e, code: 'REQUEST_ERROR' },
                         }),
                     );
                 });
@@ -77,8 +77,8 @@ module.exports = class ChunkServerRequest {
                 });
             } catch (e) {
                 reject(
-                    new Error(e.message, {
-                        cause: { error: e, code: 'INVALID_REQUEST' },
+                    new Error('Server request error', {
+                        cause: { error: e, code: 'REQUEST_ERROR' },
                     }),
                 );
             }

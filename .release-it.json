@@ -1,0 +1,9 @@
+{
+    "git": {
+        "commitMessage": "release v${version}",
+        "push": false
+    },
+    "hooks": {
+        "before:init": ["git pull", "npm run lint", "npm run test:coverage"]
+    }
+}

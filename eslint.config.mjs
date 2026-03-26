@@ -21,6 +21,12 @@ export default defineConfig([
         extends: ['json/recommended'],
     },
     {
+        files: ['package-lock.json'],
+        rules: {
+            'json/no-empty-keys': 'off',
+        },
+    },
+    {
         files: ['**/*.md'],
         plugins: { markdown },
         language: 'markdown/gfm',

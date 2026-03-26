@@ -6,78 +6,119 @@ const assert = require('node:assert');
 const http = require('node:http');
 const {
     request: {
-        chunk: { ChunkClientRequest },
+        chunk: { JsonClientRequest, ChunkClientRequest },
     },
     response: {
-        chunk: { ChunkClientResponse },
+        chunk: { JsonClientResponse, ChunkClientResponse },
     },
 } = require('../../../js').client;
 const {
     Server,
     handler: {
-        endpoint: { EndpointsHandler },
+        endpoint: {
+            EndpointHandler,
+            EndpointsHandler,
+            EndpointHandlers,
+            EndpointRequiredHandler,
+        },
         error: {
+            LogErrorHandler,
             UnexpectedErrorHandler,
             InvalidRequestErrorHandler,
             HandlerNotFoundErrorHandler,
         },
     },
     request: {
-        chunk: { ChunkServerRequest },
+        chunk: { JsonServerRequest, ChunkServerRequest },
     },
     response: {
-        chunk: { ChunkServerResponse },
+        chunk: { JsonServerResponse, ChunkServerResponse },
     },
 } = require('../../../js').server;
 
 const serverConfig = new Server({
     handler: new UnexpectedErrorHandler({
-        origin: new InvalidRequestErrorHandler({
-            origin: new HandlerNotFoundErrorHandler({
-                origin: new EndpointsHandler({
-                    endpoints: [
-                        {
-                            route: {
-                                method: 'GET',
-                                path: '/test',
-                            },
+        origin: new LogErrorHandler({
+            origin: new InvalidRequestErrorHandler({
+                origin: new HandlerNotFoundErrorHandler({
+                    origin: new EndpointRequiredHandler({
+                        origin: new EndpointHandlers({
+                            handlers: [
+                                new EndpointHandler({
+                                    endpoint: {
+                                        route: {
+                                            method: 'GET',
+                                            path: '/error',
+                                        },
 
-                            handle(request) {
-                                return {
-                                    status: 200,
-                                };
-                            },
-                        },
-                        {
-                            route: {
-                                method: 'POST',
-                                path: '/test',
-                            },
+                                        handle() {
+                                            throw new Error('WTF');
+                                        },
+                                    },
+                                    request: new ChunkServerRequest({}),
+                                    response: new ChunkServerResponse({}),
+                                }),
+                                new EndpointHandler({
+                                    endpoint: {
+                                        route: {
+                                            method: 'GET',
+                                            path: '/test',
+                                        },
 
-                            handle() {
-                                return {
-                                    status: 201,
-                                    body: 'test body',
-                                };
-                            },
-                        },
-                        {
-                            route: {
-                                method: 'GET',
-                                path: '/error',
-                            },
+                                        handle() {
+                                            return {
+                                                status: 200,
+                                                body: 'success',
+                                            };
+                                        },
+                                    },
+                                    request: new ChunkServerRequest({}),
+                                    response: new ChunkServerResponse({}),
+                                }),
+                                new EndpointsHandler({
+                                    endpoints: [
+                                        {
+                                            route: {
+                                                method: 'GET',
+                                                path: '/json/test',
+                                            },
 
-                            handle() {
-                                throw new Error('WTF');
-                            },
-                        },
-                    ],
-                    request: new ChunkServerRequest({}),
+                                            handle(request) {
+                                                return {
+                                                    status: 200,
+                                                    body: request.query,
+                                                };
+                                            },
+                                        },
+                                        {
+                                            route: {
+                                                method: 'POST',
+                                                path: '/json/test',
+                                            },
+
+                                            handle(request) {
+                                                return {
+                                                    status: 201,
+                                                    body: request.body,
+                                                };
+                                            },
+                                        },
+                                    ],
+                                    request: new JsonServerRequest({
+                                        origin: new ChunkServerRequest({}),
+                                    }),
+                                    response: new JsonServerResponse({
+                                        origin: new ChunkServerResponse({}),
+                                    }),
+                                }),
+                            ],
+                        }),
+                    }),
                     response: new ChunkServerResponse({}),
                 }),
                 response: new ChunkServerResponse({}),
             }),
-            response: new ChunkServerResponse({}),
+            logger: console,
         }),
         response: new ChunkServerResponse({}),
     }),
@@ -89,7 +130,13 @@ const request = new ChunkClientRequest({
     http: http,
     response: new ChunkClientResponse({}),
 });
-
+const jsonRequest = new JsonClientRequest({
+    origin: request.with({
+        response: new JsonClientResponse({
+            origin: request.response,
+        }),
+    }),
+});
 describe('client', async () => {
     let serverInstance;
     before(async () => {
@@ -129,6 +176,21 @@ describe('client', async () => {
         }
     });
 
+    await it('should return 500', async () => {
+        const response = await request
+            .with({
+                options: {
+                    host: 'localhost',
+                    port: 8090,
+                    method: 'GET',
+                    path: '/error',
+                },
+            })
+            .send();
+
+        assert.strictEqual(response.status, 500);
+    });
+
     await it('should return 501', async () => {
         const response = await request
             .with({
@@ -144,36 +206,36 @@ describe('client', async () => {
         assert.strictEqual(response.status, 501);
     });
 
-    await it('should return 200 and no body', async () => {
-        const response = await request
+    await it('should return 200 and query as body', async () => {
+        const response = await jsonRequest
             .with({
                 options: {
                     host: 'localhost',
                     port: 8090,
                     method: 'GET',
-                    path: '/test?nigga=nigger',
+                    path: '/json/test?x=x0',
                 },
             })
             .send();
 
         assert.strictEqual(response.status, 200);
-        assert.strictEqual(response.body.length, 0);
+        assert.deepEqual(response.body, { x: 'x0' });
     });
 
-    await it('should return 201 and test body', async () => {
-        const response = await request
+    await it('should return 201 and sended body', async () => {
+        const response = await jsonRequest
             .with({
                 options: {
                     host: 'localhost',
                     port: 8090,
                     method: 'POST',
-                    path: '/test',
+                    path: '/json/test',
                 },
-                body: 'test body',
+                body: { y: 'y0' },
             })
             .send();
 
         assert.strictEqual(response.status, 201);
-        assert.strictEqual(response.body.toString(), 'test body');
+        assert.deepEqual(response.body, { y: 'y0' });
     });
 });

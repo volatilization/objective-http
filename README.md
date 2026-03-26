@@ -1,57 +1,99 @@
-# objective-http
-Proxy classes for creating a http server
 
+# objective-http
+
+Proxy classes for creating a http server
 
 ## Server
 
 There are all `Server` classes feature.  
-Your endpoints must implement `Endpoint` class interface (`route()` and `async handle(request)` methods).
+Your endpoints should implement `Endpoint` class interface 
+(`get route()` and `async handle(request)` methods).  
+Also you can add own handlers (`handle(reqestStream, responseStream)`).  
+`Handler` is a top level logic object, who intrreact with IO streams directly.  
+`options` is a `node:http` options, who pass when server starting.  
 
 ```javascript
-const createServerFunction = require('node:http').createServer;
-
+const http = require('node:http');
+const console = require('node:console');
 const {
     Server,
-    LoggedServer,
-    endpoint: {
-        Endpoint,
-        Endpoints
+    handler: {
+        endpoint: {
+            EndpointHandler,
+            EndpointsHandler,
+            EndpointHandlers,
+            EndpointRequiredHandler,
+        },
+        error: {
+            LogErrorHandler,
+            UnexpectedErrorHandler,
+            InvalidRequestErrorHandler,
+            HandlerNotFoundErrorHandler,
+        },
     },
     request: {
-        InputRequest,
-        LoggedInputRequest,
+        chunk: { JsonServerRequest, ChunkServerRequest },
     },
     response: {
-        OutputResponse,
-        LoggedOutputResponse
-    }
+        chunk: { JsonServerResponse, ChunkServerResponse },
+    },
 } = require('objective-http').server;
 
-new LoggedServer(
-    new Server(
-        new Endpoints([
-            new MyFirstEndpoint(),
-            new MySecondEndpoint(),
-            new MyThirdEndpoint()
-        ]),
-        {port: server_port},
-        new LoggedInputRequest(new InputRequest(), console),
-        new LoggedOutputResponse(new OutputResponse(), console),
-        createServerFunction
-    ),
-    console
-).start();
+new Server({
+    handler: new UnexpectedErrorHandler({
+        origin: new LogErrorHandler({
+            origin: new InvalidRequestErrorHandler({
+                origin: new HandlerNotFoundErrorHandler({
+                    origin: new EndpointRequiredHandler({
+                        origin: new EndpointHandlers({
+                            handlers: [
+                                new EndpointHandler({
+                                    endpoint: new MyEndpoint(),
+                                    request: new ChunkServerRequest({}),
+                                    response: new ChunkServerResponse({}),
+                                }),
+                                new EndpointHandler({
+                                    endpoint: new MyEndpoint(),
+                                    request: new ChunkServerRequest({}),
+                                    response: new ChunkServerResponse({})
+                                }),
+                                new EndpointsHandler({
+                                    endpoints: [
+                                       new MyJSONEndpoint(),
+                                       new MyJSONEndpoint(),
+                                       new MyJSONEndpoint(),
+                                    ],
+                                    request: new JSONServerRequest({
+                                        origin: new ChunkServerRequest({}),
+                                    }),
+                                    response: new JSONServerResponse({
+                                        origin: new ChunkServerResponse({}),
+                                    }),
+                                }),
+                            ],
+                        }),
+                    }),
+                    response: new ChunkServerResponse({}),
+                }),
+                response: new ChunkServerResponse({}),
+            }),
+            logger: console,
+        }),
+        response: new ChunkServerResponse({}),
+    }),
+
+    options: { port: 8080 },
+    http,
+});
 ```
 
 `MyEndpoint` class example:
 
 ```javascript
 class MyEndpoint {
-    route() {
-        return {
-            method: 'GET',
-            path: '/test'
-        };
+    route = {
+        method: 'GET',
+        path: '/test'
     }
 
     async handle(request) {
@@ -59,13 +101,13 @@ class MyEndpoint {
             const processResult = await someProcess();
 
             return {
-                statusCode: 200,
+                status: 200,
                 body: processResult.toString()
             };
         
         } catch (e) {
             return {
-                statusCode: 404,
+                status: 404,
                 body: 'process does not found anything'
             };
         }
@@ -76,162 +118,40 @@ class MyEndpoint {
 
 ## Client
 
-```javascript
-const requestFunction = require('node:http').request;
+Simple wrapper for requests. `options` passing into `http.request(oprions, ...)`
 
+```javascript
+const http = require('node:http');
 const {
     request: {
-        OutputRequest
+        chunk: { JsonClientRequest, ChunkClientRequest },
     },
     response: {
-        InputResponse
-    }
+        chunk: { JsonClientResponse, ChunkClientResponse },
+    },
 } = require('objective-http').client;
 
+const request = new JsonClientRequest({
+    origin: new ChunkClientRequest({
+        http: http,
+        response: new JsonClientResponse({
+            origin: new ChunkClientResponse({})
+        }),
+    }),
+});
 
-const response = await new OutputRequest(
-    new InputResponse(),
-    requestFunction,
-    {
-        url: 'https://example.com',
-        method: 'POST',
-        body: 'test body'
+const response = await request
+    .with({
+        options: {
+            host: 'localhost',
+            port: 80,
+            method: 'GET',
+            path: '/test',
+        },
+        body: { some: 'body' }
     })
-    .send();
+    .send()
 
-console.log(response.body().toString());
-
-//or
-
-const request = new OutputRequest(new InputResponse(), requestFunction);
-
-const otherResponse = await (request
-    .copy({
-        url: 'https://example.com',
-        method: 'POST',
-        body: 'test body'
-    }))
-    .send();
-
-console.log(response.body().toString());
+console.log(JSON.stringify(response.body));
 ```
 
-
-## [Bun](https://bun.sh) support
-
-`server` and `client` packages support Bun by default.  
-But there ara special `bun` package with native [Bun API](https://bun.sh/docs/runtime/bun-apis) implementation (like `Bun.serve()`). 
-And you should replace `node:http` package with `objective-http.bun.bunttp` in your `Server` configuration.
-
-
-### Server Bun usage
-
-It should work with `node` and `bun`:
-
-```javascript
-const createServerFunction = require('node:http').createServer;
-
-const {
-    Server,
-    LoggedServer,
-    endpoint: {
-        Endpoint,
-        Endpoints
-    },
-    request: {
-        InputRequest,
-        LoggedInputRequest,
-    },
-    response: {
-        OutputResponse,
-        LoggedOutputResponse
-    }
-} = require('objective-http').server;
-
-new LoggedServer(
-    new Server(
-        new Endpoints([
-            new MyFirstEndpoint(),
-            new MySecondEndpoint(),
-            new MyThirdEndpoint()
-        ]),
-        {port: server_port},
-        new LoggedInputRequest(new InputRequest(), console),
-        new LoggedOutputResponse(new OutputResponse(), console),
-        createServerFunction
-    ),
-    console
-).start()
-```
-
-In order for the code to be executed only by `bun` (with `Bun API` inside), you need to make changes to the import block.  
-`bun` package redeclare only `InputRequest` and `OutputResponse` classes. Other classes taken from `server` package.
-
-```javascript
-const createServerFunction = require('objective-http').bun.bunttp.createServer;
-
-const {
-    Server,
-    LoggedServer,
-    endpoint: {
-        Endpoint,
-        Endpoints
-    },
-    request: {
-        LoggedInputRequest,
-    },
-    response: {
-        LoggedOutputResponse
-    }
-} = require('objective-http').server;
-
-const {
-    request: {
-        InputRequest
-    },
-    response: {
-        OutputResponse
-    }
-} = require('objective-http').bun.server;
-```
-
-
-### Client Bun usage
-
-It should work with `node` and `bun`:
-
-```javascript
-const requestFunction = require('node:http').request;
-
-const {
-    request: {
-        OutputRequest
-    },
-    response: {
-        InputResponse
-    }
-} = require('objective-http').client;
-
-await (new OutputRequest(new InputResponse(), requestFunction)
-    .copy({
-        url: 'https://example.com',
-        method: 'POST',
-        body: 'test body'
-    }))
-    .send();
-```
-
-In order for the code to be executed only by `bun`, you need to make changes to the import block.
-
-```javascript
-const requestFunction = require('objective-http').bun.bunttp.request;
-
-const {
-    request: {
-        OutputRequest
-    },
-    response: {
-        InputResponse
-    }
-} = require('objective-http').bun.client;
-```

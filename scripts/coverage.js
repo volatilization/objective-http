@@ -9,6 +9,7 @@ const coveragePercent = testResult
     .split('\n')
     .filter((line) => line.includes('.js'))
     .filter((line) => !line.includes('/test/'))
+    .filter((line) => !line.includes('index.js'))
     .map((line) => Number(line.split('|')[1].trim()))
     .reduce((prevPercent, currPercent, currIndex, array) => {
         if (currIndex === 0) {

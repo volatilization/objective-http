@@ -51,7 +51,7 @@ module.exports = class ChunkClientRequest {
 
             requestStream.on('error', (e) => {
                 reject(
-                    new Error(e.message, {
+                    new Error('Client request error', {
                         cause: { error: e, code: 'REQUEST_ERROR' },
                     }),
                 );

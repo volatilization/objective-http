@@ -10,18 +10,22 @@ module.exports = class EndpointHandler {
     }
 
     async handle(requestStream, responseStream) {
+        if (
+            JSON.stringify({
+                method: requestStream.method,
+                path: new URL(
+                    `http://${process.env.HOST ?? 'localhost'}${requestStream.url}`,
+                ).pathname,
+            }) !== JSON.stringify(this.#endpoint.route)
+        ) {
+            return;
+        }
+
         const request = await this.#request
             .with({
                 requestStream,
             })
             .accept();
-
-        if (
-            JSON.stringify(request.route) !==
-            JSON.stringify(this.#endpoint.route)
-        ) {
-            return;
-        }
 
         return this.#response
             .with({

@@ -12,8 +12,9 @@
     ],
     "scripts": {
         "lint": "eslint",
-        "test": "node --test  --experimental-test-coverage --test-reporter=spec src/test/**/**.js",
-        "test:coverage": "node scripts/coverage.js"
+        "test": "node --test  --experimental-test-coverage --test-reporter=spec src/test/*.js src/test/**/*.js",
+        "test:coverage": "node scripts/coverage.js",
+        "release": "release-it"
     },
     "author": {
         "name": "volatilization",

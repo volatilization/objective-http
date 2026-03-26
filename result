@@ -1,0 +1,68 @@
+TAP version 13
+# Subtest: server
+    # Subtest: should be started
+    ok 1 - should be started
+      ---
+      duration_ms: 29.495291
+      type: 'test'
+      ...
+    # Subtest: should return 501
+    ok 2 - should return 501
+      ---
+      duration_ms: 2.079166
+      type: 'test'
+      ...
+# Error while handling /error {
+#   cause: {
+#     error: Error: WTF
+#         at Object.handle (/Users/volatilization/projects/objective-http/src/test/e2e/server/server.js:48:51)
+#         at EndpointHandler.handle (/Users/volatilization/projects/objective-http/src/js/server/handler/endpoint/EndpointHandler.js:33:42)
+#         at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+#         at async EndpointHandlers.handle (/Users/volatilization/projects/objective-http/src/js/server/handler/endpoint/EndpointHandlers.js:10:30)
+#         at async EndpontRequiredHandler.handle (/Users/volatilization/projects/objective-http/src/js/server/handler/endpoint/EndpontRequiredHandler.js:9:26)
+#         at async HandlerNotFoundErrorHandler.handle (/Users/volatilization/projects/objective-http/src/js/server/handler/error/HandlerNotFoundErrorHandler.js:12:20)
+#         at async InvalidRequestErrorHandler.handle (/Users/volatilization/projects/objective-http/src/js/server/handler/error/InvalidRequestErrorHandler.js:12:20)
+#         at async LogErrorHandler.handle (/Users/volatilization/projects/objective-http/src/js/server/handler/error/LogErrorHandler.js:12:20)
+#         at async UnexpectedErrorHandler.handle (/Users/volatilization/projects/objective-http/src/js/server/handler/error/UnexpectedErrorHandler.js:12:20)
+#         at async Server.<anonymous> (/Users/volatilization/projects/objective-http/src/js/server/Server.js:37:25)
+#   }
+# }
+    # Subtest: should return 500
+    ok 3 - should return 500
+      ---
+      duration_ms: 2.140125
+      type: 'test'
+      ...
+    # Subtest: should return 200 and query in body
+    ok 4 - should return 200 and query in body
+      ---
+      duration_ms: 2.324958
+      type: 'test'
+      ...
+    # Subtest: should return 500 cause not a json body
+    ok 5 - should return 500 cause not a json body
+      ---
+      duration_ms: 2.755375
+      type: 'test'
+      ...
+    # Subtest: should return 201 and test body
+    ok 6 - should return 201 and test body
+      ---
+      duration_ms: 2.078584
+      type: 'test'
+      ...
+    1..6
+ok 1 - server
+  ---
+  duration_ms: 43.494542
+  type: 'suite'
+  ...
+1..1
+# tests 6
+# suites 1
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 134.302875

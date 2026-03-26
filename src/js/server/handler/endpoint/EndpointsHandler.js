@@ -15,20 +15,24 @@ module.exports = class EndpointsHandler {
     }
 
     async handle(requestStream, responseStream) {
+        if (
+            !this.#routeToEndpointMap.has(
+                JSON.stringify({
+                    method: requestStream.method,
+                    path: new URL(
+                        `http://${process.env.HOST ?? 'localhost'}${requestStream.url}`,
+                    ).pathname,
+                }),
+            )
+        ) {
+            return;
+        }
+
         const request = await this.#request
             .with({
                 requestStream,
             })
             .accept();
-
-        if (!this.#routeToEndpointMap.has(JSON.stringify(request.route))) {
-            throw new Error(
-                `Handler for ${JSON.stringify(request.route)} not found`,
-                {
-                    cause: { code: 'HANDLER_NOT_FOUND' },
-                },
-            );
-        }
 
         return this.#response
             .with({

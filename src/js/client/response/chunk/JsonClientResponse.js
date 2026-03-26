@@ -51,12 +51,12 @@ module.exports = class JsonClientResponse {
             });
         } catch (e) {
             if (!(e instanceof SyntaxError)) {
-                throw e;
+                throw new Error('JSON client response error', {
+                    cause: { error: e, code: 'RESPONSE_ERROR' },
+                });
             }
 
-            return this.with({
-                origin: accepted,
-            });
+            throw e;
         }
     }
 };

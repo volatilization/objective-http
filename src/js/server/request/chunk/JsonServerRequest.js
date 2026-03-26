@@ -43,15 +43,25 @@ module.exports = class JsonServerRequest {
     async accept() {
         const accepted = await this.#origin.accept();
 
-        return this.with({
-            origin: accepted.with({
-                body:
-                    accepted.body?.length > 0
-                        ? JSON.parse(accepted.body?.toString())
-                        : accepted.body,
-                headers: Object.fromEntries(accepted.headers),
-                query: Object.fromEntries(accepted.query),
-            }),
-        });
+        try {
+            return this.with({
+                origin: accepted.with({
+                    body:
+                        accepted.body?.length > 0
+                            ? JSON.parse(accepted.body?.toString())
+                            : accepted.body,
+                    headers: Object.fromEntries(accepted.headers),
+                    query: Object.fromEntries(accepted.query),
+                }),
+            });
+        } catch (e) {
+            if (e instanceof SyntaxError) {
+                throw new Error('Invalid server json request', {
+                    cause: { error: e, code: 'INVALID_REQUEST' },
+                });
+            }
+
+            throw e;
+        }
     }
 };

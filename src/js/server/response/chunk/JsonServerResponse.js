@@ -38,23 +38,13 @@ module.exports = class JsonServerResponse {
     }
 
     send() {
-        try {
-            return this.with({
-                origin: this.#origin
-                    .with({
-                        headers: this.headers,
-                        body: this.body,
-                    })
-                    .send(),
-            });
-        } catch (e) {
-            if (!(e instanceof SyntaxError)) {
-                throw e;
-            }
-
-            return this.with({
-                origin: this.#origin.send(),
-            });
-        }
+        return this.with({
+            origin: this.#origin
+                .with({
+                    headers: this.headers,
+                    body: this.body,
+                })
+                .send(),
+        });
     }
 };
