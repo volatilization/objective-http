@@ -1,6 +1,6 @@
 export default {
     git: {
-        requireBranch: 'release/{version}',
+        requireBranch: ['release/*', 'master'],
         commitMessage: 'release v${version}',
     },
     github: {
