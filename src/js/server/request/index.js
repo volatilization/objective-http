@@ -1,4 +1,3 @@
 module.exports = {
-    InputRequest: require('./InputRequest'),
-    LoggedInputRequest: require('./LoggedInputRequest')
+    chunk: require('./chunk'),
 };

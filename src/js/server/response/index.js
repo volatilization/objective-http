@@ -1,4 +1,3 @@
 module.exports = {
-    OutputResponse: require('./OutputResponse'),
-    LoggedOutputResponse: require('./LoggedOutputResponse')
+    chunk: require('./chunk'),
 };

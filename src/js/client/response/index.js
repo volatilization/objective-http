@@ -1,3 +1,3 @@
 module.exports = {
-    JsonResponse: require('./JsonResponse'),
+    chunk: require('./chunk'),
 };
