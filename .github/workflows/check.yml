@@ -21,6 +21,6 @@ jobs:
       - name: Linter check
         run: npm run lint
       - name: Tests check
-        run: npm run test:covearge
+        run: npm run test:coverage
         env:
           COVERAGE_MIN_PERCENT: ${{vars.coverage_min_percent}}
