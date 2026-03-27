@@ -14,7 +14,8 @@
         "email": "volatilization@yandex.ru"
     },
     "repository": {
-        "url": "git+https://github.com/volatilization/objective-http.git"
+        "type": "git",
+        "url": "https://github.com/volatilization/objective-http"
     },
     "license": "LGPL-3.0-only",
     "scripts": {
@@ -22,11 +23,14 @@
         "test": "node --test  --experimental-test-coverage --test-reporter=spec src/test/*.js src/test/**/*.js",
         "test:coverage": "node scripts/coverage.js",
         "release": "release-it --config release-it.config.mjs",
-        "release:no-increment": "release-it --config release-it.config.mjs --no-increment",
+        "release:no-increment": "release-it --ci --config release-it.config.mjs --no-increment --no-git",
         "dist:build": "node scripts/build.js",
         "dist:cleanup": "node scripts/cleanup.js"
     },
     "main": "src/js/index.js",
+    "publishConfig": {
+        "access": "public"
+    },
     "devDependencies": {
         "@dotenvx/dotenvx": "^1.57.5",
         "@eslint/js": "^9.35.0",
