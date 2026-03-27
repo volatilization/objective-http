@@ -28,6 +28,6 @@ jobs:
             git config --global user.name "volatilization"
       - name: Run release
         run: npx release-it --ci --no-increment --no-git 
-          env:
-            RELEASE_IT_GITHUB_TOKEN: ${{ secrets.RELEASE_IT_GITHUB_TOKEN  }}
-            COVERAGE_MIN_PERCENT: ${{ vars.COVERAGE_MIN_PERCENT }}
+        env:
+          RELEASE_IT_GITHUB_TOKEN: ${{ secrets.RELEASE_IT_GITHUB_TOKEN  }}
+          COVERAGE_MIN_PERCENT: ${{ vars.COVERAGE_MIN_PERCENT }}
