@@ -1,6 +1,6 @@
 {
     "name": "objective-http",
-    "version": "2.0.4",
+    "version": "2.0.5",
     "description": "Proxy classes for creating a http server",
     "keywords": [
         "web",
@@ -29,8 +29,7 @@
     },
     "main": "src/js/index.js",
     "publishConfig": {
-        "access": "public",
-        "provenance": true
+        "access": "public"
     },
     "devDependencies": {
         "@dotenvx/dotenvx": "^1.57.5",
