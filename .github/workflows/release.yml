@@ -26,7 +26,7 @@ jobs:
             git config --global user.email "volatilization@yandex.ru" 
             git config --global user.name "volatilization"
       - name: Run release
-        run: npx release-it --ci --no-increment 
+        run: npx release-it --ci --no-increment --no-npm 
         env:
           RELEASE_IT_GITHUB_TOKEN: ${{ secrets.RELEASE_IT_GITHUB_TOKEN  }}
           COVERAGE_MIN_PERCENT: ${{ vars.COVERAGE_MIN_PERCENT }}
