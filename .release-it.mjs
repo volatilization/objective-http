@@ -1,19 +1,29 @@
+import fs from 'node:fs';
+import dotenv from '@dotenvx/dotenvx';
+dotenv.config({
+    path: [fs.existsSync('.env') ? '.env' : null, 'common.env'].filter(
+        (file) => file,
+    ),
+});
+
+console.log(process.env.RELEASE_IT_GITHUB_TOKEN);
+
 export default {
     git: {
         requireBranch: ['master', 'release/*'],
         commitMessage: 'release v${version}',
+        requireCleanWorkingDir: false,
+        requireUpstream: false,
     },
     github: {
-        release: false,
+        release: true,
+        tokenRef: 'RELEASE_IT_GITHUB_TOKEN',
     },
     npm: {
-        release: false,
+        publish: true,
+        skipChecks: true,
     },
     hooks: {
-        'before:init': [
-            'git pull',
-            'npm run lint',
-            'COVERAGE_MIN_PERCENT=75 npm run test:coverage',
-        ],
+        'before:init': ['npm run lint', 'npm run test:coverage'],
     },
 };

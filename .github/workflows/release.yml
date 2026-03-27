@@ -2,25 +2,33 @@ name: Release
 
 on: workflow_dispatch
 
+permissions:
+  contents: write # For git operations
+  id-token: write # < REQUIRED FOR OIDC
+
 jobs:
   release: 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 'lts/*'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install latest npm
+        run: npm install -g npm@latest
       - name: Install the dependencies
         run: npm ci
       - name: Initialize Git user
         run: |
             git config --global user.email "volatilization@yandex.ru" 
             git config --global user.name "volatilization"
-      - name: Initialise the NPM config
-        run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-        env:
-          NPM_TOKEN: $({ secrets.NPM_TOKEN })
       - name: Run release
         run: npm run release -ci
+        run: npx release-it --ci
+          env:
+            GITHUB_TOKEN: ${{ secrets.RELEASE_IT_GITHUB_TOKEN  }}
+            RELEASE_IT_GITHUB_TOKEN: ${{ secrets.RELEASE_IT_GITHUB_TOKEN  }}

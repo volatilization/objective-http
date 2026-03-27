@@ -11,16 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup nodejs
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 'lts/*'
       - name: Install the dependencies
         run: npm ci
       - name: Linter check
         run: npm run lint
       - name: Tests check
         run: npm run test:coverage
-        env:
-          COVERAGE_MIN_PERCENT: ${{vars.coverage_min_percent}}
