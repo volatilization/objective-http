@@ -16,6 +16,7 @@ export default {
     },
     github: {
         release: true,
+        tokenRef: 'RELEASE_IT_GITHUB_TOKEN',
     },
     npm: {
         publish: true,
