@@ -25,11 +25,8 @@ jobs:
         run: |
             git config --global user.email "volatilization@yandex.ru" 
             git config --global user.name "volatilization"
-      - run: npm run dist:build
-      - run: npm publish ./dist --provenance --access public --tag not-real
-      - run: npm run dist:cleanup
       - name: Run release
-        run: npx release-it --ci --no-increment --no-npm 
+        run: npm run release:no-increment
         env:
           RELEASE_IT_GITHUB_TOKEN: ${{ secrets.RELEASE_IT_GITHUB_TOKEN  }}
           COVERAGE_MIN_PERCENT: ${{ vars.COVERAGE_MIN_PERCENT }}
