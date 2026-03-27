@@ -8,7 +8,7 @@ Proxy classes for creating a http server
 There are all `Server` classes feature.  
 Your endpoints should implement `Endpoint` class interface 
 (`get route()` and `async handle(request)` methods).  
-Also you can add own handlers (`handle(reqestStream, responseStream)`).  
+Also you can add own handlers (implements `handle(reqestStream, responseStream)`).  
 `Handler` is a top level logic object, who intrreact with IO streams directly.  
 `options` is a `node:http` options, who pass when server starting.  
 
