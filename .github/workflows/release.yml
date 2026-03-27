@@ -2,13 +2,12 @@ name: Release
 
 on: workflow_dispatch
 
-permissions:
-  contents: write # For git operations
-  id-token: write # < REQUIRED FOR OIDC
-
 jobs:
   release: 
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # For git operations
+      id-token: write # < REQUIRED FOR OIDC
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
