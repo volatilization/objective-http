@@ -25,6 +25,8 @@ jobs:
         run: |
             git config --global user.email "volatilization@yandex.ru" 
             git config --global user.name "volatilization"
+      - run: pwd
+      - run: ls -al
       - name: Run release
         run: npm run release:no-increment
         env:
