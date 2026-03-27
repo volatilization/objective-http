@@ -1,3 +1,11 @@
+const fs = require('node:fs');
+const dotenv = require('@dotenvx/dotenvx');
+dotenv.config({
+    path: [fs.existsSync('.env') ? '.env' : null, 'common.env'].filter(
+        (file) => file,
+    ),
+});
+
 const execSync = require('child_process').execSync;
 
 const testResult = execSync('npm run test').toString();
