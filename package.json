@@ -14,7 +14,7 @@
         "email": "volatilization@yandex.ru"
     },
     "repository": {
-        "url": "git+https://github.com/volatilization/objective-http.git"
+        "url": "https://github.com/volatilization/objective-http.git"
     },
     "license": "LGPL-3.0-only",
     "scripts": {
@@ -27,9 +27,6 @@
         "dist:cleanup": "node scripts/cleanup.js"
     },
     "main": "src/js/index.js",
-    "publishConfig": {
-        "provenance": true
-    },
     "devDependencies": {
         "@dotenvx/dotenvx": "^1.57.5",
         "@eslint/js": "^9.35.0",
