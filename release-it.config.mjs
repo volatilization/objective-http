@@ -20,7 +20,7 @@ export default {
     npm: {
         publish: true,
         skipChecks: true,
-        publishPath: 'objective-http',
+        publishPath: './dist',
     },
     hooks: {
         'before:init': [
@@ -28,7 +28,8 @@ export default {
             'npm run lint',
             'npm run test:coverage',
         ],
-        'before:npm:init': ['npm run dist:build'],
+        'before:npm:release': ['npm run dist:build'],
         'after:npm:release': ['npm run dist:cleanup'],
+        'befor:git:release': ['npm run dist:cleanup'],
     },
 };

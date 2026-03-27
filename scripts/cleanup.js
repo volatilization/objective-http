@@ -1,3 +1,3 @@
 const fs = require('node:fs');
 
-fs.rmSync('objective-http', { recursive: true, force: true });
+fs.rmSync('dist', { recursive: true, force: true });
