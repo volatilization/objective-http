@@ -1,0 +1,43 @@
+{
+    "name": "objective-http",
+    "version": "2.0.2",
+    "description": "Proxy classes for creating a http server",
+    "keywords": [
+        "web",
+        "web-server",
+        "http",
+        "http-server",
+        "oop"
+    ],
+    "author": {
+        "name": "volatilization",
+        "email": "volatilization@yandex.ru"
+    },
+    "repository": {
+        "url": "git+https://github.com/volatilization/objective-http.git"
+    },
+    "license": "LGPL-3.0-only",
+    "scripts": {
+        "lint": "eslint",
+        "test": "node --test  --experimental-test-coverage --test-reporter=spec src/test/*.js src/test/**/*.js",
+        "test:coverage": "node scripts/coverage.js",
+        "release": "release-it --config release-it.config.mjs",
+        "release:no-increment": "release-it --config release-it.config.mjs --no-increment",
+        "dist:build": "node scripts/build.js",
+        "dist:cleanup": "node scripts/cleanup.js"
+    },
+    "main": "src/js/index.js",
+    "devDependencies": {
+        "@dotenvx/dotenvx": "^1.57.5",
+        "@eslint/js": "^9.35.0",
+        "@eslint/json": "^0.12.0",
+        "@eslint/markdown": "^6.4.0",
+        "eslint": "^9.35.0",
+        "eslint-config-prettier": "^10.1.5",
+        "eslint-plugin-prettier": "^5.4.0",
+        "globals": "^16.0.0",
+        "prettier": "3.5.3",
+        "prettier-eslint-cli": "^8.0.1",
+        "release-it": "^19.2.4"
+    }
+}

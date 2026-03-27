@@ -37,4 +37,4 @@ node_modules/
 scratch.js
 
 #build output
-objective-http/
+dist/

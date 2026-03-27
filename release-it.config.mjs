@@ -30,6 +30,5 @@ export default {
         ],
         'before:npm:release': ['npm run dist:build'],
         'after:npm:release': ['npm run dist:cleanup'],
-        'befor:git:release': ['npm run dist:cleanup'],
     },
 };
