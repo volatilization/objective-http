@@ -1,6 +1,6 @@
 {
     "name": "objective-http",
-    "version": "2.0.0-rc",
+    "version": "2.0.1",
     "description": "Proxy classes for creating a http server",
     "keywords": [
         "web",
@@ -22,7 +22,7 @@
         "test": "node --test  --experimental-test-coverage --test-reporter=spec src/test/*.js src/test/**/*.js",
         "test:coverage": "node scripts/coverage.js",
         "release": "release-it --config release-it.config.mjs",
-        "release:no-increment": "npm run release --no-increment",
+        "release:no-increment": "release-it --config release-it.config.mjs --no-increment",
         "dist:build": "node scripts/build.js",
         "dist:cleanup": "node scripts/cleanup.js"
     },
