@@ -9,7 +9,7 @@ dotenv.config({
 
 export default {
     git: {
-        requireBranch: ['master', 'release/*'],
+        requireBranch: ['*', 'master', 'release/*'],
         commitMessage: 'release v${version}',
         requireCleanWorkingDir: false,
         requireUpstream: false,
