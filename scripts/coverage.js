@@ -1,9 +1,10 @@
 const fs = require('node:fs');
 const dotenv = require('@dotenvx/dotenvx');
 dotenv.config({
-    path: [fs.existsSync('.env') ? '.env' : null, 'common.env'].filter(
-        (file) => file,
-    ),
+    path: [
+        fs.existsSync('.env') ? '.env' : null,
+        fs.existsSync('common.env') ? 'common.env' : null,
+    ].filter((file) => file),
 });
 
 const execSync = require('child_process').execSync;
