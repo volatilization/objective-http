@@ -2,13 +2,12 @@ name: Release
 
 on: workflow_dispatch
 
-permissions:
-  contents: write # For git operations
-  id-token: write # < REQUIRED FOR OIDC
-
 jobs:
   release: 
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # For git operations
+      id-token: write # < REQUIRED FOR OIDC
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -27,7 +26,7 @@ jobs:
             git config --global user.email "volatilization@yandex.ru" 
             git config --global user.name "volatilization"
       - name: Run release
-        run: npx release-it --ci --no-increment --no-git 
+        run: npm run release:no-increment
         env:
           RELEASE_IT_GITHUB_TOKEN: ${{ secrets.RELEASE_IT_GITHUB_TOKEN  }}
           COVERAGE_MIN_PERCENT: ${{ vars.COVERAGE_MIN_PERCENT }}
