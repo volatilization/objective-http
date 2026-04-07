@@ -45,7 +45,25 @@ const serverConfig = new Server({
                                         },
 
                                         handle() {
-                                            throw new Error('WTF');
+                                            throw new Error('WTF', {
+                                                cause: {
+                                                    error: new Error('1', {
+                                                        cause: {
+                                                            error: new Error(
+                                                                '2',
+                                                                {
+                                                                    cause: {
+                                                                        error: new TypeError(),
+                                                                        code: '2',
+                                                                    },
+                                                                },
+                                                            ),
+                                                            code: '1',
+                                                        },
+                                                    }),
+                                                    code: 'MAIN',
+                                                },
+                                            });
                                         },
                                     },
                                     request: new ChunkServerRequest({}),
