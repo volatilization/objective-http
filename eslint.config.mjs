@@ -8,12 +8,16 @@ import eslintConfigPrettier from 'eslint-config-prettier/flat';
 export default defineConfig([
     eslintConfigPrettier,
     globalIgnores(['dist/']),
+    globalIgnores(['scratch.js']),
     { files: ['**/*.js'], languageOptions: { sourceType: 'commonjs' } },
     {
         files: ['**/*.{js,mjs,cjs}'],
         languageOptions: { globals: globals.node },
         plugins: { js },
         extends: ['js/recommended'],
+        rules: {
+            'preserve-caught-error': 'off',
+        },
     },
     {
         files: ['**/*.json'],
