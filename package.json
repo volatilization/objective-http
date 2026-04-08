@@ -20,7 +20,7 @@
     "license": "LGPL-3.0-only",
     "scripts": {
         "lint": "eslint",
-        "test": "node --test  --experimental-test-coverage --test-reporter=spec src/test/*.js src/test/**/*.js",
+        "test": "node --test  --experimental-test-coverage --test-reporter=spec test/*.js test/**/*.js",
         "test:coverage": "node scripts/coverage.js",
         "release": "release-it --config release-it.config.mjs",
         "release:no-increment": "release-it --ci --config release-it.config.mjs --no-increment --no-git",
