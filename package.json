@@ -31,7 +31,7 @@
         "access": "public"
     },
     "devDependencies": {
-        "@dotenvx/dotenvx": "^1.57.5",
+        "@dotenvx/dotenvx": "^1.60.2",
         "@eslint/js": "^10.0.1",
         "@eslint/json": "^1.2.0",
         "@eslint/markdown": "^8.0.1",
@@ -42,7 +42,7 @@
         "globals": "^17.4.0",
         "prettier": "^3.8.1",
         "prettier-eslint-cli": "^8.0.1",
-        "release-it": "^17.11.0",
+        "release-it": "^19.2.4",
         "terser-webpack-plugin": "^5.4.0",
         "webpack": "^5.105.4",
         "webpack-cli": "^7.0.2"
