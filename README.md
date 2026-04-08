@@ -87,6 +87,15 @@ new Server({
 });
 ```
 
+or jsut use `autoconfig`.
+
+```javascript
+const { server } = require('objective-http').server.autoconfig;
+const { env } = require('ndoe:process');
+
+server({ env, endpoints });
+```
+
 `MyEndpoint` class example:
 
 ```javascript
