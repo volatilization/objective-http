@@ -3,4 +3,5 @@ module.exports = {
     handler: require('./handler'),
     request: require('./request'),
     response: require('./response'),
+    autoconfig: require('./autoconfig'),
 };

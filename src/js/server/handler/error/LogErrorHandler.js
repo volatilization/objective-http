@@ -11,9 +11,10 @@ module.exports = class LogErrorHandler {
         try {
             return await this.#origin.handle(reqestStream, responseStream);
         } catch (e) {
-            this.#logger.error(`Error while handling ${reqestStream.url}`, {
-                cause: { error: e },
-            });
+            this.#logger.error(
+                `Error while handling ${reqestStream.method}:${reqestStream.url}`,
+                e,
+            );
 
             throw e;
         }
