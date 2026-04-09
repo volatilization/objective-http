@@ -1,6 +1,6 @@
 {
     "name": "objective-http",
-    "version": "2.1.3",
+    "version": "2.1.4",
     "description": "Proxy classes for creating a http server",
     "keywords": [
         "web",
@@ -24,8 +24,8 @@
         "test:coverage": "node scripts/coverage.js",
         "release": "release-it --config release-it.config.mjs",
         "release:no-increment": "release-it --ci --config release-it.config.mjs --no-increment --no-git",
-        "dist:build": "webpack --config webpack.config.mjs",
-        "dist:cleanup": "node scripts/cleanup.js"
+        "build": "webpack --config webpack.config.mjs",
+        "build:cleanup": "node scripts/cleanup.js"
     },
     "publishConfig": {
         "access": "public"

@@ -44,8 +44,8 @@ module.exports = class JsonClientRequest {
         return this.#origin.response;
     }
 
-    send() {
-        return this.#origin
+    async send() {
+        return await this.#origin
             .with({
                 body: this.body,
                 options: this.options,

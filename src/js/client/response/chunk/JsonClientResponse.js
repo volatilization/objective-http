@@ -50,10 +50,13 @@ module.exports = class JsonClientResponse {
                 }),
             });
         } catch (e) {
-            if (!(e instanceof SyntaxError)) {
-                throw new Error('JSON client response error', {
-                    cause: { error: e, code: 'RESPONSE_ERROR' },
-                });
+            if (e instanceof SyntaxError) {
+                throw new Error(
+                    `Invalid client json response. Body was ${accepted.body}`,
+                    {
+                        cause: { error: e, code: 'RESPONSE_ERROR' },
+                    },
+                );
             }
 
             throw e;

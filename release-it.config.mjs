@@ -25,11 +25,11 @@ export default {
     },
     hooks: {
         'before:init': [
-            'npm run dist:cleanup',
+            'npm run build:cleanup',
             'npm run lint',
             'npm run test:coverage',
         ],
-        'before:npm:release': ['npm run dist:build'],
-        'after:npm:release': ['npm run dist:cleanup'],
+        'before:npm:release': ['npm run build'],
+        'after:npm:release': ['npm run build:cleanup'],
     },
 };

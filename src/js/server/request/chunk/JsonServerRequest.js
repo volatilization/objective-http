@@ -56,9 +56,12 @@ module.exports = class JsonServerRequest {
             });
         } catch (e) {
             if (e instanceof SyntaxError) {
-                throw new Error('Invalid server json request', {
-                    cause: { error: e, code: 'INVALID_REQUEST' },
-                });
+                throw new Error(
+                    `Invalid server json request. Body was ${accepted.body}`,
+                    {
+                        cause: { error: e, code: 'INVALID_REQUEST' },
+                    },
+                );
             }
 
             throw e;
