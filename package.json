@@ -24,8 +24,8 @@
         "test:coverage": "node scripts/coverage.js",
         "release": "release-it --config release-it.config.mjs",
         "release:no-increment": "release-it --ci --config release-it.config.mjs --no-increment --no-git",
-        "dist:build": "webpack --config webpack.config.mjs",
-        "dist:cleanup": "node scripts/cleanup.js"
+        "build": "webpack --config webpack.config.mjs",
+        "build:cleanup": "node scripts/cleanup.js"
     },
     "publishConfig": {
         "access": "public"
