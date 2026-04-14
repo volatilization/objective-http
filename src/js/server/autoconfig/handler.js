@@ -57,14 +57,22 @@ function loggHandler({ env, handler }) {
 
     const { LogErrorHandler } = require('../index').handler.error;
     const console = require('node:console');
+    const { inspect } = require('node:util');
 
     return new LogErrorHandler({
         origin: handler,
         logger: console,
+        inspect,
     });
 }
 
-module.exports = function handler({ env, endpoints }) {
+module.exports = function handler({
+    env,
+    errorHandler = ({ origin }) => {
+        return origin;
+    },
+    endpoints,
+}) {
     const {
         handler: {
             endpoint: { EndpointRequiredHandler },
@@ -81,12 +89,15 @@ module.exports = function handler({ env, endpoints }) {
 
     return new UnexpectedErrorHandler({
         origin: loggHandler({
-            handler: new InvalidRequestErrorHandler({
-                origin: new HandlerNotFoundErrorHandler({
-                    origin: new EndpointRequiredHandler({
-                        origin: endpointHandler({
-                            endpoint: endpoints,
+            handler: errorHandler({
+                origin: new InvalidRequestErrorHandler({
+                    origin: new HandlerNotFoundErrorHandler({
+                        origin: new EndpointRequiredHandler({
+                            origin: endpointHandler({
+                                endpoint: endpoints,
+                            }),
                         }),
+                        response: new ChunkServerResponse({}),
                     }),
                     response: new ChunkServerResponse({}),
                 }),

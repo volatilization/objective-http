@@ -1,10 +1,12 @@
 module.exports = class LogErrorHandler {
     #origin;
     #logger;
+    #inspect;
 
-    constructor({ origin, logger }) {
+    constructor({ origin, logger, inspect }) {
         this.#origin = origin;
         this.#logger = logger;
+        this.#inspect = inspect;
     }
 
     async handle(reqestStream, responseStream) {
@@ -13,7 +15,7 @@ module.exports = class LogErrorHandler {
         } catch (e) {
             this.#logger.error(
                 `Error while handling ${reqestStream.method}:${reqestStream.url}`,
-                e,
+                this.#inspect(e, false, 256),
             );
 
             throw e;
