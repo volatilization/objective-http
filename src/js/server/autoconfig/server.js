@@ -1,4 +1,4 @@
-module.exports = function server({ env, endpoints }) {
+module.exports = function server({ env, errorHandler, endpoints }) {
     if (!env?.SERVER_PORT) {
         throw new Error('Server port is empty', {
             cause: { code: 'INVALID_CONFIG' },
@@ -10,7 +10,7 @@ module.exports = function server({ env, endpoints }) {
     const http = require('node:http');
 
     return new Server({
-        handler: handler({ env, endpoints }),
+        handler: handler({ env, errorHandler, endpoints }),
         options: { port: Number(env.SERVER_PORT) },
         http,
     });
