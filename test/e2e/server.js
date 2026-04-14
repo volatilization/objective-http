@@ -73,7 +73,7 @@ const endpoints = [
 ];
 
 function errorHandlers() {
-    return ({ origin, response }) => {
+    return ({ origin }) => {
         return {
             async handle(requestStream, responseStream) {
                 console.log('INSIDE');
