@@ -19,7 +19,6 @@ coverage_percent=$(
 )
 
 if (( $(echo "$coverage_percent < $COVERAGE_MIN_PERCENT" | bc -l) )); then
-    echo "why am here"
     echo "${coverage_percent} is not enough coverage percent" >&2
     exit 1
 fi
