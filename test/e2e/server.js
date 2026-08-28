@@ -72,8 +72,20 @@ const endpoints = [
     ],
 ];
 
+function errorHandlers() {
+    return ({ origin }) => {
+        return {
+            async handle(requestStream, responseStream) {
+                console.log('INSIDE');
+                return await origin.handle(requestStream, responseStream);
+            },
+        };
+    };
+}
+
 const serverConfig = server({
     endpoints,
+    errorHandler: errorHandlers(),
     env: { SERVER_PORT: 8080, SERVER_ERROR_LOG: true },
 });
 

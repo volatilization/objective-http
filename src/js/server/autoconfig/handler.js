@@ -50,9 +50,9 @@ function endpointHandler({ endpoint }) {
     });
 }
 
-function loggHandler({ env, handler }) {
+function loggHandler({ env, origin }) {
     if ([undefined, null, 'disable', 'off'].includes(env?.SERVER_ERROR_LOG)) {
-        return handler;
+        return origin;
     }
 
     const { LogErrorHandler } = require('../index').handler.error;
@@ -60,7 +60,7 @@ function loggHandler({ env, handler }) {
     const { inspect } = require('node:util');
 
     return new LogErrorHandler({
-        origin: handler,
+        origin,
         logger: console,
         inspect,
     });
@@ -68,9 +68,7 @@ function loggHandler({ env, handler }) {
 
 module.exports = function handler({
     env,
-    errorHandler = ({ origin }) => {
-        return origin;
-    },
+    errorHandler = ({ origin }) => origin,
     endpoints,
 }) {
     const {
@@ -89,7 +87,7 @@ module.exports = function handler({
 
     return new UnexpectedErrorHandler({
         origin: loggHandler({
-            handler: errorHandler({
+            origin: errorHandler({
                 origin: new InvalidRequestErrorHandler({
                     origin: new HandlerNotFoundErrorHandler({
                         origin: new EndpointRequiredHandler({
