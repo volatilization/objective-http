@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 export LC_ALL=C
-set -euo pipefail
+set -eo pipefail
 
 [ -f .env ] && set -a && source .env && set +a
 [ -f common.env ] && set -a && source common.env && set +a
