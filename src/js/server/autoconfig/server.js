@@ -4,7 +4,7 @@ module.exports = function server({ env, errorHandler, endpoints }) {
             cause: { code: 'INVALID_CONFIG' },
         });
     }
-
+    
     const { Server } = require('../index');
     const handler = require('./handler');
     const http = require('node:http');

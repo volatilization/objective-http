@@ -3,9 +3,11 @@ import dotenv from '@dotenvx/dotenvx';
 dotenv.config({
     path: [
         fs.existsSync('.env') ? '.env' : null,
-        fs.existsSync('common.env') ? 'common.env' : null,
+        fs.existsSync('.common.env') ? '.common.env' : null,
     ].filter((file) => file),
 });
+
+console.log(process.env.RELEASE_IT_GITHUB_TOKEN);
 
 export default {
     git: {

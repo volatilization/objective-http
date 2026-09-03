@@ -3,7 +3,7 @@ export LC_ALL=C
 set -eo pipefail
 
 [ -f .env ] && set -a && source .env && set +a
-[ -f common.env ] && set -a && source common.env && set +a
+[ -f .common.env ] && set -a && source .common.env && set +a
 
 test_result=$(FORCE_COLOR=0 npm run test)
 

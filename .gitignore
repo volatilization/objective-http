@@ -1,6 +1,9 @@
 .idea/
+.vim/
+.scratches/
 *.vim
 *.vim.*
+.DS_Store
 
 # Logs
 logs

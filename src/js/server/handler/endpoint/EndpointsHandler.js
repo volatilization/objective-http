@@ -21,7 +21,9 @@ module.exports = class EndpointsHandler {
         });
 
         if (!this.#routeToEndpointMap.has(requestRoute)) {
-            return;
+            throw new Error(`Handler for ${requestStream.url} not found`, {
+                cause: { code: 'HANDLER_NOT_FOUND' },
+            });
         }
 
         const request = await this.#request

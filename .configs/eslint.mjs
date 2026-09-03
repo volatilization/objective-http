@@ -8,7 +8,9 @@ import eslintConfigPrettier from 'eslint-config-prettier/flat';
 export default defineConfig([
     eslintConfigPrettier,
     globalIgnores(['dist/']),
-    globalIgnores(['scratch.js']),
+    globalIgnores(['.scratches/']),
+    globalIgnores(['.config/']),
+    globalIgnores(['.agents/']),
     { files: ['**/*.js'], languageOptions: { sourceType: 'commonjs' } },
     {
         files: ['**/*.{js,mjs,cjs}'],

@@ -19,13 +19,13 @@
     },
     "license": "LGPL-3.0-only",
     "scripts": {
-        "lint": "eslint",
+        "lint": "eslint  --config .configs/eslint.mjs",
         "test": "node --test  --experimental-test-coverage --test-reporter=spec test/*.js test/**/*.js",
-        "test:coverage": "./scripts/coverage.sh",
-        "release": "release-it --config release-it.config.mjs",
-        "release:no-increment": "release-it --ci --config release-it.config.mjs --no-increment --no-git",
-        "build": "webpack --config webpack.config.mjs",
-        "build:cleanup": "node scripts/cleanup.js"
+        "test:coverage": "./.scripts/coverage.sh",
+        "release": "release-it --config .configs/release-it.mjs",
+        "release:no-increment": "release-it --ci --config .configs/release-it.mjs --no-increment --no-git",
+        "build": "webpack --config .configs/webpack.mjs",
+        "build:cleanup": "rm -rf dist"
     },
     "publishConfig": {
         "access": "public"
