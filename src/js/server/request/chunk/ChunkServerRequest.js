@@ -45,7 +45,7 @@ module.exports = class ChunkServerRequest {
         return this.#headers;
     }
 
-    accept() {
+    recive() {
         return new Promise((resolve, reject) => {
             try {
                 this.#requestStream.on('error', (e) => {

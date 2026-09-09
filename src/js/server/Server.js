@@ -51,7 +51,7 @@ module.exports = class Server {
                 );
             } catch (e) {
                 reject(
-                    new Error('Init server fail', {
+                    new Error('Server initializing error', {
                         cause: { error: e, code: 'INITIAL_SERVER_FAIL' },
                     }),
                 );
