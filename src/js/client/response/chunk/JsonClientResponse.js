@@ -36,23 +36,23 @@ module.exports = class JsonClientResponse {
         return this.#origin.body;
     }
 
-    async accept() {
-        const accepted = await this.#origin.accept();
+    async recive() {
+        const recived = await this.#origin.recive();
 
         try {
             return this.with({
-                origin: accepted.with({
+                origin: recived.with({
                     body:
-                        accepted.body?.length > 0
-                            ? JSON.parse(accepted.body?.toString())
-                            : accepted.body,
-                    headers: Object.fromEntries(accepted.headers),
+                        recived.body?.length > 0
+                            ? JSON.parse(recived.body?.toString())
+                            : recived.body,
+                    headers: Object.fromEntries(recived.headers),
                 }),
             });
         } catch (e) {
             if (e instanceof SyntaxError) {
                 throw new Error(
-                    `Invalid client json response. Body was ${accepted.body}`,
+                    `Invalid client json response. Body was ${recived.body}`,
                     {
                         cause: { error: e, code: 'RESPONSE_ERROR' },
                     },

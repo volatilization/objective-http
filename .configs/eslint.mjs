@@ -9,7 +9,7 @@ export default defineConfig([
     eslintConfigPrettier,
     globalIgnores(['dist/']),
     globalIgnores(['.scratches/']),
-    globalIgnores(['.config/']),
+    globalIgnores(['.configs/']),
     globalIgnores(['.agents/']),
     { files: ['**/*.js'], languageOptions: { sourceType: 'commonjs' } },
     {

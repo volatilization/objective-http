@@ -20,10 +20,6 @@ module.exports = class ChunkClientRequest {
         return new ChunkClientRequest({ http, options, body, response });
     }
 
-    get http() {
-        return this.#http;
-    }
-
     get options() {
         return this.#options;
     }
@@ -43,7 +39,7 @@ module.exports = class ChunkClientRequest {
                 (responseStream) => {
                     this.response
                         .with({ responseStream })
-                        .accept()
+                        .recive()
                         .then(resolve)
                         .catch(reject);
                 },

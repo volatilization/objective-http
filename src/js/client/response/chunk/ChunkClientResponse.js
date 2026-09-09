@@ -41,7 +41,7 @@ module.exports = class ChunkClientResponse {
         return Number(this.status) === 200;
     }
 
-    accept() {
+    recive() {
         return new Promise((resolve, reject) => {
             try {
                 this.#responseStream.on('error', (e) => {

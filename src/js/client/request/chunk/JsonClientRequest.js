@@ -20,10 +20,6 @@ module.exports = class JsonClientRequest {
         return new JsonClientRequest({ origin });
     }
 
-    get http() {
-        return this.#origin.http;
-    }
-
     get options() {
         return {
             ...this.#origin.options,

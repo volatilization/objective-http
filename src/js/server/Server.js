@@ -1,24 +1,24 @@
 module.exports = class Server {
-    #handler;
+    #request;
     #options;
     #http;
     #server;
 
-    constructor({ handler, options, http, server }) {
-        this.#handler = handler;
+    constructor({ request, options, http, server }) {
+        this.#request = request;
         this.#options = options;
         this.#http = http;
         this.#server = server;
     }
 
     with({
-        handler = this.#handler,
+        request = this.#request,
         options = this.#options,
         http = this.#http,
         server = this.#server,
     }) {
         return new Server({
-            handler,
+            request,
             options,
             http,
             server,
@@ -33,11 +33,17 @@ module.exports = class Server {
         return new Promise((resolve, reject) => {
             try {
                 const server = this.#http.createServer(
-                    async (requestStream, responseStream) =>
-                        await this.#handler.handle(
-                            requestStream,
-                            responseStream,
-                        ),
+                    (requestStream, responseStream) => {
+                        this.#request
+                            .with({ stream: requestStream })
+                            .recive()
+                            .response.with({ stream: responseStream })
+                            .send();
+                    },
+                    // await this.#handler.handle(
+                    //     requestStream,
+                    //     responseStream,
+                    // ),
                 );
 
                 server.listen(this.options, () =>
