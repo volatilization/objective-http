@@ -1,24 +1,24 @@
 module.exports = class ChunkServerResponse {
-    #responseStream;
+    #stream;
     #status;
     #headers;
     #body;
 
-    constructor({ responseStream, status = 200, headers = {}, body }) {
-        this.#responseStream = responseStream;
+    constructor({ stream, status = 200, headers = {}, body }) {
+        this.#stream = stream;
         this.#status = status;
         this.#headers = headers;
         this.#body = body;
     }
 
     with({
-        responseStream = this.#responseStream,
+        stream = this.#stream,
         status = this.#status,
         headers = this.#headers,
         body = this.#body,
     }) {
         return new ChunkServerResponse({
-            responseStream,
+            stream,
             status,
             headers,
             body,
@@ -39,15 +39,15 @@ module.exports = class ChunkServerResponse {
 
     send() {
         try {
-            this.#responseStream.writeHead(this.status, this.headers);
+            this.#stream.writeHead(this.status, this.headers);
 
             if (this.body != null) {
-                this.#responseStream.write(this.body);
+                this.#stream.write(this.body);
             }
 
             return this;
         } finally {
-            this.#responseStream.end();
+            this.#stream.end();
         }
     }
 };

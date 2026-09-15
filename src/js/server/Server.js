@@ -1,22 +1,13 @@
 module.exports = class Server {
     #endpoint;
-    #request;
-    #response;
+    #errorResponse;
     #options;
     #http;
     #server;
 
-    constructor({
-        endpoint,
-        request = endpoint.request,
-        response = endpoint.response,
-        options,
-        http,
-        server,
-    }) {
+    constructor({ endpoint, errorResponse, options, http, server }) {
         this.#endpoint = endpoint;
-        this.#request = request;
-        this.#response = response;
+        this.#errorResponse = errorResponse;
         this.#options = options;
         this.#http = http;
         this.#server = server;
@@ -24,16 +15,14 @@ module.exports = class Server {
 
     with({
         endpoint = this.#endpoint,
-        request = this.#request,
-        response = this.#response,
+        errorResponse = this.#errorResponse,
         options = this.#options,
         http = this.#http,
         server = this.#server,
     }) {
         return new Server({
             endpoint,
-            request,
-            response,
+            errorResponse,
             options,
             http,
             server,
@@ -49,16 +38,25 @@ module.exports = class Server {
             try {
                 const server = this.#http.createServer(
                     async (requestStream, responseStream) => {
-                        await this.#endpoint
-                            .with({
-                                request: this.#request.with({
-                                    stream: requestStream,
-                                }),
-                                response: this.#response.with({
+                        try {
+                            await this.#endpoint
+                                .with({
+                                    request: this.#endpoint.request.with({
+                                        stream: requestStream,
+                                    }),
+                                    response: this.#endpoint.response.with({
+                                        stream: responseStream,
+                                    }),
+                                })
+                                .handle();
+                        } catch (e) {
+                            await this.#errorResponse
+                                .with({
                                     stream: responseStream,
-                                }),
-                            })
-                            .handle();
+                                    error: e,
+                                })
+                                .send();
+                        }
                     },
                 );
 
