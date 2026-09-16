@@ -166,25 +166,16 @@ describe('client', async () => {
             () => {
                 return {
                     ...testedRequest,
-                    options: {
-                        host: 'localhost',
-                        port: 8090,
-                        method: 'GET',
-                    },
+                    url: 'http://localhost:8090',
                 }.send();
             },
-            Error,
-            //{ message: 'fetch failed' },
+            { message: 'fetch failed' },
         );
 
         try {
             await {
                 ...testedRequest,
-                options: {
-                    host: 'localhost',
-                    port: 8091,
-                    method: 'GET',
-                },
+                url: 'http://localhost:8091',
             }.send();
         } catch (e) {
             assert.strictEqual(e.cause.code, 'REQUEST_ERROR');
@@ -194,12 +185,7 @@ describe('client', async () => {
     await it('should return 500', async () => {
         const response = await {
             ...testedRequest,
-            options: {
-                host: 'localhost',
-                port: 8090,
-                method: 'GET',
-                path: '/error',
-            },
+            url: 'http://localhost:8090/error',
         }.send();
 
         assert.strictEqual(response.status, 500);
@@ -208,12 +194,7 @@ describe('client', async () => {
     await it('should return 501', async () => {
         const response = await {
             ...testedRequest,
-            options: {
-                host: 'localhost',
-                port: 8090,
-                method: 'GET',
-                path: '/not_a_test',
-            },
+            url: 'http://localhost:8090/not_a_test',
         }.send();
 
         assert.strictEqual(response.status, 501);
@@ -223,12 +204,7 @@ describe('client', async () => {
     await it('should return 200 and query as body', async () => {
         const response = await {
             ...testedJsonRequest,
-            options: {
-                host: 'localhost',
-                port: 8090,
-                method: 'GET',
-                path: '/json/test?x=x0',
-            },
+            url: 'http://localhost:8090/json/test?x=x0',
         }.send();
 
         assert.strictEqual(response.status, 200);
@@ -239,11 +215,9 @@ describe('client', async () => {
     await it('should return 201 and sended body', async () => {
         const response = await {
             ...testedJsonRequest,
+            url: 'http://localhost:8090/json/test',
             options: {
-                host: 'localhost',
-                port: 8090,
                 method: 'POST',
-                path: '/json/test',
             },
             body: { y: 'y0' },
         }.send();

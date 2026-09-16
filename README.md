@@ -1,111 +1,74 @@
 
 # objective-http
 
-Proxy classes for creating a http server
+Proxy opbjects for creating a http server
 
 ## Server
 
-There are all `Server` classes feature.  
-Your endpoints should implement `Endpoint` class interface 
-(`get route()` and `async handle(request)` methods).  
-Also you can add own handlers (implements `handle(reqestStream, responseStream)`).  
-`Handler` is a top level logic object, who intrreact with IO streams directly.  
+There are all `server` objects feature.  
+There are `endpoints` contains all endpoints of your application.  
+An endpoint is defined by `request` and `response` types
+(usually of the same type).  
 `options` is a `node:http` options, who pass when server starting.  
+There is an `errorResponse` object for error handling,
+and it can be extended. The default behavior is a 500 response status.  
+
+### `myServer` object example
 
 ```javascript
 const http = require('node:http');
 const console = require('node:console');
+
 const {
-    Server,
-    handler: {
-        endpoint: {
-            EndpointHandler,
-            EndpointsHandler,
-            EndpointHandlers,
-            EndpointRequiredHandler,
-        },
-        error: {
-            LogErrorHandler,
-            UnexpectedErrorHandler,
-            InvalidRequestErrorHandler,
-            HandlerNotFoundErrorHandler,
-        },
-    },
+    server,
+    endpoint: { endpoints, chunkEndpoint },
     request: {
-        chunk: { JsonServerRequest, ChunkServerRequest },
+        serverRequest,
+        chunk: { serverChunkRequest, serverJsonRequest },
     },
     response: {
-        chunk: { JsonServerResponse, ChunkServerResponse },
+        serverResponse,
+        chunk: { serverChunkResponse, serverJsonResponse, serverErrorResponse },
     },
 } = require('objective-http').server;
 
-new Server({
-    handler: new UnexpectedErrorHandler({
-        origin: new LogErrorHandler({
-            origin: new InvalidRequestErrorHandler({
-                origin: new HandlerNotFoundErrorHandler({
-                    origin: new EndpointRequiredHandler({
-                        origin: new EndpointHandlers({
-                            handlers: [
-                                new EndpointHandler({
-                                    endpoint: new MyEndpoint(),
-                                    request: new ChunkServerRequest({}),
-                                    response: new ChunkServerResponse({}),
-                                }),
-                                new EndpointHandler({
-                                    endpoint: new MyEndpoint(),
-                                    request: new ChunkServerRequest({}),
-                                    response: new ChunkServerResponse({})
-                                }),
-                                new EndpointsHandler({
-                                    endpoints: [
-                                       new MyJsonEndpoint(),
-                                       new MyJsonEndpoint(),
-                                       new MyJsonEndpoint(),
-                                    ],
-                                    request: new JsonServerRequest({
-                                        origin: new ChunkServerRequest({}),
-                                    }),
-                                    response: new JsonServerResponse({
-                                        origin: new ChunkServerResponse({}),
-                                    }),
-                                }),
-                            ],
-                        }),
-                    }),
-                    response: new ChunkServerResponse({}),
-                }),
-                response: new ChunkServerResponse({}),
-            }),
-            logger: console,
-        }),
-        response: new ChunkServerResponse({}),
-    }),
-
+const myServer = {
+    ...server,
+    endpoints: {
+        ...endpoints,
+        request: serverRequest,
+        response: serverResponse,
+        collection: [
+            {
+                ...chunkEndpoint,
+                request: serverChunkRequest,
+                response: serverChunkResponse,
+                origin: myChunkEndpoint,
+            },
+            {
+                ...chunkEndpoint,
+                request: serverJsonRequest,
+                response: serverJsonResponse,
+                origin: myJsonEndpoint,
+            },
+        ],
+    },
+    errorResponse: myErrorResponse,
     options: { port: 8080 },
     http,
-});
+};
 ```
 
-or jsut use `autoconfig`.
+### `myEndpoint` object example
 
 ```javascript
-const { server } = require('objective-http').server.autoconfig;
-const { env } = require('ndoe:process');
-
-server({ env, endpoints });
-```
-
-`MyEndpoint` class example:
-
-```javascript
-class MyEndpoint {
+const myEndpoint = {
     route = {
         method: 'GET',
         path: '/test'
     }
 
-    async handle(request) {
+    async handle({ query, headers, body }) {
         try {
             const processResult = await someProcess();
 
@@ -125,42 +88,82 @@ class MyEndpoint {
 
 ```
 
+It should be wrapped by `chunkEndpoint` with `serverChunkResponse` and `serverChunkRequest`;
+
+### `myErrorResponse` object example
+
+```javascript
+
+const myErrorResponse = {
+    ...serverErrorResponse,
+    origin: serverErrorResponse,
+    send() {
+        let status = 500;
+
+        if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
+            status = 501;
+        }
+
+        if (this.error.cause?.code === 'INVALID_REQUEST') {
+            status = 400;
+        }
+
+        ({
+            ...this.origin,
+            stream: this.stream,
+            error: this.error,
+            status: status,
+        }).send();
+
+        return this;
+    },
+};
+
+```
+
 ## Client
 
-Simple wrapper for requests. `options` passing into `http.request(oprions, ...)`
+Simple wrapper for requests. An `options` passing into `http.request(oprions, ...)`
 
 ```javascript
 const http = require('node:http');
+
 const {
     request: {
-        chunk: { JsonClientRequest, ChunkClientRequest },
+        chunk: { clientChunkRequest, clientJsonRequest },
     },
     response: {
-        chunk: { JsonClientResponse, ChunkClientResponse },
+        chunk: { clientChunkResponse, clientJsonResponse },
     },
-} = require('objective-http').client;
+} = require('../../src/js/client');
 
-const request = new JsonClientRequest({
-    origin: new ChunkClientRequest({
-        http: http,
-        response: new JsonClientResponse({
-            origin: new ChunkClientResponse({})
-        }),
-    }),
-});
+const myChunkRequest = {
+    ...clientChunkRequest,
+    response: clientChunkResponse,
+    http: http,
+};
+const myJsonRequest = {
+    ...clientJsonRequest,
+    response: clientJsonResponse,
+    http: http,
+}
 
-const response = await request
-    .with({
-        options: {
-            host: 'localhost',
-            port: 80,
-            method: 'GET',
-            path: '/test',
-        },
-        body: { some: 'body' }
-    })
-    .send()
+// GET
 
-console.log(JSON.stringify(response.body));
+const { status, headers, body } = await {
+    ...myChunkRequest,
+    url: 'http://example.com'
+}.send();
+
+// POST
+
+const { status, headers, body } = await {
+    ...myJsonRequest,
+    url: 'http://example.com/json',
+    options: {
+        method: 'POST',
+    },
+    body: { foo: 'bar' },
+}.send();
+
 ```
-

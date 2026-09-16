@@ -10,10 +10,11 @@ module.exports = Object.freeze({
             ...this.origin,
             http: this.http,
             response: this.response,
+            url: this.url,
             options: {
                 ...this.options,
                 headers: {
-                    ...this.options.headers,
+                    ...this.options?.headers,
                     'content-type': 'application/json',
                 },
             },
