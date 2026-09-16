@@ -1,4 +1,4 @@
 module.exports = {
-    ChunkServerRequest: require('./ChunkServerRequest'),
-    JsonServerRequest: require('./JsonServerRequest'),
+    serverChunkRequest: require('./chunkRequest'),
+    serverJsonRequest: require('./jsonRequest'),
 };

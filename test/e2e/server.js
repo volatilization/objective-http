@@ -3,9 +3,20 @@
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert');
 
-const { server } = require('../../src/js/index').server.autoconfig;
+const {
+    server,
+    endpoint: { endpoints, chunkEndpoint },
+    request: {
+        serverRequest,
+        chunk: { serverChunkRequest, serverJsonRequest },
+    },
+    response: {
+        serverResponse,
+        chunk: { serverChunkResponse, serverJsonResponse, serverErrorResponse },
+    },
+} = require('../../src/js/server');
 
-const endpoints = [
+const chunkEndpoints = [
     {
         route: {
             method: 'GET',
@@ -29,72 +40,116 @@ const endpoints = [
             };
         },
     },
-    [
-        {
-            route: {
-                method: 'GET',
-                path: '/json/test',
-            },
-
-            handle(request) {
-                return {
-                    status: 200,
-                    body: request.query,
-                };
-            },
-        },
-        {
-            route: {
-                method: 'POST',
-                path: '/json/test',
-            },
-
-            handle(request) {
-                return {
-                    status: 201,
-                    body: request.body,
-                };
-            },
-        },
-        {
-            route: {
-                method: 'POST',
-                path: '/not/a/json/test',
-            },
-
-            handle(request) {
-                return {
-                    status: 200,
-                    body: request.body.toString(),
-                };
-            },
-        },
-    ],
 ];
 
-function errorHandlers() {
-    return ({ origin }) => {
-        return {
-            async handle(requestStream, responseStream) {
-                console.log('INSIDE');
-                return await origin.handle(requestStream, responseStream);
-            },
-        };
-    };
-}
+const jsonEndpoints = [
+    {
+        route: {
+            method: 'GET',
+            path: '/json/test',
+        },
 
-const serverConfig = server({
-    endpoints,
-    errorHandler: errorHandlers(),
-    env: { SERVER_PORT: 8080, SERVER_ERROR_LOG: true },
-});
+        handle({ query }) {
+            return {
+                status: 200,
+                body: query,
+            };
+        },
+    },
+    {
+        route: {
+            method: 'POST',
+            path: '/json/test',
+        },
+
+        handle({ body }) {
+            return {
+                status: 201,
+                body: body,
+            };
+        },
+    },
+    {
+        route: {
+            method: 'POST',
+            path: '/not/a/json/test',
+        },
+
+        handle({ body }) {
+            return {
+                status: 200,
+                body: body.toString(),
+            };
+        },
+    },
+];
+
+const testedErrorResponse = {
+    ...serverErrorResponse,
+    origin: serverErrorResponse,
+    send() {
+        let status = 500;
+
+        if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
+            status = 501;
+        }
+
+        if (this.error.cause?.code === 'INVALID_REQUEST') {
+            status = 400;
+        }
+
+        ({
+            ...this.origin,
+            stream: this.stream,
+            error: this.error,
+            status: status,
+        }).send();
+
+        return this;
+    },
+};
+
+const testedServer = {
+    ...server,
+    endpoints: {
+        ...endpoints,
+        request: serverRequest,
+        response: serverResponse,
+        collection: []
+            .concat(
+                chunkEndpoints.map((e) => {
+                    return {
+                        ...chunkEndpoint,
+                        request: serverChunkRequest,
+                        response: serverChunkResponse,
+                        origin: e,
+                    };
+                }),
+            )
+            .concat(
+                jsonEndpoints.map((e) => {
+                    return {
+                        ...chunkEndpoint,
+                        request: serverJsonRequest,
+                        response: serverJsonResponse,
+                        origin: e,
+                    };
+                }),
+            ),
+    },
+    errorResponse: testedErrorResponse,
+    options: { port: 8080 },
+    http: require('node:http'),
+};
 
 describe('server', async () => {
     let serverInstance;
     before(async () => {
-        serverInstance = await serverConfig.start();
+        serverInstance = await testedServer.start();
     });
-    after(async () => await serverInstance.stop());
+    after(async () => {
+        await serverInstance.stop();
+    });
 
     await it('should be started', async () => {
         await assert.doesNotReject(() => fetch('http://localhost:8080'), {

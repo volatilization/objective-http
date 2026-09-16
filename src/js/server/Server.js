@@ -1,81 +1,63 @@
-module.exports = class Server {
-    #endpoint;
-    #errorResponse;
-    #options;
-    #http;
-    #server;
-
-    constructor({ endpoint, errorResponse, options, http, server }) {
-        this.#endpoint = endpoint;
-        this.#errorResponse = errorResponse;
-        this.#options = options;
-        this.#http = http;
-        this.#server = server;
-    }
-
-    with({
-        endpoint = this.#endpoint,
-        errorResponse = this.#errorResponse,
-        options = this.#options,
-        http = this.#http,
-        server = this.#server,
-    }) {
-        return new Server({
-            endpoint,
-            errorResponse,
-            options,
-            http,
-            server,
-        });
-    }
-
-    get options() {
-        return this.#options;
-    }
+module.exports = Object.freeze({
+    endpoints: undefined,
+    errorResponse: undefined,
+    options: undefined,
+    http: undefined,
+    instance: undefined,
 
     start() {
         return new Promise((resolve, reject) => {
             try {
-                const server = this.#http.createServer(
+                const instance = this.http.createServer(
                     async (requestStream, responseStream) => {
                         try {
-                            await this.#endpoint
-                                .with({
-                                    request: this.#endpoint.request.with({
-                                        stream: requestStream,
-                                    }),
-                                    response: this.#endpoint.response.with({
-                                        stream: responseStream,
-                                    }),
-                                })
-                                .handle();
-                        } catch (e) {
-                            await this.#errorResponse
-                                .with({
+                            await {
+                                ...this.endpoints,
+                                request: {
+                                    ...this.endpoints.request,
+                                    stream: requestStream,
+                                },
+                                response: {
+                                    ...this.endpoints.response,
                                     stream: responseStream,
-                                    error: e,
-                                })
-                                .send();
+                                },
+                            }.handle();
+                        } catch (e) {
+                            ({
+                                ...this.errorResponse,
+                                stream: responseStream,
+                                error: e,
+                            }).send();
                         }
                     },
                 );
 
-                server.listen(this.options, () =>
-                    resolve(this.with({ server })),
+                instance.listen(this.options, () =>
+                    resolve({ ...this, instance }),
                 );
             } catch (e) {
                 reject(
                     new Error('Server initializing error', {
-                        cause: { error: e, code: 'INITIAL_SERVER_FAIL' },
+                        cause: { error: e, code: 'SERVER_INIT_FAIL' },
                     }),
                 );
             }
         });
-    }
+    },
 
     stop() {
-        return new Promise((resolve) => {
-            this.#server.close(() => resolve(this.with({ server: null })));
+        return new Promise((resolve, reject) => {
+            try {
+                this.instance.close(() =>
+                    resolve({ ...this, instance: undefined }),
+                );
+            } catch (e) {
+                reject(
+                    new Error('Server shutdown error', {
+                        cause: { error: e, code: 'SERVER_SHUTDOWN_FAIL' },
+                    }),
+                );
+            }
         });
-    }
-};
+    },
+});
