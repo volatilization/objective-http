@@ -1,7 +1,6 @@
 module.exports = {
-    Server: require('./Server'),
-    handler: require('./handler'),
+    server: require('./server'),
+    endpoint: require('./endpoint'),
     request: require('./request'),
     response: require('./response'),
-    autoconfig: require('./autoconfig'),
 };

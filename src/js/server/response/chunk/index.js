@@ -1,4 +1,5 @@
 module.exports = {
-    ChunkServerResponse: require('./ChunkServerResponse'),
-    JsonServerResponse: require('./JsonServerResponse')
+    serverChunkResponse: require('./chunkRersponse'),
+    serverJsonResponse: require('./jsonResponse'),
+    serverErrorResponse: require('./errorResponse'),
 };

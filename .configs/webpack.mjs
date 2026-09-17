@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import CopyPlugin from 'copy-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export default {
     entry: path.resolve(__dirname, 'src', 'js', 'index.js'),
