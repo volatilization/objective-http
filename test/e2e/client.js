@@ -7,7 +7,10 @@ const http = require('node:http');
 
 const {
     server,
-    endpoint: { endpoints, chunkEndpoint },
+    endpoint: {
+        endpoints,
+        chunk: { chunkEndpoint },
+    },
     request: {
         serverRequest,
         chunk: { serverChunkRequest, serverJsonRequest },

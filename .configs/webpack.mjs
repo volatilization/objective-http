@@ -3,7 +3,10 @@ import { fileURLToPath } from 'node:url';
 import CopyPlugin from 'copy-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 
-const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const __dirname = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+);
 
 export default {
     entry: path.resolve(__dirname, 'src', 'js', 'index.js'),
@@ -18,7 +21,31 @@ export default {
     plugins: [
         new CopyPlugin({
             patterns: [
-                path.resolve(__dirname, 'package.json'),
+                {
+                    from: path.resolve(__dirname, 'package.json'),
+                    transform(content) {
+                        return Buffer.from(
+                            JSON.stringify(
+                                JSON.parse(content.toString('utf-8')),
+                                (key, value) => {
+                                    switch (key) {
+                                        case 'main':
+                                            return 'index.js';
+                                        case 'scripts':
+                                            return undefined;
+                                        case 'devDependencies':
+                                            return undefined;
+                                        case 'browserslist':
+                                            return undefined;
+                                        default:
+                                            return value;
+                                    }
+                                },
+                                '\t',
+                            ),
+                        );
+                    },
+                },
                 path.resolve(__dirname, 'README.md'),
                 path.resolve(__dirname, 'LICENSE'),
             ],
