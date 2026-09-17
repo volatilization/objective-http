@@ -5,7 +5,10 @@ const assert = require('node:assert');
 
 const {
     server,
-    endpoint: { endpoints, chunkEndpoint },
+    endpoint: {
+        endpoints,
+        chunk: { chunkEndpoint },
+    },
     request: {
         serverRequest,
         chunk: { serverChunkRequest, serverJsonRequest },

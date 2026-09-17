@@ -1,7 +1,6 @@
-
 # objective-http
 
-Proxy opbjects for creating a http server
+Proxy objects for creating a http server
 
 ## Server
 
@@ -11,17 +10,19 @@ An endpoint is defined by `request` and `response` types
 (usually of the same type).  
 `options` is a `node:http` options, who pass when server starting.  
 There is an `errorResponse` object for error handling,
-and it can be extended. The default behavior is a 500 response status.  
+and it can be extended. The default behavior is a 500 response status.
 
 ### `myServer` object example
 
 ```javascript
 const http = require('node:http');
-const console = require('node:console');
 
 const {
     server,
-    endpoint: { endpoints, chunkEndpoint },
+    endpoint: {
+        endpoints,
+        chunk: { chunkEndpoint },
+    },
     request: {
         serverRequest,
         chunk: { serverChunkRequest, serverJsonRequest },
@@ -76,7 +77,7 @@ const myEndpoint = {
                 status: 200,
                 body: processResult.toString()
             };
-        
+
         } catch (e) {
             return {
                 status: 404,
@@ -93,7 +94,6 @@ It should be wrapped by `chunkEndpoint` with `serverChunkResponse` and `serverCh
 ### `myErrorResponse` object example
 
 ```javascript
-
 const myErrorResponse = {
     ...serverErrorResponse,
     origin: serverErrorResponse,
@@ -118,7 +118,6 @@ const myErrorResponse = {
         return this;
     },
 };
-
 ```
 
 ## Client
@@ -146,13 +145,13 @@ const myJsonRequest = {
     ...clientJsonRequest,
     response: clientJsonResponse,
     http: http,
-}
+};
 
 // GET
 
 const { status, headers, body } = await {
     ...myChunkRequest,
-    url: 'http://example.com'
+    url: 'http://example.com',
 }.send();
 
 // POST
@@ -165,5 +164,4 @@ const { status, headers, body } = await {
     },
     body: { foo: 'bar' },
 }.send();
-
 ```

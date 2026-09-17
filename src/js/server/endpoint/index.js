@@ -1,4 +1,4 @@
 module.exports = {
-    chunkEndpoint: require('./chunkEndpoint'),
     endpoints: require('./endpoints'),
+    chunk: require('./chunk'),
 };
