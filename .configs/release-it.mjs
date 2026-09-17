@@ -11,7 +11,7 @@ console.log(process.env.RELEASE_IT_GITHUB_TOKEN);
 
 export default {
     git: {
-        requireBranch: ['master', 'release/v*'],
+        requireBranch: ['release/v*'],
         commitMessage: 'release v${version}',
         requireCleanWorkingDir: false,
         requireUpstream: false,
