@@ -98,23 +98,26 @@ const myErrorResponse = {
     ...serverErrorResponse,
     origin: serverErrorResponse,
     send() {
-        let status = 500;
-
-        if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
-            status = 501;
-        }
-
-        if (this.error.cause?.code === 'INVALID_REQUEST') {
-            status = 400;
-        }
-
-        ({
+        const originResponse = {
             ...this.origin,
             stream: this.stream,
             error: this.error,
-            status: status,
-        }).send();
+            // status: 500 --default behavior
+        };
 
+        if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
+            ({ ...originResponse, status: 501 }).send();
+
+            return this;
+        }
+
+        if (this.error.cause?.code === 'INVALID_REQUEST') {
+            ({ ...originResponse, status: 400 }).send();
+
+            return this;
+        }
+
+        originResponse.send();
         return this;
     },
 };

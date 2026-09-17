@@ -22,7 +22,7 @@
         "lint": "eslint  --config .configs/eslint.mjs",
         "test": "node --test  --experimental-test-coverage --test-reporter=spec test/*.js test/**/*.js",
         "test:coverage": "./.scripts/coverage.sh",
-        "release": "release-it --config .configs/release-it.mjs",
+        "release": "release-it --config .configs/release-it.mjs --no-npm --no-github",
         "release:no-increment": "release-it --ci --config .configs/release-it.mjs --no-increment --no-git",
         "build": "webpack --config .configs/webpack.mjs",
         "build:cleanup": "rm -rf dist"

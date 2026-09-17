@@ -3,6 +3,7 @@
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert');
 
+const http = require('node:http');
 const {
     server,
     endpoint: {
@@ -91,23 +92,25 @@ const testedErrorResponse = {
     ...serverErrorResponse,
     origin: serverErrorResponse,
     send() {
-        let status = 500;
-
-        if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
-            status = 501;
-        }
-
-        if (this.error.cause?.code === 'INVALID_REQUEST') {
-            status = 400;
-        }
-
-        ({
+        const originResponse = {
             ...this.origin,
             stream: this.stream,
             error: this.error,
-            status: status,
-        }).send();
+        };
 
+        if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
+            ({ ...originResponse, status: 501 }).send();
+
+            return this;
+        }
+
+        if (this.error.cause?.code === 'INVALID_REQUEST') {
+            ({ ...originResponse, status: 400 }).send();
+
+            return this;
+        }
+
+        originResponse.send();
         return this;
     },
 };
@@ -142,7 +145,7 @@ const testedServer = {
     },
     errorResponse: testedErrorResponse,
     options: { port: 8080 },
-    http: require('node:http'),
+    http,
 };
 
 describe('server', async () => {
@@ -161,25 +164,19 @@ describe('server', async () => {
     });
 
     await it('should return 501', async () => {
-        const response = await fetch('http://localhost:8080/not/a/test', {
-            method: 'GET',
-        });
+        const response = await fetch('http://localhost:8080/not/a/test');
 
         assert.strictEqual(response.status, 501);
     });
 
     await it('should return 500', async () => {
-        const response = await fetch('http://localhost:8080/error', {
-            method: 'GET',
-        });
+        const response = await fetch('http://localhost:8080/error');
 
         assert.strictEqual(response.status, 500);
     });
 
     await it('should return 200 and query in body', async () => {
-        const response = await fetch('http://localhost:8080/json/test?x=x0', {
-            method: 'GET',
-        });
+        const response = await fetch('http://localhost:8080/json/test?x=x0');
         const body = await (await response.blob()).text();
 
         assert.strictEqual(response.status, 200);
