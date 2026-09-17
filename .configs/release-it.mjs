@@ -15,6 +15,7 @@ export default {
         commitMessage: 'release v${version}',
         requireCleanWorkingDir: false,
         requireUpstream: false,
+        commitArgs: ['--allow-empty'],
     },
     github: {
         release: true,
