@@ -3,7 +3,6 @@ const response = require('../response');
 module.exports = Object.freeze({
     ...response,
 
-    origin: response,
     body: undefined,
 
     recive() {

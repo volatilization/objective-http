@@ -90,10 +90,9 @@ const jsonEndpoints = [
 
 const testedErrorResponse = {
     ...serverErrorResponse,
-    origin: serverErrorResponse,
     send() {
         const originResponse = {
-            ...this.origin,
+            ...serverErrorResponse,
             stream: this.stream,
             error: this.error,
         };
@@ -123,22 +122,22 @@ const testedServer = {
         response: serverResponse,
         collection: []
             .concat(
-                chunkEndpoints.map((e) => {
+                chunkEndpoints.map((endpoint) => {
                     return {
                         ...chunkEndpoint,
                         request: serverChunkRequest,
                         response: serverChunkResponse,
-                        origin: e,
+                        implementation: endpoint,
                     };
                 }),
             )
             .concat(
-                jsonEndpoints.map((e) => {
+                jsonEndpoints.map((endpoint) => {
                     return {
                         ...chunkEndpoint,
                         request: serverJsonRequest,
                         response: serverJsonResponse,
-                        origin: e,
+                        implementation: endpoint,
                     };
                 }),
             ),

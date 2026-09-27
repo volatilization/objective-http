@@ -2,16 +2,16 @@ module.exports = Object.freeze({
     request: undefined,
     response: undefined,
 
-    origin: undefined,
+    implementation: undefined,
 
     route() {
-        return this.origin.route;
+        return this.implementation.route;
     },
 
     async handle() {
         const recivedRequest = await this.request.recive();
 
-        const handleResult = this.origin.handle(recivedRequest);
+        const handleResult = await this.implementation.handle(recivedRequest);
 
         ({
             ...this.response,

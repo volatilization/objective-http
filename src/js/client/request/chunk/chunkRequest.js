@@ -3,7 +3,6 @@ const request = require('../request');
 module.exports = Object.freeze({
     ...request,
 
-    origin: request,
     body: undefined,
 
     send() {

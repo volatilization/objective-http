@@ -3,11 +3,9 @@ const chunkRequest = require('./chunkRequest');
 module.exports = Object.freeze({
     ...chunkRequest,
 
-    origin: chunkRequest,
-
     async send() {
         return await {
-            ...this.origin,
+            ...chunkRequest,
             http: this.http,
             response: this.response,
             url: this.url,

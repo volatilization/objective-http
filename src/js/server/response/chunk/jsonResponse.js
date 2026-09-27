@@ -3,11 +3,9 @@ const chunkResponse = require('./chunkRersponse');
 module.exports = Object.freeze({
     ...chunkResponse,
 
-    origin: chunkResponse,
-
     send() {
         ({
-            ...this.origin,
+            ...chunkResponse,
             stream: this.stream,
             status: this.status,
             headers: {
