@@ -44,13 +44,13 @@ const myServer = {
                 ...chunkEndpoint,
                 request: serverChunkRequest,
                 response: serverChunkResponse,
-                origin: myChunkEndpoint,
+                implementation: myChunkEndpoint,
             },
             {
                 ...chunkEndpoint,
                 request: serverJsonRequest,
                 response: serverJsonResponse,
-                origin: myJsonEndpoint,
+                implementation: myJsonEndpoint,
             },
         ],
     },
@@ -96,10 +96,9 @@ It should be wrapped by `chunkEndpoint` with `serverChunkResponse` and `serverCh
 ```javascript
 const myErrorResponse = {
     ...serverErrorResponse,
-    origin: serverErrorResponse,
     send() {
         const originResponse = {
-            ...this.origin,
+            ...serverErrorResponse,
             stream: this.stream,
             error: this.error,
             // status: 500 --default behavior
