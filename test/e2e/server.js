@@ -26,9 +26,11 @@ const chunkEndpoints = [
         },
     },
     {
-        route: {
-            method: 'GET',
-            path: '/test',
+        route() {
+            return {
+                method: 'GET',
+                path: '/test',
+            };
         },
 
         handle() {
