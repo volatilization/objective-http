@@ -12,7 +12,11 @@ module.exports = Object.freeze({
     implementation: undefined,
 
     route() {
-        return this.implementation.route ?? this.implementation.route();
+        if (typeof this.implementation.route === 'function') {
+            return this.implementation.route();
+        }
+
+        return this.implementation.route;
     },
 
     async handle() {

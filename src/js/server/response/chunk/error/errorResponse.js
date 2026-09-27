@@ -1,4 +1,4 @@
-const chunkResponse = require('./chunkRersponse');
+const chunkResponse = require('../chunkRersponse');
 
 module.exports = Object.freeze({
     ...chunkResponse,

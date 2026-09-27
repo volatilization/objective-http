@@ -10,7 +10,9 @@ const {
         chunk: { chunkEndpoint, jsonEndpoint },
     },
     response: {
-        chunk: { serverErrorResponse },
+        chunk: {
+            error: { serverErrorResponseWithStatusMap },
+        },
     },
 } = require('../../src/js/server');
 
@@ -68,30 +70,19 @@ const jsonEndpoints = [
     },
 ];
 
-const testedErrorResponse = {
-    ...serverErrorResponse,
-    send() {
-        const originResponse = {
-            ...serverErrorResponse,
-            stream: this.stream,
-            error: this.error,
-        };
+const errorStatusMap = {
+    error: undefined,
 
+    status() {
         if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
-            ({ ...originResponse, status: 501 }).send();
-
-            return this;
+            return 501;
         }
 
         if (this.error.cause?.code === 'INVALID_REQUEST') {
-            ({ ...originResponse, status: 400 }).send();
-
-            return this;
+            return 400;
         }
 
-        originResponse.send();
-
-        return this;
+        return 500;
     },
 };
 
@@ -117,7 +108,11 @@ const testedServer = {
                 }),
             ),
     },
-    errorResponse: testedErrorResponse,
+    errorResponse: {
+        ...serverErrorResponseWithStatusMap,
+
+        statusMap: errorStatusMap,
+    },
     options: { port: 8090 },
 };
 
