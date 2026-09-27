@@ -3,20 +3,14 @@
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert');
 
-const http = require('node:http');
 const {
     server,
     endpoint: {
         endpoints,
-        chunk: { chunkEndpoint },
-    },
-    request: {
-        serverRequest,
-        chunk: { serverChunkRequest, serverJsonRequest },
+        chunk: { chunkEndpoint, jsonEndpoint },
     },
     response: {
-        serverResponse,
-        chunk: { serverChunkResponse, serverJsonResponse, serverErrorResponse },
+        chunk: { serverErrorResponse },
     },
 } = require('../../src/js/server');
 
@@ -118,15 +112,11 @@ const testedServer = {
     ...server,
     endpoints: {
         ...endpoints,
-        request: serverRequest,
-        response: serverResponse,
         collection: []
             .concat(
                 chunkEndpoints.map((endpoint) => {
                     return {
                         ...chunkEndpoint,
-                        request: serverChunkRequest,
-                        response: serverChunkResponse,
                         implementation: endpoint,
                     };
                 }),
@@ -134,9 +124,7 @@ const testedServer = {
             .concat(
                 jsonEndpoints.map((endpoint) => {
                     return {
-                        ...chunkEndpoint,
-                        request: serverJsonRequest,
-                        response: serverJsonResponse,
+                        ...jsonEndpoint,
                         implementation: endpoint,
                     };
                 }),
@@ -144,16 +132,15 @@ const testedServer = {
     },
     errorResponse: testedErrorResponse,
     options: { port: 8080 },
-    http,
 };
 
 describe('server', async () => {
-    let serverInstance;
+    let server;
     before(async () => {
-        serverInstance = await testedServer.start();
+        server = await testedServer.start();
     });
     after(async () => {
-        await serverInstance.stop();
+        await server.stop();
     });
 
     await it('should be started', async () => {

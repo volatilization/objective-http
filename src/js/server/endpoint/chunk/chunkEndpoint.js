@@ -1,6 +1,13 @@
+const {
+    chunk: { serverChunkRequest },
+} = require('../../request');
+const {
+    chunk: { serverChunkResponse },
+} = require('../../response');
+
 module.exports = Object.freeze({
-    request: undefined,
-    response: undefined,
+    request: serverChunkRequest,
+    response: serverChunkResponse,
 
     implementation: undefined,
 

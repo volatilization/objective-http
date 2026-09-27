@@ -3,21 +3,14 @@
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert');
 
-const http = require('node:http');
-
 const {
     server,
     endpoint: {
         endpoints,
-        chunk: { chunkEndpoint },
-    },
-    request: {
-        serverRequest,
-        chunk: { serverChunkRequest, serverJsonRequest },
+        chunk: { chunkEndpoint, jsonEndpoint },
     },
     response: {
-        serverResponse,
-        chunk: { serverChunkResponse, serverJsonResponse, serverErrorResponse },
+        chunk: { serverErrorResponse },
     },
 } = require('../../src/js/server');
 
@@ -78,22 +71,25 @@ const jsonEndpoints = [
 const testedErrorResponse = {
     ...serverErrorResponse,
     send() {
-        let status = 500;
-
-        if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
-            status = 501;
-        }
-
-        if (this.error.cause?.code === 'INVALID_REQUEST') {
-            status = 400;
-        }
-
-        ({
+        const originResponse = {
             ...serverErrorResponse,
             stream: this.stream,
             error: this.error,
-            status: status,
-        }).send();
+        };
+
+        if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
+            ({ ...originResponse, status: 501 }).send();
+
+            return this;
+        }
+
+        if (this.error.cause?.code === 'INVALID_REQUEST') {
+            ({ ...originResponse, status: 400 }).send();
+
+            return this;
+        }
+
+        originResponse.send();
 
         return this;
     },
@@ -103,15 +99,11 @@ const testedServer = {
     ...server,
     endpoints: {
         ...endpoints,
-        request: serverRequest,
-        response: serverResponse,
         collection: []
             .concat(
                 chunkEndpoints.map((endpoint) => {
                     return {
                         ...chunkEndpoint,
-                        request: serverChunkRequest,
-                        response: serverChunkResponse,
                         implementation: endpoint,
                     };
                 }),
@@ -119,9 +111,7 @@ const testedServer = {
             .concat(
                 jsonEndpoints.map((endpoint) => {
                     return {
-                        ...chunkEndpoint,
-                        request: serverJsonRequest,
-                        response: serverJsonResponse,
+                        ...jsonEndpoint,
                         implementation: endpoint,
                     };
                 }),
@@ -129,28 +119,16 @@ const testedServer = {
     },
     errorResponse: testedErrorResponse,
     options: { port: 8090 },
-    http,
 };
 
 const {
     request: {
         chunk: { clientChunkRequest, clientJsonRequest },
     },
-    response: {
-        chunk: { clientChunkResponse, clientJsonResponse },
-    },
 } = require('../../src/js/client');
 
-const testedRequest = {
-    ...clientChunkRequest,
-    response: clientChunkResponse,
-    http: http,
-};
-const testedJsonRequest = {
-    ...clientJsonRequest,
-    response: clientJsonResponse,
-    http: http,
-};
+const testedRequest = clientChunkRequest;
+const testedJsonRequest = clientJsonRequest;
 
 describe('client', async () => {
     let serverInstance;

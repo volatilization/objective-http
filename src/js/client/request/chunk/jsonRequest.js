@@ -1,7 +1,13 @@
 const chunkRequest = require('./chunkRequest');
 
+const {
+    chunk: { clientJsonResponse },
+} = require('../../response');
+
 module.exports = Object.freeze({
     ...chunkRequest,
+
+    response: clientJsonResponse,
 
     async send() {
         return await {

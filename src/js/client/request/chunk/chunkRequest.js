@@ -1,9 +1,14 @@
 const request = require('../request');
 
+const {
+    chunk: { clientChunkResponse },
+} = require('../../response');
+
 module.exports = Object.freeze({
     ...request,
 
     body: undefined,
+    response: clientChunkResponse,
 
     send() {
         return new Promise((resolve, reject) => {

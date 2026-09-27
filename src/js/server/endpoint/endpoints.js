@@ -1,6 +1,9 @@
+const { serverRequest } = require('../request');
+const { serverResponse } = require('../response');
+
 module.exports = Object.freeze({
-    request: undefined,
-    response: undefined,
+    request: serverRequest,
+    response: serverResponse,
 
     collection: undefined,
 

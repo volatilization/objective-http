@@ -1,9 +1,11 @@
+const http = require('node:http');
+
 module.exports = Object.freeze({
     endpoints: undefined,
     errorResponse: undefined,
     options: undefined,
-    http: undefined,
     instance: undefined,
+    http: http,
 
     start() {
         return new Promise((resolve, reject) => {
