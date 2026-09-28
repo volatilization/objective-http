@@ -11,8 +11,8 @@ export default {
     $schema: 'https://unpkg.com/release-it@21/schema/release-it.json',
     plugins: {
         '@release-it/bumper': {
-            in: './package.json',
-            out: './package.json',
+            in: 'package.json',
+            out: ['package.json', 'package-lock.json'],
         },
     },
     git: {
