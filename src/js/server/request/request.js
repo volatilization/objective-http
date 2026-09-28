@@ -1,5 +1,6 @@
 module.exports = Object.freeze({
     stream: undefined,
+
     route() {
         return {
             method: this.stream.method,

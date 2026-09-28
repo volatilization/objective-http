@@ -3,20 +3,16 @@
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert');
 
-const http = require('node:http');
 const {
     server,
     endpoint: {
-        endpoints,
-        chunk: { chunkEndpoint },
-    },
-    request: {
-        serverRequest,
-        chunk: { serverChunkRequest, serverJsonRequest },
+        endpointsWithRouteMap,
+        chunk: { chunkEndpoint, jsonEndpoint },
     },
     response: {
-        serverResponse,
-        chunk: { serverChunkResponse, serverJsonResponse, serverErrorResponse },
+        chunk: {
+            error: { serverErrorResponseWithStatusMap },
+        },
     },
 } = require('../../src/js/server');
 
@@ -32,9 +28,11 @@ const chunkEndpoints = [
         },
     },
     {
-        route: {
-            method: 'GET',
-            path: '/test',
+        route() {
+            return {
+                method: 'GET',
+                path: '/test',
+            };
         },
 
         handle() {
@@ -88,73 +86,59 @@ const jsonEndpoints = [
     },
 ];
 
-const testedErrorResponse = {
-    ...serverErrorResponse,
-    origin: serverErrorResponse,
-    send() {
-        const originResponse = {
-            ...this.origin,
-            stream: this.stream,
-            error: this.error,
-        };
+const errorStatusMap = {
+    error: undefined,
 
+    status() {
         if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
-            ({ ...originResponse, status: 501 }).send();
-
-            return this;
+            return 501;
         }
 
         if (this.error.cause?.code === 'INVALID_REQUEST') {
-            ({ ...originResponse, status: 400 }).send();
-
-            return this;
+            return 400;
         }
 
-        originResponse.send();
-        return this;
+        return 500;
     },
 };
 
 const testedServer = {
     ...server,
     endpoints: {
-        ...endpoints,
-        request: serverRequest,
-        response: serverResponse,
+        ...endpointsWithRouteMap,
         collection: []
             .concat(
-                chunkEndpoints.map((e) => {
+                chunkEndpoints.map((endpoint) => {
                     return {
                         ...chunkEndpoint,
-                        request: serverChunkRequest,
-                        response: serverChunkResponse,
-                        origin: e,
+                        implementation: endpoint,
                     };
                 }),
             )
             .concat(
-                jsonEndpoints.map((e) => {
+                jsonEndpoints.map((endpoint) => {
                     return {
-                        ...chunkEndpoint,
-                        request: serverJsonRequest,
-                        response: serverJsonResponse,
-                        origin: e,
+                        ...jsonEndpoint,
+                        implementation: endpoint,
                     };
                 }),
             ),
+    }.init(),
+    errorResponse: {
+        ...serverErrorResponseWithStatusMap,
+
+        statusMap: errorStatusMap,
     },
-    errorResponse: testedErrorResponse,
     options: { port: 8080 },
-    http,
 };
 
 describe('server', async () => {
-    let serverInstance;
+    let server;
     before(async () => {
-        serverInstance = await testedServer.start();
+        server = await testedServer.start();
     });
     after(async () => {
-        await serverInstance.stop();
+        await server.stop();
     });
 
     await it('should be started', async () => {

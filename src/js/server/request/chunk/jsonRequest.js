@@ -3,11 +3,9 @@ const chunkRequest = require('./chunkRequest');
 module.exports = Object.freeze({
     ...chunkRequest,
 
-    origin: chunkRequest,
-
     async recive() {
         const recived = await {
-            ...this.origin,
+            ...chunkRequest,
             stream: this.stream,
         }.recive();
 

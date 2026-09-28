@@ -1,17 +1,28 @@
-module.exports = Object.freeze({
-    request: undefined,
-    response: undefined,
+const {
+    chunk: { serverChunkRequest },
+} = require('../../request');
+const {
+    chunk: { serverChunkResponse },
+} = require('../../response');
 
-    origin: undefined,
+module.exports = Object.freeze({
+    request: serverChunkRequest,
+    response: serverChunkResponse,
+
+    implementation: undefined,
 
     route() {
-        return this.origin.route;
+        if (typeof this.implementation.route === 'function') {
+            return this.implementation.route();
+        }
+
+        return this.implementation.route;
     },
 
     async handle() {
         const recivedRequest = await this.request.recive();
 
-        const handleResult = this.origin.handle(recivedRequest);
+        const handleResult = await this.implementation.handle(recivedRequest);
 
         ({
             ...this.response,
