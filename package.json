@@ -1,6 +1,6 @@
 {
     "name": "objective-http",
-    "version": "3.0.2",
+    "version": "3.0.3",
     "description": "Proxy objects for creating a http server",
     "keywords": [
         "web",
