@@ -7,9 +7,14 @@ dotenv.config({
     ].filter((file) => file),
 });
 
-console.log(process.env.RELEASE_IT_GITHUB_TOKEN);
-
 export default {
+    $schema: 'https://unpkg.com/release-it@21/schema/release-it.json',
+    plugins: {
+        '@release-it/bumper': {
+            in: './package.json',
+            out: './package.json',
+        },
+    },
     git: {
         requireBranch: ['release/v*'],
         commitMessage: 'release v${version}',
