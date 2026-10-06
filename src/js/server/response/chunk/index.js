@@ -1,5 +1,12 @@
+const chunkResponse = require('./chunkRersponse');
+const jsonChunkResponse = require('./jsonChunkResponse');
+const { errorResponse, statusMapErrorResponse } = require('./error');
+
 module.exports = {
-    serverChunkResponse: require('./chunkRersponse'),
-    serverJsonResponse: require('./jsonResponse'),
-    error: require('./error'),
+    chunkResponse,
+    jsonChunkResponse: { ...chunkResponse, ...jsonChunkResponse },
+    error: {
+        errorResponse: { ...chunkResponse, ...errorResponse },
+        statusMapErrorResponse: { ...chunkResponse, ...statusMapErrorResponse },
+    },
 };

@@ -1,15 +1,33 @@
-module.exports = Object.freeze({
-    stream: undefined,
-    status: undefined,
-    headers: undefined,
+module.exports = {
+    getStream() {
+        return this.stream;
+    },
+
+    getStatus() {
+        return this.status;
+    },
+
+    getHeaders() {
+        return this.headers;
+    },
 
     send() {
         try {
-            this.stream.writeHead(this.status, this.headers);
+            this.getStream().writeHead(this.getStatus(), this.getHeaders());
 
             return this;
         } finally {
-            this.stream.end();
+            this.getStream().end();
         }
     },
-});
+
+    getOrigin(proxy = this) {
+        return {
+            ...this.origin?.getOrigin(proxy),
+            ...(this.origin ?? this),
+            stream: proxy.stream,
+            status: proxy.status,
+            headers: proxy.headers,
+        };
+    },
+};

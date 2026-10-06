@@ -2,19 +2,60 @@
 
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert');
-
 const {
     server,
     endpoint: {
-        endpoints,
-        chunk: { chunkEndpoint, jsonEndpoint },
+        endpoint,
+        many: { endpoints, routeMapEndpoints },
+        chunk: { chunkEndpoint },
+    },
+    request: {
+        serverRequest,
+        chunk: { serverChunkRequest, serverJsonChunkRequest },
     },
     response: {
+        serverResponse,
         chunk: {
-            error: { serverErrorResponseWithStatusMap },
+            serverChunkResponse,
+            serverJsonChunkResponse,
+            error: { serverErrorResponse, serverStatusMapErrorResponse },
         },
     },
 } = require('../../src/js/server');
+
+const testedServerChunkRequest = {
+    ...serverChunkRequest,
+    origin: serverRequest,
+};
+const testedServerJsonChunkRequset = {
+    ...serverJsonChunkRequest,
+    origin: testedServerChunkRequest,
+};
+const testedServerChunkResponse = {
+    ...serverChunkResponse,
+    origin: serverResponse,
+};
+const testedServerJsonChunkResponse = {
+    ...serverJsonChunkResponse,
+    origin: testedServerChunkResponse,
+};
+const testedServerErrorResponse = {
+    ...serverStatusMapErrorResponse,
+    origin: { ...serverErrorResponse, origin: testedServerChunkResponse },
+    statusMap: {
+        get(error) {
+            if (error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
+                return 501;
+            }
+
+            if (error.cause?.code === 'INVALID_REQUEST') {
+                return 400;
+            }
+
+            return 500;
+        },
+    },
+};
 
 const chunkEndpoints = [
     {
@@ -69,85 +110,89 @@ const jsonEndpoints = [
         },
     },
 ];
+const testedEndpoints = {
+    ...routeMapEndpoints,
 
-const errorStatusMap = {
-    error: undefined,
+    origin: { ...endpoints, origin: endpoint },
 
-    status() {
-        if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
-            return 501;
-        }
-
-        if (this.error.cause?.code === 'INVALID_REQUEST') {
-            return 400;
-        }
-
-        return 500;
-    },
-};
+    request: serverRequest,
+    response: serverResponse,
+    collection: []
+        .concat(
+            chunkEndpoints.map((endpoint) => {
+                return {
+                    ...chunkEndpoint,
+                    request: testedServerChunkRequest,
+                    response: testedServerChunkResponse,
+                    implementation: endpoint,
+                };
+            }),
+        )
+        .concat(
+            jsonEndpoints.map((endpoint) => {
+                return {
+                    ...chunkEndpoint,
+                    request: testedServerJsonChunkRequset,
+                    response: testedServerJsonChunkResponse,
+                    implementation: endpoint,
+                };
+            }),
+        ),
+}.init();
 
 const testedServer = {
     ...server,
-    endpoints: {
-        ...endpoints,
-        collection: []
-            .concat(
-                chunkEndpoints.map((endpoint) => {
-                    return {
-                        ...chunkEndpoint,
-                        implementation: endpoint,
-                    };
-                }),
-            )
-            .concat(
-                jsonEndpoints.map((endpoint) => {
-                    return {
-                        ...jsonEndpoint,
-                        implementation: endpoint,
-                    };
-                }),
-            ),
-    },
-    errorResponse: {
-        ...serverErrorResponseWithStatusMap,
-
-        statusMap: errorStatusMap,
-    },
+    endpoint: testedEndpoints,
+    errorResponse: testedServerErrorResponse,
     options: { port: 8090 },
+    http: require('node:http'),
 };
 
 const {
     request: {
-        chunk: { clientChunkRequest, clientJsonRequest },
+        clientRequest,
+        chunk: { clientChunkRequest, clientJsonChunkRequest },
+    },
+    response: {
+        clientResponse,
+        chunk: { clientChunkResponse, clientJsonChunkResponse },
     },
 } = require('../../src/js/client');
 
-const testedRequest = clientChunkRequest;
-const testedJsonRequest = clientJsonRequest;
+const testedClientChunkResponse = {
+    ...clientChunkResponse,
+    origin: clientResponse,
+};
+const testedClientChunkRequest = {
+    ...clientChunkRequest,
+    origin: clientRequest,
+    response: testedClientChunkResponse,
+    http: require('node:http'),
+};
+const testedClientJsonChunkResponse = {
+    ...clientJsonChunkResponse,
+    origin: testedClientChunkResponse,
+};
+const testedClientJsonChunkRequest = {
+    ...clientJsonChunkRequest,
+    origin: testedClientChunkRequest,
+    response: testedClientJsonChunkResponse,
+    http: require('node:http'),
+};
 
 describe('client', async () => {
-    let serverInstance;
+    let s;
     before(async () => {
-        serverInstance = await testedServer.start();
+        s = await testedServer.start();
     });
     after(async () => {
-        await serverInstance.stop();
+        await s.stop();
     });
 
     await it('should be started', async () => {
-        await assert.doesNotReject(
-            () => {
-                return {
-                    ...testedRequest,
-                    url: 'http://localhost:8090',
-                }.send();
-            },
-            { message: 'fetch failed' },
-        );
-
         try {
             await {
-                ...testedRequest,
+                ...testedClientChunkRequest,
                 url: 'http://localhost:8091',
             }.send();
         } catch (e) {
@@ -157,37 +202,37 @@ describe('client', async () => {
 
     await it('should return 500', async () => {
         const response = await {
-            ...testedRequest,
+            ...testedClientChunkRequest,
             url: 'http://localhost:8090/error',
         }.send();
 
-        assert.strictEqual(response.status, 500);
+        assert.strictEqual(response.getStatus(), 500);
     });
 
     await it('should return 501', async () => {
         const response = await {
-            ...testedRequest,
+            ...testedClientChunkRequest,
             url: 'http://localhost:8090/not_a_test',
         }.send();
 
-        assert.strictEqual(response.status, 501);
+        assert.strictEqual(response.getStatus(), 501);
         assert.equal(response.ok(), false);
     });
 
     await it('should return 200 and query as body', async () => {
         const response = await {
-            ...testedJsonRequest,
+            ...testedClientJsonChunkRequest,
             url: 'http://localhost:8090/json/test?x=x0',
         }.send();
 
-        assert.strictEqual(response.status, 200);
+        assert.strictEqual(response.getStatus(), 200);
         assert.equal(response.ok(), true);
-        assert.deepEqual(response.body, { x: 'x0' });
+        assert.deepEqual(response.getBody(), { x: 'x0' });
     });
 
     await it('should return 201 and sended body', async () => {
         const response = await {
-            ...testedJsonRequest,
+            ...testedClientJsonChunkRequest,
             url: 'http://localhost:8090/json/test',
             options: {
                 method: 'POST',
@@ -195,13 +240,13 @@ describe('client', async () => {
             body: { y: 'y0' },
         }.send();
 
-        assert.strictEqual(response.status, 201);
+        assert.strictEqual(response.getStatus(), 201);
         assert.equal(response.ok(), true);
-        assert.deepEqual(response.body, { y: 'y0' });
+        assert.deepEqual(response.getBody(), { y: 'y0' });
         assert.strictEqual(
-            response.headers?.['content-type'],
+            response.getHeaders()?.['content-type'],
             'application/json',
         );
-        assert.strictEqual(response.headers?.['content-length'], '10');
+        assert.strictEqual(response.getHeaders()?.['content-length'], '10');
     });
 });

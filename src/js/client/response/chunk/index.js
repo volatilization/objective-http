@@ -1,4 +1,7 @@
+const chunkResponse = require('./chunkResponse');
+const jsonChunkResponse = require('./jsonChunkResponse');
+
 module.exports = {
-    clientChunkResponse: require('./chunkResponse'),
-    clientJsonResponse: require('./jsonResponse'),
+    chunkResponse,
+    jsonChunkResponse: { ...chunkResponse, ...jsonChunkResponse },
 };

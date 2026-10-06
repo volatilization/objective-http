@@ -1,5 +1,14 @@
+const endpoint = require('./endpoint');
+const { endpoints, routeMapEndpoints } = require('./many');
+const { chunkEndpoint } = require('./chunk');
+
 module.exports = {
-    endpoints: require('./endpoints'),
-    endpointsWithRouteMap: require('./endpointsWithRouteMap'),
-    chunk: require('./chunk'),
+    endpoint,
+    many: {
+        endpoints: { ...endpoint, ...endpoints },
+        routeMapEndpoints: { ...endpoint, ...routeMapEndpoints },
+    },
+    chunk: {
+        chunkEndpoint: { ...endpoint, ...chunkEndpoint },
+    },
 };

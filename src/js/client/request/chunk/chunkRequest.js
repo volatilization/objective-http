@@ -1,38 +1,41 @@
-const request = require('../request');
+module.exports = {
+    getOptions() {
+        const options = this.getOrigin().getOptions();
 
-const {
-    chunk: { clientChunkResponse },
-} = require('../../response');
+        return {
+            ...options,
+            headers: {
+                ...options?.headers,
+                'content-length': this.getBody()
+                    ? Buffer.byteLength(this.getBody())
+                    : 0,
+            },
+        };
+    },
 
-module.exports = Object.freeze({
-    ...request,
-
-    body: undefined,
-    response: clientChunkResponse,
+    getBody() {
+        return this.body;
+    },
 
     send() {
         return new Promise((resolve, reject) => {
-            const options = {
-                ...this.options,
-                headers: {
-                    ...this.options?.headers,
-                    'content-length': this.body
-                        ? Buffer.byteLength(this.body)
-                        : 0,
-                },
-            };
             const responseHandler = (responseStream) => {
                 ({
-                    ...this.response,
+                    ...this.getResponse(),
                     stream: responseStream,
                 })
                     .recive()
                     .then(resolve)
                     .catch(reject);
             };
-            const requestStream = this.url
-                ? this.http.request(this.url, options, responseHandler)
-                : this.http.request(options, responseHandler);
+
+            const requestStream = this.getUrl()
+                ? this.getHttp().request(
+                      this.getUrl(),
+                      this.getOptions(),
+                      responseHandler,
+                  )
+                : this.getHttp().request(this.getOptions(), responseHandler);
 
             requestStream.on('error', (e) => {
                 reject(
@@ -42,11 +45,19 @@ module.exports = Object.freeze({
                 );
             });
 
-            if (this.body) {
-                requestStream.write(this.body);
+            if (this.getBody()?.length > 0) {
+                requestStream.write(this.getBody());
             }
 
             requestStream.end();
         });
     },
-});
+
+    getOrigin(proxy = this) {
+        return {
+            ...this.origin?.getOrigin(proxy),
+            ...(this.origin ?? this),
+            body: proxy.body,
+        };
+    },
+};
