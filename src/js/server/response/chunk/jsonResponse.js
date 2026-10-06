@@ -3,18 +3,20 @@ const chunkResponse = require('./chunkRersponse');
 module.exports = Object.freeze({
     ...chunkResponse,
 
-    send() {
-        ({
-            ...chunkResponse,
-            stream: this.stream,
-            status: this.status,
-            headers: {
-                ...this.headers,
-                'content-type': 'application/json',
-            },
-            body: JSON.stringify(this.body),
-        }).send();
+    getHeaders() {
+        return {
+            ...{
+                ...this.origin,
+                headers: this.headers,
+                body: this.getBody(),
+            }.getHeaders(),
+            'content-type': 'application/json',
+        };
+    },
 
-        return this;
+    getBody() {
+        const body = { ...this.origin, body: this.body }.getBody();
+
+        return JSON.stringify(body);
     },
 });

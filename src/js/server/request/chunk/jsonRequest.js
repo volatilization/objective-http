@@ -3,33 +3,40 @@ const chunkRequest = require('./chunkRequest');
 module.exports = Object.freeze({
     ...chunkRequest,
 
-    async recive() {
-        const recived = await {
-            ...chunkRequest,
-            stream: this.stream,
-        }.recive();
+    getQuery() {
+        return Object.fromEntries(
+            {
+                ...this.origin,
+                query: this.query,
+            }.getQuery(),
+        );
+    },
+
+    getHeaders() {
+        return Object.fromEntries(
+            {
+                ...this.origin,
+                headers: this.headers,
+            }.getHeaders(),
+        );
+    },
+
+    getBody() {
+        const body = { ...this.origin, body: this.body }.getBody();
+
+        if (body?.length <= 0) {
+            return body;
+        }
 
         try {
-            return {
-                ...this,
-                query: Object.fromEntries(recived.query),
-                headers: Object.fromEntries(recived.headers),
-                body:
-                    recived.body?.length > 0
-                        ? JSON.parse(recived.body?.toString())
-                        : recived.body,
-            };
+            return JSON.parse(body.toString());
         } catch (e) {
-            if (e instanceof SyntaxError) {
-                throw new Error(
-                    `Invalid server json request. Body was ${recived.body}`,
-                    {
-                        cause: { error: e, code: 'INVALID_REQUEST' },
-                    },
-                );
+            if (!(e instanceof SyntaxError)) {
+                throw e;
             }
-
-            throw e;
+            throw new Error(`Invalid server json request. Body was ${body}`, {
+                cause: { error: e, code: 'INVALID_REQUEST' },
+            });
         }
     },
 });

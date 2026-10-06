@@ -1,9 +1,17 @@
 module.exports = Object.freeze({
-    stream: undefined,
-    status: undefined,
-    headers: undefined,
+    getStream() {
+        return this.stream;
+    },
+
+    getStatus() {
+        return this.status;
+    },
+
+    getHeaders() {
+        return this.headers;
+    },
 
     ok() {
-        return 200 <= this.status && this.status < 300;
+        return 200 <= this.getStatus() && this.getStatus() < 300;
     },
 });

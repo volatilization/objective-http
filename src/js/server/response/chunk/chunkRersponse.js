@@ -3,22 +3,30 @@ const response = require('../response');
 module.exports = Object.freeze({
     ...response,
 
-    body: undefined,
+    getBody() {
+        return this.body;
+    },
+
+    getHeaders() {
+        return {
+            ...this.headers,
+            'content-length': this.getBody()
+                ? Buffer.byteLength(this.getBody())
+                : 0,
+        };
+    },
 
     send() {
         try {
-            this.stream.writeHead(this.status, {
-                ...this.headers,
-                'content-length': this.body ? Buffer.byteLength(this.body) : 0,
-            });
+            this.getStream().writeHead(this.getStatus(), this.getHeaders());
 
-            if (this.body) {
-                this.stream.write(this.body);
+            if (this.getBody()) {
+                this.getStream().write(this.getBody());
             }
 
             return this;
         } finally {
-            this.stream.end();
+            this.getStream().end();
         }
     },
 });

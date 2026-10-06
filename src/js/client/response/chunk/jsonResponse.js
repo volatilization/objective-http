@@ -3,33 +3,28 @@ const chunkResponse = require('./chunkResponse');
 module.exports = Object.freeze({
     ...chunkResponse,
 
-    async recive() {
-        const recived = await {
-            ...chunkResponse,
-            stream: this.stream,
-        }.recive();
+    getHeaders() {
+        return Object.fromEntries(this.origin.getHeaders());
+    },
+
+    getBody() {
+        if (this.origin.getBody()?.length <= 0) {
+            return this.origin.getBody();
+        }
 
         try {
-            return {
-                ...this,
-                status: recived.status,
-                headers: Object.fromEntries(recived.headers),
-                body:
-                    recived.body?.length > 0
-                        ? JSON.parse(recived.body?.toString())
-                        : recived.body,
-            };
+            return JSON.parse(this.origin.getBody().toString());
         } catch (e) {
-            if (e instanceof SyntaxError) {
-                throw new Error(
-                    `Invalid client json response. Body was ${recived.body}`,
-                    {
-                        cause: { error: e, code: 'RESPONSE_ERROR' },
-                    },
-                );
+            if (!(e instanceof SyntaxError)) {
+                throw e;
             }
 
-            throw e;
+            throw new Error(
+                `Invalid client json response. Body was ${this.origin.getBody()}`,
+                {
+                    cause: { error: e, code: 'RESPONSE_ERROR' },
+                },
+            );
         }
     },
 });

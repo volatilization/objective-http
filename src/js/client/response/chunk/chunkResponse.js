@@ -3,12 +3,14 @@ const response = require('../response');
 module.exports = Object.freeze({
     ...response,
 
-    body: undefined,
+    getBody() {
+        return this.body;
+    },
 
     recive() {
         return new Promise((resolve, reject) => {
             try {
-                this.stream.on('error', (e) => {
+                this.getStream().on('error', (e) => {
                     reject(
                         new Error('Client response error', {
                             cause: { error: e, code: 'RESPONSE_ERROR' },
@@ -17,12 +19,12 @@ module.exports = Object.freeze({
                 });
 
                 var chunks = [];
-                this.stream.on('data', (chunk) => chunks.push(chunk));
-                this.stream.on('end', () => {
+                this.getStream().on('data', (chunk) => chunks.push(chunk));
+                this.getStream().on('end', () => {
                     resolve({
                         ...this,
-                        status: this.stream.statusCode,
-                        headers: new Headers(this.stream.headers),
+                        status: this.getStream().statusCode,
+                        headers: new Headers(this.getStream().headers),
                         body: Buffer.concat(chunks),
                     });
                 });

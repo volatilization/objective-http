@@ -3,20 +3,19 @@ const chunkResponse = require('../chunkRersponse');
 module.exports = Object.freeze({
     ...chunkResponse,
 
-    error: undefined,
+    getStatus() {
+        return this.origin.getStatus() ?? 500;
+    },
 
-    send() {
-        ({
-            ...chunkResponse,
-            stream: this.stream,
-            status: this.status ?? 500,
-            headers: {
-                ...this.headers,
-                'content-type': 'text/plain',
-            },
-            body: this.error.message,
-        }).send();
+    getHeaders() {
+        return { ...this.origin.getHeaders(), 'content-type': 'text/plain' };
+    },
 
-        return this;
+    getBody() {
+        return this.getError().message;
+    },
+
+    getError() {
+        return this.error;
     },
 });

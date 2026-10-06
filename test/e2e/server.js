@@ -7,10 +7,17 @@ const {
     server,
     endpoint: {
         endpointsWithRouteMap,
-        chunk: { chunkEndpoint, jsonEndpoint },
+        chunk: { chunkEndpoint },
+    },
+    request: {
+        serverRequest,
+        chunk: { serverChunkRequest, serverJsonRequest },
     },
     response: {
+        serverResponse,
         chunk: {
+            serverChunkResponse,
+            serverJsonResponse,
             error: { serverErrorResponseWithStatusMap },
         },
     },
@@ -28,7 +35,7 @@ const chunkEndpoints = [
         },
     },
     {
-        route() {
+        getRoute() {
             return {
                 method: 'GET',
                 path: '/test',
@@ -52,6 +59,7 @@ const jsonEndpoints = [
         },
 
         handle({ query }) {
+            console.log('json endpoint', query);
             return {
                 status: 200,
                 body: query,
@@ -65,6 +73,7 @@ const jsonEndpoints = [
         },
 
         handle({ body }) {
+            console.log('json endpoint post', body);
             return {
                 status: 201,
                 body: body,
@@ -87,14 +96,12 @@ const jsonEndpoints = [
 ];
 
 const errorStatusMap = {
-    error: undefined,
-
-    status() {
-        if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
+    get(error) {
+        if (error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
             return 501;
         }
 
-        if (this.error.cause?.code === 'INVALID_REQUEST') {
+        if (error.cause?.code === 'INVALID_REQUEST') {
             return 400;
         }
 
@@ -106,11 +113,17 @@ const testedServer = {
     ...server,
     endpoints: {
         ...endpointsWithRouteMap,
+        request: serverRequest,
+        response: serverResponse,
         collection: []
             .concat(
                 chunkEndpoints.map((endpoint) => {
                     return {
                         ...chunkEndpoint,
+                        request: serverChunkRequest,
+
+                        response: serverChunkResponse,
+
                         implementation: endpoint,
                     };
                 }),
@@ -118,27 +131,36 @@ const testedServer = {
             .concat(
                 jsonEndpoints.map((endpoint) => {
                     return {
-                        ...jsonEndpoint,
+                        ...chunkEndpoint,
+                        request: {
+                            ...serverJsonRequest,
+                            origin: serverChunkRequest,
+                        },
+                        response: {
+                            ...serverJsonResponse,
+                            origin: serverChunkResponse,
+                        },
                         implementation: endpoint,
                     };
                 }),
             ),
-    }.init(),
+    },
     errorResponse: {
         ...serverErrorResponseWithStatusMap,
-
+        origin: serverChunkResponse,
         statusMap: errorStatusMap,
     },
     options: { port: 8080 },
+    http: require('node:http'),
 };
 
 describe('server', async () => {
-    let server;
+    let s;
     before(async () => {
-        server = await testedServer.start();
+        s = await testedServer.start();
     });
     after(async () => {
-        await server.stop();
+        await s.stop();
     });
 
     await it('should be started', async () => {

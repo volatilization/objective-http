@@ -9,20 +9,17 @@ module.exports = Object.freeze({
 
     response: clientJsonResponse,
 
-    async send() {
-        return await {
-            ...chunkRequest,
-            http: this.http,
-            response: this.response,
-            url: this.url,
-            options: {
-                ...this.options,
-                headers: {
-                    ...this.options?.headers,
-                    'content-type': 'application/json',
-                },
+    getOptions() {
+        return {
+            ...this.origin.getOptions(),
+            headers: {
+                ...this.origin.getOptions()?.headers,
+                'content-type': 'application/json',
             },
-            body: JSON.stringify(this.body),
-        }.send();
+        };
+    },
+
+    getBody() {
+        return JSON.stringify(this.origin.getBody());
     },
 });

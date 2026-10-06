@@ -1,11 +1,7 @@
-const http = require('node:http');
-
 module.exports = Object.freeze({
-    endpoints: undefined,
-    errorResponse: undefined,
-    options: undefined,
-    instance: undefined,
-    http: http,
+    getOptions() {
+        return this.options;
+    },
 
     start() {
         return new Promise((resolve, reject) => {
@@ -16,15 +12,16 @@ module.exports = Object.freeze({
                             await {
                                 ...this.endpoints,
                                 request: {
-                                    ...this.endpoints.request,
+                                    ...this.endpoints.getRequest(),
                                     stream: requestStream,
                                 },
                                 response: {
-                                    ...this.endpoints.response,
+                                    ...this.endpoints.getResponse(),
                                     stream: responseStream,
                                 },
                             }.handle();
                         } catch (e) {
+                            console.error(e);
                             ({
                                 ...this.errorResponse,
                                 stream: responseStream,
@@ -34,7 +31,7 @@ module.exports = Object.freeze({
                     },
                 );
 
-                instance.listen(this.options, () =>
+                instance.listen(this.getOptions(), () =>
                     resolve({ ...this, instance }),
                 );
             } catch (e) {

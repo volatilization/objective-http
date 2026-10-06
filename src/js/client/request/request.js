@@ -1,10 +1,49 @@
-const http = require('node:http');
-
-const { clientResponse } = require('../response');
-
 module.exports = Object.freeze({
-    http: http,
-    response: clientResponse,
-    url: undefined,
-    options: undefined,
+    getHttp() {
+        return this.http;
+    },
+
+    getResponse() {
+        return this.response;
+    },
+
+    getUrl() {
+        return this.url;
+    },
+
+    getOptions() {
+        return this.options;
+    },
+
+    send() {
+        return new Promise((resolve, reject) => {
+            const responseHandler = (responseStream) => {
+                ({
+                    ...this.getResponse(),
+                    stream: responseStream,
+                })
+                    .recive()
+                    .then(resolve)
+                    .catch(reject);
+            };
+
+            const requestStream = this.getUrl()
+                ? this.getHttp().request(
+                      this.getUrl(),
+                      this.getOptions(),
+                      responseHandler,
+                  )
+                : this.getHttp().request(this.getOptions(), responseHandler);
+
+            requestStream.on('error', (e) => {
+                reject(
+                    new Error('Client request error', {
+                        cause: { error: e, code: 'REQUEST_ERROR' },
+                    }),
+                );
+            });
+
+            requestStream.end();
+        });
+    },
 });

@@ -1,24 +1,26 @@
-const { serverRequest } = require('../request');
-const { serverResponse } = require('../response');
+const endpoint = require('./endpoint');
 
 module.exports = Object.freeze({
-    request: serverRequest,
-    response: serverResponse,
+    ...endpoint,
 
-    collection: undefined,
+    getCollection() {
+        return this.collection;
+    },
 
-    currentEndpoint() {
-        return this.collection.find(
+    getCurrentEndpoint() {
+        console.log('ty get current endpoint', this.getRequest().getRoute());
+
+        return this.getCollection().find(
             (endpoint) =>
-                JSON.stringify(endpoint.route()) ===
-                JSON.stringify(this.request.route()),
+                JSON.stringify(endpoint.getRoute()) ===
+                JSON.stringify(this.getRequest().getRoute()),
         );
     },
 
-    async handle(endpoint = this.currentEndpoint()) {
-        if (!endpoint) {
+    async handle(currentEndpoint = this.getCurrentEndpoint()) {
+        if (!currentEndpoint) {
             throw new Error(
-                `Endpoint for ${JSON.stringify(this.request.route())} not implemented`,
+                `Endpoint for ${JSON.stringify(this.getRequest().getRoute())} not implemented`,
                 {
                     cause: { code: 'ENDPOINT_NOT_IMPLEMENTED' },
                 },
@@ -26,9 +28,15 @@ module.exports = Object.freeze({
         }
 
         await {
-            ...endpoint,
-            request: { ...endpoint.request, stream: this.request.stream },
-            response: { ...endpoint.response, stream: this.response.stream },
+            ...currentEndpoint,
+            request: {
+                ...currentEndpoint.getRequest(),
+                stream: this.getRequest().getStream(),
+            },
+            response: {
+                ...currentEndpoint.getResponse(),
+                stream: this.getResponse().getStream(),
+            },
         }.handle();
 
         return this;

@@ -3,14 +3,14 @@ const request = require('../request');
 module.exports = Object.freeze({
     ...request,
 
-    query: undefined,
-    headers: undefined,
-    body: undefined,
+    getBody() {
+        return this.body;
+    },
 
     recive() {
         return new Promise((resolve, reject) => {
             try {
-                this.stream.on('error', (e) => {
+                this.getStream().on('error', (e) => {
                     reject(
                         new Error('Server request error', {
                             cause: { error: e, code: 'REQUEST_ERROR' },
@@ -19,14 +19,14 @@ module.exports = Object.freeze({
                 });
 
                 let chunks = [];
-                this.stream.on('data', (chunk) => chunks.push(chunk));
-                this.stream.on('end', () => {
+                this.getStream().on('data', (chunk) => chunks.push(chunk));
+                this.getStream().on('end', () => {
                     resolve({
                         ...this,
                         query: new URL(
-                            `http://${process.env.HOST ?? 'localhost'}${this.stream.url}`,
+                            `http://localhost${this.getStream().url}`,
                         ).searchParams,
-                        headers: new Headers(this.stream.headers),
+                        headers: new Headers(this.getStream().headers),
                         body: Buffer.concat(chunks),
                     });
                 });

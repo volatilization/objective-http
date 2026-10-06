@@ -3,21 +3,25 @@ const endpoints = require('./endpoints');
 module.exports = Object.freeze({
     ...endpoints,
 
-    init() {
+    getMap() {
         if (!this.map) {
+            console.log('build new map');
             this.map = new Map(
-                this.collection.map((endpoint) => [
-                    JSON.stringify(endpoint.route()),
+                this.getCollection().map((endpoint) => [
+                    JSON.stringify(endpoint.getRoute()),
                     endpoint,
                 ]),
             );
         }
 
-        return this;
+        return this.map;
     },
 
-    currentEndpoint() {
-        const incomeRoute = JSON.stringify(this.request.route());
-        return this.map.has(incomeRoute) ? this.map.get(incomeRoute) : null;
+    getCurrentEndpoint() {
+        console.log('ty get current endpoint', this.getRequest().getRoute());
+        const incomeRoute = JSON.stringify(this.getRequest().getRoute());
+        return this.getMap().has(incomeRoute)
+            ? this.getMap().get(incomeRoute)
+            : null;
     },
 });
