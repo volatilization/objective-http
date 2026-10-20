@@ -1,4 +1,7 @@
+const chunkRequest = require('./chunkRequest');
+const jsonChunkRequest = require('./jsonChunkRequest');
+
 module.exports = {
-    clientChunkRequest: require('./chunkRequest'),
-    clientJsonRequest: require('./jsonRequest'),
+    chunkRequest,
+    jsonChunkRequest: { ...chunkRequest, ...jsonChunkRequest },
 };

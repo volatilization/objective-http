@@ -1,24 +1,36 @@
-const response = require('../response');
+module.exports = {
+    getBody() {
+        return this.body;
+    },
 
-module.exports = Object.freeze({
-    ...response,
-
-    body: undefined,
+    getHeaders() {
+        return {
+            ...this.getOrigin().getHeaders(),
+            'content-length': this.getBody()
+                ? Buffer.byteLength(this.getBody())
+                : 0,
+        };
+    },
 
     send() {
         try {
-            this.stream.writeHead(this.status, {
-                ...this.headers,
-                'content-length': this.body ? Buffer.byteLength(this.body) : 0,
-            });
+            this.getStream().writeHead(this.getStatus(), this.getHeaders());
 
-            if (this.body) {
-                this.stream.write(this.body);
+            if (this.getBody()) {
+                this.getStream().write(this.getBody());
             }
 
             return this;
         } finally {
-            this.stream.end();
+            this.getStream().end();
         }
     },
-});
+
+    getOrigin(proxy = this) {
+        return {
+            ...this.origin?.getOrigin(proxy),
+            ...(this.origin ?? this),
+            body: proxy.body,
+        };
+    },
+};

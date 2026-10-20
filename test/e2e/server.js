@@ -6,15 +6,51 @@ const assert = require('node:assert');
 const {
     server,
     endpoint: {
-        endpointsWithRouteMap,
-        chunk: { chunkEndpoint, jsonEndpoint },
+        endpoint,
+        many: { endpoints, routeMapEndpoints },
+        chunk: { chunkEndpoint },
+    },
+    request: {
+        serverRequest,
+        chunk: { serverChunkRequest, serverJsonChunkRequest },
     },
     response: {
+        serverResponse,
         chunk: {
-            error: { serverErrorResponseWithStatusMap },
+            serverChunkResponse,
+            serverJsonChunkResponse,
+            error: { serverErrorResponse, serverStatusMapErrorResponse },
         },
     },
 } = require('../../src/js/server');
+
+const testedChunkRequest = { ...serverChunkRequest, origin: serverRequest };
+const testedJsonChunkRequset = {
+    ...serverJsonChunkRequest,
+    origin: testedChunkRequest,
+};
+const testedChunkResponse = { ...serverChunkResponse, origin: serverResponse };
+const testedJsonChunkResponse = {
+    ...serverJsonChunkResponse,
+    origin: testedChunkResponse,
+};
+const testedErrorResponse = {
+    ...serverStatusMapErrorResponse,
+    origin: { ...serverErrorResponse, origin: testedChunkResponse },
+    statusMap: {
+        get(error) {
+            if (error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
+                return 501;
+            }
+
+            if (error.cause?.code === 'INVALID_REQUEST') {
+                return 400;
+            }
+
+            return 500;
+        },
+    },
+};
 
 const chunkEndpoints = [
     {
@@ -28,7 +64,7 @@ const chunkEndpoints = [
         },
     },
     {
-        route() {
+        getRoute() {
             return {
                 method: 'GET',
                 path: '/test',
@@ -86,59 +122,51 @@ const jsonEndpoints = [
     },
 ];
 
-const errorStatusMap = {
-    error: undefined,
+const testedEndpoints = {
+    ...routeMapEndpoints,
 
-    status() {
-        if (this.error.cause?.code === 'ENDPOINT_NOT_IMPLEMENTED') {
-            return 501;
-        }
+    origin: { ...endpoints, origin: endpoint },
 
-        if (this.error.cause?.code === 'INVALID_REQUEST') {
-            return 400;
-        }
-
-        return 500;
-    },
-};
+    request: serverRequest,
+    response: serverResponse,
+    collection: []
+        .concat(
+            chunkEndpoints.map((endpoint) => {
+                return {
+                    ...chunkEndpoint,
+                    request: testedChunkRequest,
+                    response: testedChunkResponse,
+                    implementation: endpoint,
+                };
+            }),
+        )
+        .concat(
+            jsonEndpoints.map((endpoint) => {
+                return {
+                    ...chunkEndpoint,
+                    request: testedJsonChunkRequset,
+                    response: testedJsonChunkResponse,
+                    implementation: endpoint,
+                };
+            }),
+        ),
+}.init();
 
 const testedServer = {
     ...server,
-    endpoints: {
-        ...endpointsWithRouteMap,
-        collection: []
-            .concat(
-                chunkEndpoints.map((endpoint) => {
-                    return {
-                        ...chunkEndpoint,
-                        implementation: endpoint,
-                    };
-                }),
-            )
-            .concat(
-                jsonEndpoints.map((endpoint) => {
-                    return {
-                        ...jsonEndpoint,
-                        implementation: endpoint,
-                    };
-                }),
-            ),
-    }.init(),
-    errorResponse: {
-        ...serverErrorResponseWithStatusMap,
-
-        statusMap: errorStatusMap,
-    },
+    endpoint: testedEndpoints,
+    errorResponse: testedErrorResponse,
     options: { port: 8080 },
+    http: require('node:http'),
 };
 
 describe('server', async () => {
-    let server;
+    let s;
     before(async () => {
-        server = await testedServer.start();
+        s = await testedServer.start();
     });
     after(async () => {
-        await server.stop();
+        await s.stop();
     });
 
     await it('should be started', async () => {

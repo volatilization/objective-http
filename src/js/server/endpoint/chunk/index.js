@@ -1,4 +1,5 @@
+const chunkEndpoint = require('./chunkEndpoint');
+
 module.exports = {
-    chunkEndpoint: require('./chunkEndpoint'),
-    jsonEndpoint: require('./jsonEndpoint'),
+    chunkEndpoint,
 };

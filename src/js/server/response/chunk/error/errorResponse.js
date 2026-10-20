@@ -1,22 +1,28 @@
-const chunkResponse = require('../chunkRersponse');
-
-module.exports = Object.freeze({
-    ...chunkResponse,
-
-    error: undefined,
-
-    send() {
-        ({
-            ...chunkResponse,
-            stream: this.stream,
-            status: this.status ?? 500,
-            headers: {
-                ...this.headers,
-                'content-type': 'text/plain',
-            },
-            body: this.error.message,
-        }).send();
-
-        return this;
+module.exports = {
+    getStatus() {
+        return this.getOrigin().getStatus() ?? 500;
     },
-});
+
+    getHeaders() {
+        return {
+            ...this.getOrigin({ ...this, body: this.getBody() }).getHeaders(),
+            'content-type': 'text/plain',
+        };
+    },
+
+    getBody() {
+        return this.getError().message;
+    },
+
+    getError() {
+        return this.error;
+    },
+
+    getOrigin(proxy = this) {
+        return {
+            ...this.origin?.getOrigin(proxy),
+            ...(this.origin ?? this),
+            error: proxy.error,
+        };
+    },
+};

@@ -1,32 +1,40 @@
-const http = require('node:http');
-
 module.exports = Object.freeze({
-    endpoints: undefined,
-    errorResponse: undefined,
-    options: undefined,
-    instance: undefined,
-    http: http,
+    getHttp() {
+        return this.http;
+    },
+
+    getEndpoint() {
+        return this.endpoint;
+    },
+
+    getErrorResponse() {
+        return this.errorResponse;
+    },
+
+    getOptions() {
+        return this.options;
+    },
 
     start() {
         return new Promise((resolve, reject) => {
             try {
-                const instance = this.http.createServer(
+                const instance = this.getHttp().createServer(
                     async (requestStream, responseStream) => {
                         try {
                             await {
-                                ...this.endpoints,
+                                ...this.getEndpoint(),
                                 request: {
-                                    ...this.endpoints.request,
+                                    ...this.getEndpoint().getRequest(),
                                     stream: requestStream,
                                 },
                                 response: {
-                                    ...this.endpoints.response,
+                                    ...this.getEndpoint().getResponse(),
                                     stream: responseStream,
                                 },
                             }.handle();
                         } catch (e) {
                             ({
-                                ...this.errorResponse,
+                                ...this.getErrorResponse(),
                                 stream: responseStream,
                                 error: e,
                             }).send();
@@ -34,7 +42,7 @@ module.exports = Object.freeze({
                     },
                 );
 
-                instance.listen(this.options, () =>
+                instance.listen(this.getOptions(), () =>
                     resolve({ ...this, instance }),
                 );
             } catch (e) {
@@ -61,5 +69,16 @@ module.exports = Object.freeze({
                 );
             }
         });
+    },
+
+    getOrigin(proxy = this) {
+        return {
+            ...this.origin?.getOrigin(proxy),
+            ...(this.origin ?? this),
+            http: proxy.http,
+            endpoint: proxy.endpoint,
+            errorResponse: proxy.errorResponse,
+            options: proxy.options,
+        };
     },
 });
